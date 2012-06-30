@@ -33,11 +33,6 @@
 #include <windows.h>
 #include <locale.h>
 #endif
-#if defined(__OS2__)
-# define INCL_DOS
-# define INCL_DOSERRORS
-# include <os2.h>
-#endif
 #include <assert.h>
 
 /* state of output_mode and input_mode
@@ -330,7 +325,7 @@ static void mime_putc(nkf_char c);
 
 /* buffers */
 
-#if !defined(PERL_XS) && !defined(WIN32DLL)
+#if !defined(PERL_XS)
 static unsigned char stdibuf[IOBUF_SIZE];
 static unsigned char stdobuf[IOBUF_SIZE];
 #endif
@@ -669,21 +664,6 @@ nkf_locale_charmap() {
 	static char buf[16];
 	sprintf(buf, "CP%d", GetACP());
 	return buf;
-#elif defined(__OS2__)
-# if defined(INT_IS_SHORT)
-	/* OS/2 1.x */
-	return NULL;
-# else
-	/* OS/2 32bit */
-	static char buf[16];
-	ULONG ulCP[1], ulncp;
-	DosQueryCp(sizeof(ulCP), ulCP, &ulncp);
-	if (ulCP[0] == 932 || ulCP[0] == 943)
-	strcpy(buf, "Shift_JIS");
-	else
-	sprintf(buf, "CP%lu", ulCP[0]);
-	return buf;
-# endif
 #endif
 	return NULL;
 }
@@ -716,6 +696,9 @@ nkf_default_encoding() {
 	return enc;
 }
 
+/**
+ * nkf_buf_t 構造体
+ */
 typedef struct {
 	long capa;
 	long len;
@@ -748,6 +731,7 @@ static nkf_char nkf_buf_at(nkf_buf_t *buf, int index) {
 	return buf->ptr[index];
 }
 
+// バッファの中身を0にする
 static void nkf_buf_clear(nkf_buf_t *buf) {
 	buf->len = 0;
 }
@@ -2850,6 +2834,9 @@ static void code_status(nkf_char c) {
 	}
 }
 
+/*
+ * nkfの状態を表す構造体？
+ */
 typedef struct {
 	nkf_buf_t *std_gc_buf;
 	nkf_char broken_state;
@@ -2862,6 +2849,7 @@ static nkf_state_t *nkf_state = NULL;
 
 #define STD_GC_BUFSIZE (256)
 
+// nkfの初期化
 static void nkf_state_init(void) {
 	if (nkf_state) {
 		nkf_buf_clear(nkf_state->std_gc_buf);
@@ -2877,26 +2865,22 @@ static void nkf_state_init(void) {
 	nkf_state->mimeout_state = 0;
 }
 
-#ifndef WIN32DLL
 static nkf_char std_getc(FILE *f) {
 	if (!nkf_buf_empty_p(nkf_state->std_gc_buf)) {
 		return nkf_buf_pop(nkf_state->std_gc_buf);
 	}
 	return getc(f);
 }
-#endif /*WIN32DLL*/
 
 static nkf_char std_ungetc(nkf_char c, FILE *f) {
 	nkf_buf_push(nkf_state->std_gc_buf, c);
 	return c;
 }
 
-#ifndef WIN32DLL
 static void std_putc(nkf_char c) {
 	if (c != EOF)
 		putchar(c);
 }
-#endif /*WIN32DLL*/
 
 static nkf_char hold_buf[HOLD_SIZE * 2];
 static int hold_count = 0;
@@ -4001,7 +3985,7 @@ get_guessed_code(void) {
 	return input_codename;
 }
 
-#if !defined(PERL_XS) && !defined(WIN32DLL)
+#if !defined(PERL_XS)
 static void print_guessed_code(char *filename) {
 	if (filename != NULL)
 		printf("%s: ", filename);
@@ -4019,7 +4003,7 @@ static void print_guessed_code(char *filename) {
 		}
 	}
 }
-#endif /*WIN32DLL*/
+#endif /*PERL_XS*/
 
 #ifdef INPUT_OPTION
 
@@ -5221,7 +5205,7 @@ static int module_connection(void) {
  Conversion main loop. Code detection only.
  */
 
-#if !defined(PERL_XS) && !defined(WIN32DLL)
+#if !defined(PERL_XS)
 static nkf_char noconvert(FILE *f) {
 	nkf_char c;
 
@@ -5260,7 +5244,7 @@ static int kanji_convert(FILE *f) {
 	output_mode = ASCII;
 
 	if (module_connection() < 0) {
-#if !defined(PERL_XS) && !defined(WIN32DLL)
+#if !defined(PERL_XS)
 		fprintf(stderr, "no output encoding given\n");
 #endif
 		return -1;
@@ -5699,6 +5683,7 @@ static int kanji_convert(FILE *f) {
 
 /*
  * int options(unsigned char *cp)
+ * オプションの判別と設定を行う
  *
  * return values:
  *    0: success
@@ -5740,7 +5725,7 @@ static int options(unsigned char *cp) {
 				p = 0;
 			}
 			if (p == 0) {
-#if !defined(PERL_XS) && !defined(WIN32DLL)
+#if !defined(PERL_XS)
 				fprintf(stderr, "unknown long option: --%s\n", cp);
 #endif
 				return -1;
@@ -5950,7 +5935,7 @@ static int options(unsigned char *cp) {
 					}
 					continue;
 				}
-#if !defined(PERL_XS) && !defined(WIN32DLL)
+#if !defined(PERL_XS)
 				fprintf(stderr, "unsupported long option: --%s\n",
 						long_option[i].name);
 #endif
@@ -6016,7 +6001,7 @@ static int options(unsigned char *cp) {
 		case 'r':
 			rot_f = TRUE;
 			continue;
-#if defined(MSDOS) || defined(__OS2__)
+#if defined(MSDOS)
 		case 'T':
 			binmode_f = FALSE;
 			continue;
@@ -6268,7 +6253,7 @@ static int options(unsigned char *cp) {
 				;
 			continue;
 		default:
-#if !defined(PERL_XS) && !defined(WIN32DLL)
+#if !defined(PERL_XS)
 			fprintf(stderr, "unknown option: -%c\n", *(cp - 1));
 #endif
 			/* bogus option but ignored */
@@ -6292,6 +6277,7 @@ int nkf(int argc, char **argv) {
 #ifdef DEFAULT_CODE_LOCALE
 	setlocale(LC_CTYPE, "");
 #endif
+	// nkfの状態を初期化する
 	nkf_state_init();
 
 	for (argc--, argv++; (argc > 0) && **argv == '-'; argc--, argv++) {
@@ -6300,6 +6286,7 @@ int nkf(int argc, char **argv) {
 	}
 
 	if (guess_f) {
+		// 入力データの文字コード予測を行う場合
 #ifdef CHECK_OPTION
 		int debug_f_back = debug_f;
 #endif
@@ -6319,12 +6306,7 @@ int nkf(int argc, char **argv) {
 	}
 
 	if (binmode_f == TRUE)
-#if defined(__OS2__) && (defined(__IBMC__) || defined(__IBMCPP__))
-		if (freopen("","wb",stdout) == NULL)
-		return (-1);
-#else
 		setbinmode(stdout);
-#endif
 
 	if (unbuf_f)
 		setbuf(stdout, (char *) NULL);
@@ -6333,11 +6315,7 @@ int nkf(int argc, char **argv) {
 
 	if (argc == 0) {
 		if (binmode_f == TRUE)
-#if defined(__OS2__) && (defined(__IBMC__) || defined(__IBMCPP__))
-			if (freopen("","rb",stdin) == NULL) return (-1);
-#else
 			setbinmode(stdin);
-#endif
 		setvbuffer(stdin, (char *) stdibuf, IOBUF_SIZE);
 		if (nop_f)
 			noconvert(stdin);
@@ -6412,21 +6390,11 @@ int nkf(int argc, char **argv) {
 						return (-1);
 					}
 					if (binmode_f == TRUE) {
-#if defined(__OS2__) && (defined(__IBMC__) || defined(__IBMCPP__))
-						if (freopen("","wb",stdout) == NULL)
-						return (-1);
-#else
 						setbinmode(stdout);
-#endif
 					}
 				}
 				if (binmode_f == TRUE)
-#if defined(__OS2__) && (defined(__IBMC__) || defined(__IBMCPP__))
-					if (freopen("","rb",fin) == NULL)
-					return (-1);
-#else
 					setbinmode(fin);
-#endif
 				setvbuffer(fin, (char *) stdibuf, IOBUF_SIZE);
 				if (nop_f)
 					noconvert(fin);
@@ -6442,7 +6410,7 @@ int nkf(int argc, char **argv) {
 #ifdef OVERWRITE
 				if (overwrite_f) {
 					struct stat sb;
-#if defined(MSDOS) && !defined(__MINGW32__) && !defined(__WIN32__) && !defined(__WATCOMC__) && !defined(__EMX__) && !defined(__OS2__) && !defined(__DJGPP__)
+#if defined(MSDOS) && !defined(__MINGW32__) && !defined(__WIN32__) && !defined(__WATCOMC__) && !defined(__EMX__) && !defined(__DJGPP__)
 					time_t tb[2];
 #else
 					struct utimbuf tb;
@@ -6463,7 +6431,7 @@ int nkf(int argc, char **argv) {
 
 					/* タイムスタンプを復元 */
 					if (preserve_time_f) {
-#if defined(MSDOS) && !defined(__MINGW32__) && !defined(__WIN32__) && !defined(__WATCOMC__) && !defined(__EMX__) && !defined(__OS2__) && !defined(__DJGPP__)
+#if defined(MSDOS) && !defined(__MINGW32__) && !defined(__WIN32__) && !defined(__WATCOMC__) && !defined(__EMX__) && !defined(__DJGPP__)
 						tb[0] = tb[1] = sb.st_mtime;
 						if (utime(outfname, tb)) {
 							fprintf(stderr, "Can't set timestamp %s\n", outfname);

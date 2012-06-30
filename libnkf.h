@@ -37,7 +37,7 @@ typedef int nkf_char;
 #define NKF_INT32_C(n)   (n)
 #endif
 
-#if (defined(__TURBOC__) || defined(_MSC_VER) || defined(LSI_C) || (defined(__WATCOMC__) && defined(__386__) && !defined(__LINUX__)) || defined(__MINGW32__) || defined(__EMX__) || defined(__MSDOS__) || defined(__WINDOWS__) || defined(__DOS__) || defined(__OS2__)) && !defined(MSDOS)
+#if (defined(__TURBOC__) || defined(_MSC_VER) || defined(LSI_C) || (defined(__WATCOMC__) && defined(__386__) && !defined(__LINUX__)) || defined(__MINGW32__) || defined(__EMX__) || defined(__MSDOS__) || defined(__WINDOWS__) || defined(__DOS__)) && !defined(MSDOS)
 #define MSDOS
 #if (defined(__Win32__) || defined(_WIN32)) && !defined(__WIN32__)
 #define __WIN32__
@@ -55,7 +55,7 @@ typedef int nkf_char;
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(MSDOS) || defined(__OS2__)
+#if defined(MSDOS)
 #include <fcntl.h>
 #include <io.h>
 #if defined(_MSC_VER) || defined(__WATCOMC__)
@@ -110,7 +110,7 @@ void  setbinmode(FILE *fp)
 #include <sys/utime.h>
 #endif /* (__BORLANDC__) */
 #else /* !defined(__WIN32__) */
-#if defined(_MSC_VER) || defined(__MINGW32__) || defined(__WATCOMC__) || defined(__OS2__) || defined(__EMX__) || defined(__IBMC__) || defined(__IBMCPP__)  /* VC++, MinGW, Watcom, emx+gcc, IBM VAC++ */
+#if defined(_MSC_VER) || defined(__MINGW32__) || defined(__WATCOMC__) || defined(__EMX__) || defined(__IBMC__) || defined(__IBMCPP__)  /* VC++, MinGW, Watcom, emx+gcc, IBM VAC++ */
 #include <sys/utime.h>
 #elif defined(__TURBOC__) /* BCC */
 #include <utime.h>
@@ -129,11 +129,6 @@ void  setbinmode(FILE *fp)
 #ifdef DEFAULT_CODE_LOCALE
 
 #if defined(__WIN32__) /* not win32 should be posix */
-# ifndef HAVE_LOCALE_H
-#  define HAVE_LOCALE_H
-# endif
-#elif defined(__OS2__)
-# undef HAVE_LANGINFO_H /* We do not use kLIBC's langinfo. */
 # ifndef HAVE_LOCALE_H
 #  define HAVE_LOCALE_H
 # endif
