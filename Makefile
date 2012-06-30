@@ -6,7 +6,7 @@
 
 # target and sources
 TARGET  = libnkf.a
-SOURCES = nkf.c utf8tbl.c
+SOURCES = utf8tbl.c libnkf.c
 OBJECTS = $(SOURCES:.c=.o)
 
 # basic command

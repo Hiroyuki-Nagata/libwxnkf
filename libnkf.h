@@ -1,12 +1,9 @@
-/*
- * 
- * nkf.h - Header file for nkf
- * 
- * $Id: nkf.h,v 1.6 2008/11/07 02:43:43 naruse Exp $
- */
+#ifndef _LIBNKF_H_
+#define _LIBNKF_H_
 
-#ifndef NKF_H
-#define NKF_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Wrapper of configurations */
 
@@ -92,15 +89,6 @@ void  setbinmode(FILE *fp)
 #define       setvbuffer(fp, buf, size)       setbuffer(fp, buf, size)
 #endif
 
-/*Borland C++ 4.5 EasyWin*/
-#if defined(__TURBOC__) && defined(_Windows) && !defined(__WIN32__) /*Easy Win */
-#define         EASYWIN
-#ifndef __WIN16__
-#define __WIN16__
-#endif
-#include <windows.h>
-#endif
-
 #ifdef OVERWRITE
 /* added by satoru@isoternet.org */
 #if defined(__EMX__)
@@ -174,8 +162,13 @@ void  setbinmode(FILE *fp)
 #define         FALSE   0
 #define         TRUE    1
 
-#ifdef WIN32DLL
-#include "nkf32.h"
+/**
+ * 実際に文字コードを変換するインターフェース
+ */
+int nkf(const char *in, char *out, size_t len, const char *options);
+
+#ifdef __cplusplus
+}
 #endif
 
-#endif /* NKF_H */
+#endif /* _LIBNKF_H_ */

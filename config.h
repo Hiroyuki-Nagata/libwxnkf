@@ -27,13 +27,6 @@
 /* JIS X0212 */
 #define X0212_ENABLE
 
-/* --exec-in, --exec-out option
- * require pipe, fork, execvp and so on.
- * please undef this on MS-DOS, MinGW
- * this is still buggy arround child process
- */
-/* #define EXEC_IO */
-
 /* Unicode Normalization */
 #define UNICODE_NORMALIZATION
 
