@@ -5230,6 +5230,9 @@ static nkf_char noconvert(FILE *f) {
     debug("ISO-2022-JP"); \
 } while (0)
 
+/**
+ * 指定されたファイルポインタから文字コードの変換を行う
+ */
 static int kanji_convert(FILE *f) {
 	nkf_char c1 = 0, c2 = 0, c3 = 0, c4 = 0;
 	int shift_mode = 0; /* 0, 1, 2, 3 */
@@ -6264,14 +6267,15 @@ static int options(unsigned char *cp) {
 }
 
 /**
- * 実際に文字コードを変換するインターフェース
+ * nkf bash上で打つコマンドと同じように扱う
  */
 int nkf(int argc, char **argv) {
+	// 入力データのファイルポインタ
 	FILE *fin;
 	unsigned char *cp;
 
 	// 入出力ファイル名
-	char *origfname;
+	char *origfname;  // *argv++のこと
 	char *outfname = NULL;
 
 #ifdef DEFAULT_CODE_LOCALE
@@ -6282,6 +6286,7 @@ int nkf(int argc, char **argv) {
 
 	for (argc--, argv++; (argc > 0) && **argv == '-'; argc--, argv++) {
 		cp = (unsigned char *) *argv;
+		// 読み取ったオプションをnkfに設定する
 		options(cp);
 	}
 
@@ -6314,6 +6319,7 @@ int nkf(int argc, char **argv) {
 		setvbuffer(stdout, (char *) stdobuf, IOBUF_SIZE);
 
 	if (argc == 0) {
+		// nkfの起動時引数が0ならば何もせず終了する
 		if (binmode_f == TRUE)
 			setbinmode(stdin);
 		setvbuffer(stdin, (char *) stdibuf, IOBUF_SIZE);
@@ -6325,8 +6331,11 @@ int nkf(int argc, char **argv) {
 				print_guessed_code(NULL);
 		}
 	} else {
+		// nkfの起動時引数が0ではない場合
 		int nfiles = argc;
 		int is_argument_error = FALSE;
+
+		// argv[]の配列の数だけループを繰り返す
 		while (argc--) {
 			input_codename = NULL;
 			input_eol = 0;
@@ -6334,6 +6343,7 @@ int nkf(int argc, char **argv) {
 			iconv_for_check = 0;
 #endif
 			if ((fin = fopen((origfname = *argv++), "r")) == NULL) {
+				// 入力ファイルをオープンする
 				perror(*(argv - 1));
 				is_argument_error = TRUE;
 				continue;
@@ -6399,6 +6409,7 @@ int nkf(int argc, char **argv) {
 				if (nop_f)
 					noconvert(fin);
 				else {
+					// ここで指定されたファイルポインタを使って文字コードの変換を行う
 					char *filename = NULL;
 					kanji_convert(fin);
 					if (nfiles > 1)

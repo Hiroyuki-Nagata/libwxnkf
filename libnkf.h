@@ -158,9 +158,9 @@ void  setbinmode(FILE *fp)
 #define         TRUE    1
 
 /**
- * 実際に文字コードを変換するインターフェース
+ * nkf bash上で打つコマンドと同じように扱う
  */
-int nkf(const char *in, char *out, size_t len, const char *options);
+int nkf(int argc, char **argv);
 
 #ifdef __cplusplus
 }
