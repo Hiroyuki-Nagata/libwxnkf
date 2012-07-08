@@ -284,6 +284,15 @@ static const char *input_codename = NULL; /* NULL: unestablished, "": BINARY */
 static nkf_encoding *input_encoding = NULL;
 static nkf_encoding *output_encoding = NULL;
 
+/* it used if output is memory */
+static FILE *fout = NULL;
+static const unsigned char *cin = NULL;
+static unsigned char *cout = NULL;
+static int nin = -1;
+static int ninmax = -1;
+static int nout = -1;
+static int noutmax = -1;
+
 #if defined(UTF8_INPUT_ENABLE) || defined(UTF8_OUTPUT_ENABLE)
 /* UCS Mapping
  * 0: Shift_JIS, eucJP-ascii
@@ -348,6 +357,7 @@ static int iso8859_f = FALSE; /* ISO8859 through */
 static int mimeout_f = FALSE; /* base64 mode */
 static int x0201_f = NKF_UNSPECIFIED; /* convert JIS X 0201 */
 static int iso2022jp_f = FALSE; /* replace non ISO-2022-JP with GETA */
+static int output_is_memory_f = FALSE; /* if true, output is console out. else output is in memory. */
 
 #ifdef UNICODE_NORMALIZATION
 static int nfc_f = FALSE;
@@ -2849,13 +2859,17 @@ static nkf_state_t *nkf_state = NULL;
 
 #define STD_GC_BUFSIZE (256)
 
-// nkfの初期化
+/**
+ * nkfの初期化
+ */
 static void nkf_state_init(void) {
 	if (nkf_state) {
+		// nkf_stateがNULLでなければメモリをクリアする
 		nkf_buf_clear(nkf_state->std_gc_buf);
 		nkf_buf_clear(nkf_state->broken_buf);
 		nkf_buf_clear(nkf_state->nfc_buf);
 	} else {
+		// nkf_stateがNULLであればメモリを確保する
 		nkf_state = nkf_xmalloc(sizeof(nkf_state_t));
 		nkf_state->std_gc_buf = nkf_buf_new(STD_GC_BUFSIZE);
 		nkf_state->broken_buf = nkf_buf_new(3);
@@ -2865,10 +2879,36 @@ static void nkf_state_init(void) {
 	nkf_state->mimeout_state = 0;
 }
 
+/**
+ * ファイルポインタからnkf用のデータを読み取る
+ * std_getc
+ */
 static nkf_char std_getc(FILE *f) {
 	if (!nkf_buf_empty_p(nkf_state->std_gc_buf)) {
+		// バッファにデータが残っていればそれを返す
 		return nkf_buf_pop(nkf_state->std_gc_buf);
 	}
+
+	if (output_is_memory_f && cin != NULL) {
+
+		// メモリに出力するフラグが立っていれば
+		if (ninmax >= 0) {
+			if (nin >= ninmax) {
+				return EOF;
+			} else {
+				nin++;
+				return *cin++;
+			}
+		} else {
+			if (*cin) {
+				return *cin++;
+			} else {
+				return EOF;
+			}
+		}
+	}
+
+	// 通常時の標準出力
 	return getc(f);
 }
 
@@ -2877,9 +2917,17 @@ static nkf_char std_ungetc(nkf_char c, FILE *f) {
 	return c;
 }
 
+/**
+ * 標準出力またはファイルに文字列を書き込む
+ */
 static void std_putc(nkf_char c) {
-	if (c != EOF)
-		putchar(c);
+	if (!output_is_memory_f) {
+		if (c != EOF)
+			putchar(c);
+	} else {
+		if (cout != NULL)
+			*cout++ = c;
+	}
 }
 
 static nkf_char hold_buf[HOLD_SIZE * 2];
@@ -4965,6 +5013,9 @@ nkf_iconv_close(nkf_iconv_t *convert)
 }
 #endif
 
+/**
+ * nkfのフラグと変数の初期化を行う
+ */
 static void reinit(void) {
 	{
 		struct input_code *p = input_code_list;
@@ -5072,6 +5123,17 @@ static void reinit(void) {
 	input_codename = NULL;
 	input_encoding = NULL;
 	output_encoding = NULL;
+
+	/* output is memory, init value  */
+	output_is_memory_f = FALSE;
+	cin = NULL;
+	nin = -1;
+	ninmax = -1;
+	fout = stdout;
+	cout = NULL;
+	nout = -1;
+	noutmax = -1;
+
 	nkf_state_init();
 }
 
@@ -6275,7 +6337,7 @@ int nkf(int argc, char **argv) {
 	unsigned char *cp;
 
 	// 入出力ファイル名
-	char *origfname;  // *argv++のこと
+	char *origfname; // *argv++のこと
 	char *outfname = NULL;
 
 #ifdef DEFAULT_CODE_LOCALE
@@ -6343,11 +6405,12 @@ int nkf(int argc, char **argv) {
 			iconv_for_check = 0;
 #endif
 			if ((fin = fopen((origfname = *argv++), "r")) == NULL) {
-				// 入力ファイルをオープンする
+				// 入力ファイルオープンがエラーの場合
 				perror(*(argv - 1));
 				is_argument_error = TRUE;
 				continue;
 			} else {
+				// 入力ファイルオープンが正常の場合
 #ifdef OVERWRITE
 				int fd = 0;
 				int fd_backup = 0;
@@ -6426,8 +6489,9 @@ int nkf(int argc, char **argv) {
 #else
 					struct utimbuf tb;
 #endif
-
+					// 標準出力に結果を表示する
 					fflush(stdout);
+
 					close(fd);
 					if (dup2(fd_backup, fileno(stdout)) < 0) {
 						perror("dup2");
@@ -6492,3 +6556,58 @@ int nkf(int argc, char **argv) {
 		fclose(stdout);
 	return (0);
 }
+
+/**
+ * オプションを設定する
+ */
+void nkf_set_option(const char *opt) {
+	char *p = malloc(strlen(opt) + 2);
+	if (!p)
+		return;
+
+	if (*opt == '-') {
+		strcpy(p, opt);
+	} else {
+		*p = '-';
+		strcpy(p + 1, opt);
+	}
+	reinit();
+	options(p);
+	free(p);
+}
+
+/**
+ * 文字コードを変換する
+ */
+void nkf_convert(char *dst, const char *src) {
+	output_is_memory_f = TRUE;
+	cout = dst;
+	noutmax = -1;
+	nout = -1;
+	cin = src;
+	ninmax = -1;
+	nin = -1;
+	kanji_convert(NULL);
+	*cout = 0;
+}
+
+/**
+ * 返り値を指定して安全に文字コードを変換する
+ *
+size_t nkf_convert_safe(char *dst, size_t dst_length, const char *src,
+		size_t src_length) {
+	if (src == NULL)
+		return 0;
+	std_putc_mode = 6;
+	cout = dst;
+	noutmax = dst_length;
+	nout = 0;
+	std_getc_mode = 2;
+	cin = src;
+	ninmax = src_length;
+	nin = 0;
+	kanji_convert(NULL);
+	if (nout < noutmax)
+		*cout = 0;
+	return nout;
+}*/

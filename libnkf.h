@@ -162,6 +162,16 @@ void  setbinmode(FILE *fp)
  */
 int nkf(int argc, char **argv);
 
+/**
+ * nkf用にオプションをセットする
+ */
+void nkf_set_option(const char *opt);
+
+/**
+ * 文字コードを変換する
+ */
+void nkf_convert(char *dst, const char *src);
+
 #ifdef __cplusplus
 }
 #endif
