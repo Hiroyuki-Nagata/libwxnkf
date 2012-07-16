@@ -12,6 +12,7 @@
 #include <string>
 #include <sys/stat.h>
 #include "NKFNativeEncodings.h"
+#include "NKFEncoding.h"
 #include "UTF8Table.h"
 #include "FlagPool.h"
 #include "Util.h"
@@ -253,8 +254,8 @@ private:
 	/**
 	 * 入力された文字コード・出力する文字コード
 	 */
-	static NKFNativeEncoding* inputEncoding;
-	static NKFNativeEncoding* outputEncoding;
+	static NKFEncoding* inputEncoding;
+	static NKFEncoding* outputEncoding;
 	/**
 	 * MIME mode B base64, Q hex
 	 */
@@ -276,7 +277,7 @@ private:
 	/**
 	 * 文字コードの種類判別
 	 */
-	NKFNativeEncoding* enc;
+	NKFEncoding* enc;
 	/**
 	 * LibNKFの初期化処理を行う
 	 */
@@ -313,7 +314,7 @@ private:
 	/**
 	 * BOMが存在するかチェックし、存在すれば無視する
 	 */
-	static void CheckBom(FILE *f);
+	void CheckBom(FILE *f);
 	/**
 	 * ファイルポインタから1バイトnkf用のデータを読み取って返す
 	 */

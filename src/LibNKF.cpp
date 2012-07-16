@@ -81,7 +81,7 @@ int LibNKF::SetOption(const string option) {
 	nkf_char i, j;
 	unsigned char *p;
 	unsigned char *cp_back = NULL;
-	enc = new NKFNativeEncoding();
+	enc = new NKFEncoding();
 	flagPool = new FlagPool();
 
 	if (flagPool->option_mode == 1)
@@ -643,9 +643,9 @@ int LibNKF::KanjiConvert(FILE* f) {
 	int g2 = 0;
 	int is_8bit = FALSE;
 
-	if (inputEncoding && !nkf_enc_asciicompat(inputEncoding)) {
-		is_8bit = TRUE;
-	}
+	//if (inputEncoding && !nkf_enc_asciicompat(inputEncoding)) {
+	//	is_8bit = TRUE;
+	//}
 
 	inputMode = ASCII;
 	outputMode = ASCII;
@@ -1092,19 +1092,19 @@ int LibNKF::ModuleConnection() {
 	}
 	if (!outputEncoding) {
 		if (flagPool->noout_f || flagPool->guess_f) {
-			NKFEncodingISO_2022_JP* enc;
-			outputEncoding = (NKFEncoding*) enc;
+			outputEncoding = Util::NKFEncFromIndex(ISO_2022_JP);
 		} else {
 			return -1;
 		}
 	}
 	LibNKF::SetOutputEncoding(outputEncoding);
-	//oconv = nkf_enc_to_oconv(outputEncoding);
-	//oconvはoutputEncoding->Oconv(); を使う
-	//o_putc = std_putc;
-	//o_putcは
-	if (nkf_enc_unicode_p(outputEncoding))
+	// oconv = nkf_enc_to_oconv(outputEncoding);
+	// oconvはoutputEncoding->Oconv(); を使う
+	// o_putc = std_putc;
+	// o_putcは
+	if (nkf_enc_unicode_p(outputEncoding)) {
 		output_mode = UTF_8;
+	}
 
 	if (flagPool->x0201_f == NKF_UNSPECIFIED) {
 		flagPool->x0201_f = X0201_DEFAULT;
@@ -1210,7 +1210,7 @@ int LibNKF::ModuleConnection() {
 /**
  * 入力された文字コードからフラグを設定する
  */
-void LibNKF::SetInputEncoding(NKFEncoding *enc) {
+void LibNKF::SetInputEncoding(NKFNativeEncoding *enc) {
 	switch (enc->id) {
 	case ISO_8859_1:
 		flagPool->iso8859_f = TRUE;
@@ -1305,7 +1305,7 @@ void LibNKF::SetInputEncoding(NKFEncoding *enc) {
 /**
  * 出力する文字コード用にフラグを設定する
  */
-void LibNKF::SetOutputEncoding(NKFEncoding *enc) {
+void LibNKF::SetOutputEncoding(NKFNativeEncoding *enc) {
 
 	switch (enc->id) {
 	case CP50220:
@@ -1429,10 +1429,9 @@ void LibNKF::CheckBom(FILE *f) {
 			if ((c2 = LibNKF::StdGetC(f)) == 0xFE) {
 				if ((c2 = LibNKF::StdGetC(f)) == 0xFF) {
 					if (!inputEncoding) {
-						NKFEncodingUTF_32* enc;
-						inputEncoding = (NKFEncoding*)enc;
+						inputEncoding->iconvName = "w_iconv32";
 					}
-					if (iconv == w_iconv32) {
+					if (inputEncoding->iconvName == "w_iconv32") {
 						inputEndian = ENDIAN_BIG;
 						return;
 					}
@@ -1444,9 +1443,9 @@ void LibNKF::CheckBom(FILE *f) {
 			} else if (c2 == 0xFF) {
 				if ((c2 = LibNKF::StdGetC(f)) == 0xFE) {
 					if (!inputEncoding) {
-						set_iconv(TRUE, w_iconv32);
+						inputEncoding->iconvName = "w_iconv32";
 					}
-					if (iconv == w_iconv32) {
+					if (inputEncoding->iconvName == "w_iconv32") {
 						inputEndian = ENDIAN_2143;
 						return;
 					}
@@ -1468,9 +1467,9 @@ void LibNKF::CheckBom(FILE *f) {
 		if ((c2 = LibNKF::StdGetC(f)) == 0xBB) {
 			if ((c2 = LibNKF::StdGetC(f)) == 0xBF) {
 				if (!inputEncoding) {
-					set_iconv(TRUE, w_iconv);
+					inputEncoding->iconvName = "w_iconv";
 				}
-				if (iconv == w_iconv) {
+				if (inputEncoding->iconvName == "w_iconv") {
 					return;
 				}
 				LibNKF::StdUnGetC(0xBF, f);
@@ -1486,9 +1485,9 @@ void LibNKF::CheckBom(FILE *f) {
 			if ((c2 = LibNKF::StdGetC(f)) == 0x00) {
 				if ((c2 = LibNKF::StdGetC(f)) == 0x00) {
 					if (!inputEncoding) {
-						set_iconv(TRUE, w_iconv32);
+						inputEncoding->iconvName = "w_iconv32";
 					}
-					if (iconv == w_iconv32) {
+					if (inputEncoding->iconvName == "w_iconv32") {
 						inputEndian = ENDIAN_3412;
 						return;
 					}
@@ -1499,9 +1498,9 @@ void LibNKF::CheckBom(FILE *f) {
 			} else
 				LibNKF::StdUnGetC(c2, f);
 			if (!inputEncoding) {
-				set_iconv(TRUE, w_iconv16);
+				inputEncoding->iconvName = "w_iconv16";
 			}
-			if (iconv == w_iconv16) {
+			if (inputEncoding->iconvName == "w_iconv16") {
 				inputEndian = ENDIAN_BIG;
 				return;
 			}
@@ -1515,9 +1514,9 @@ void LibNKF::CheckBom(FILE *f) {
 			if ((c2 = LibNKF::StdGetC(f)) == 0x00) {
 				if ((c2 = LibNKF::StdGetC(f)) == 0x00) {
 					if (!inputEncoding) {
-						set_iconv(TRUE, w_iconv32);
+						inputEncoding->iconvName = "w_iconv32";
 					}
-					if (iconv == w_iconv32) {
+					if (inputEncoding->iconvName == "w_iconv32") {
 						inputEndian = ENDIAN_LITTLE;
 						return;
 					}
@@ -1528,9 +1527,9 @@ void LibNKF::CheckBom(FILE *f) {
 			} else
 				LibNKF::StdUnGetC(c2, f);
 			if (!inputEncoding) {
-				set_iconv(TRUE, w_iconv16);
+				inputEncoding->iconvName = "w_iconv16";
 			}
-			if (iconv == w_iconv16) {
+			if (inputEncoding->iconvName == "w_iconv16") {
 				inputEndian = ENDIAN_LITTLE;
 				return;
 			}
