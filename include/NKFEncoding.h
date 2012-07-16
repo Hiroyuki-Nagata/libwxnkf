@@ -1,12 +1,14 @@
 /*
  * NKFEncoding.h
- *
+ * 構造体nkf_encodingのクラス化
  *  Created on: 2012/07/16
- *      Author: learning
+ * Contributor: Hiroyuki Nagata
  */
 
 #ifndef NKFENCODING_H_
 #define NKFENCODING_H_
+
+#include <string>
 
 class NKFEncoding {
 public:

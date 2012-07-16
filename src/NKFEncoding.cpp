@@ -2,7 +2,7 @@
  * NKFEncoding.cpp
  *
  *  Created on: 2012/07/16
- *      Author: learning
+ * Contributor: Hiroyuki Nagata
  */
 
 #include "NKFEncoding.h"

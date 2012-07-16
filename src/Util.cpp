@@ -2,7 +2,7 @@
  * Util.cpp
  *
  *  Created on: 2012/07/12
- *      Author: learning
+ * Contributor: Hiroyuki Nagata
  */
 
 #include "Util.h"
@@ -269,6 +269,9 @@ NKFEncoding* Util::NKFEncodingTable(int idx) {
 
 	return enc;
 }
+/**
+ * OSのロケールカらデフォルトのNKFEncodingを取得し返す
+ */
 NKFEncoding* Util::NKFLocaleEncoding() {
 	NKFNativeEncoding* enc;
 	enc->id = 0;

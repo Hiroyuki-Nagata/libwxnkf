@@ -1,8 +1,8 @@
 /*
  * Util.h
- *
+ *	NKFの中で共通で使われているメソッドを集めたクラス
  *  Created on: 2012/07/12
- *      Author: learning
+ * Contributor: Hiroyuki Nagata
  */
 
 #ifndef UTIL_H_
@@ -36,7 +36,9 @@ private:
 	 * 文字コードを表すIDを元にNKFEncodingクラスを設定して返す
 	 */
 	static NKFEncoding* NKFEncodingTable(int idx);
-
+	/**
+	 * OSのロケールカらデフォルトのNKFEncodingを取得し返す
+	 */
 	static NKFNativeEncoding* NKFLocaleEncoding();
 
 	static nkf_char E2sConv(nkf_char c2, nkf_char c1, nkf_char *p2,
@@ -50,7 +52,6 @@ private:
 
 	static void NKFUnicodeToUTF8(nkf_char val, nkf_char *p1, nkf_char *p2,
 			nkf_char *p3, nkf_char *p4);
-
 	static int UnicodeToJISCommon(nkf_char c2, nkf_char c1, nkf_char c0,
 			nkf_char *p2, nkf_char *p1);
 	static int UnicodeToJISCommon2(nkf_char c1, nkf_char c0,

@@ -692,7 +692,7 @@ int LibNKF::KanjiConvert(FILE* f) {
 				if (!flagPool->estab_f && !mime_decode_mode) {
 					/* in case of not established yet */
 					/* It is still ambiguious */
-					if (h_conv(f, c2, c1) == EOF) {
+					if (GuessConv::GuessIConv(f, c2, c1) == EOF) {
 						LAST;
 					} else {
 						SKIP
@@ -773,7 +773,7 @@ int LibNKF::KanjiConvert(FILE* f) {
 					/* in case of Kanji shifted */
 					MORE
 					;
-				} else if (c1 == '=' && mime_f && !mime_decode_mode) {
+				} else if (c1 == '=' && flagPool->mime_f && !mime_decode_mode) {
 					/* Check MIME code */
 					if ((c1 = LibNKF::StdGetC(f)) == EOF) {
 						(*oconv)(0, '=');
@@ -867,7 +867,7 @@ int LibNKF::KanjiConvert(FILE* f) {
 							SKIP
 							;
 						}
-					} else if (broken_f & 0x2) {
+					} else if (flagPool->broken_f & 0x2) {
 						/* accept any ESC-(-x as broken code ... */
 						inputMode = JIS_X_0208;
 						shift_mode = 0;
@@ -980,11 +980,11 @@ int LibNKF::KanjiConvert(FILE* f) {
 					SEND;
 				}
 			} else if (c1 == LF || c1 == CR) {
-				if (broken_f & 4) {
+				if (flagPool->broken_f & 4) {
 					inputMode = ASCII;
 					set_iconv(FALSE, 0);
 					SEND;
-				} else if (mime_decode_f && !mime_decode_mode) {
+				} else if (flagPool->mime_decode_f && !mime_decode_mode) {
 					if (c1 == LF) {
 						if ((c1 = LibNKF::StdGetC(f)) != EOF && c1 == SP) {
 							LibNKF::StdUnGetC(SP, f);
@@ -1108,7 +1108,7 @@ int LibNKF::ModuleConnection() {
 	// oconvはoutputEncoding->Oconv(); を使う
 	// o_putc = std_putc;
 	// o_putcは
-	if (nkf_enc_unicode_p(outputEncoding)) {
+	if (outputEncoding->baseEncoding->id == UTF_8) {
 		// baseEncodingがUTF-8だった場合出力モードはUTF-8
 		outputMode = UTF_8;
 	}
@@ -1120,98 +1120,97 @@ int LibNKF::ModuleConnection() {
 	/* replace continucation module, from output side */
 
 	/* output redicrection */
-	if (flagPool->noout_f || flagPool->guess_f) {
-		o_putc = no_putc;
-	}
-	if (flagPool->mimeout_f) {
-		o_mputc = o_putc;
-		o_putc = mime_putc;
-		if (flagPool->mimeout_f == TRUE) {
-			o_base64conv = oconv;
-			oconv = base64_conv;
-		}
-		/* base64_count = 0; */
-	}
+//	if (flagPool->noout_f || flagPool->guess_f) {
+//		o_putc = no_putc;
+//	}
+//	if (flagPool->mimeout_f) {
+//		o_mputc = o_putc;
+//		o_putc = mime_putc;
+//		if (flagPool->mimeout_f == TRUE) {
+//			o_base64conv = oconv;
+//			oconv = base64_conv;
+//		}
+//		/* base64_count = 0; */
+//	}
 
-	if (flagPool->eolmode_f || flagPool->guess_f) {
-		o_eol_conv = oconv;
-		oconv = eol_conv;
-	}
-	if (flagPool->rot_f) {
-		o_rot_conv = oconv;
-		oconv = rot_conv;
-	}
-	if (flagPool->iso2022jp_f) {
-		o_iso2022jp_check_conv = oconv;
-		oconv = iso2022jp_check_conv;
-	}
-	if (flagPool->hira_f) {
-		o_hira_conv = oconv;
-		oconv = hira_conv;
-	}
-	if (flagPool->fold_f) {
-		o_fconv = oconv;
-		oconv = fold_conv;
-		f_line = 0;
-	}
-	if (flagPool->alpha_f || flagPool->x0201_f) {
-		o_zconv = oconv;
-		oconv = z_conv;
-	}
+//	if (flagPool->eolmode_f || flagPool->guess_f) {
+//		o_eol_conv = oconv;
+//		oconv = eol_conv;
+//	}
+//	if (flagPool->rot_f) {
+//		o_rot_conv = oconv;
+//		oconv = rot_conv;
+//	}
+//	if (flagPool->iso2022jp_f) {
+//		o_iso2022jp_check_conv = oconv;
+//		oconv = iso2022jp_check_conv;
+//	}
+//	if (flagPool->hira_f) {
+//		o_hira_conv = oconv;
+//		oconv = hira_conv;
+//	}
+//	if (flagPool->fold_f) {
+//		o_fconv = oconv;
+//		oconv = fold_conv;
+//		f_line = 0;
+//	}
+//	if (flagPool->alpha_f || flagPool->x0201_f) {
+//		o_zconv = oconv;
+//		oconv = z_conv;
+//	}
 
-	i_getc = std_getc;
-	i_ungetc = std_ungetc;
+//	i_getc = std_getc;
+//	i_ungetc = std_ungetc;
 	/* input redicrection */
-	if (flagPool->cap_f) {
-		i_cgetc = i_getc;
-		i_getc = cap_getc;
-		i_cungetc = i_ungetc;
-		i_ungetc = cap_ungetc;
-	}
-	if (flagPool->url_f) {
-		i_ugetc = i_getc;
-		i_getc = url_getc;
-		i_uungetc = i_ungetc;
-		i_ungetc = url_ungetc;
-	}
-	if (flagPool->numchar_f) {
-		i_ngetc = i_getc;
-		i_getc = numchar_getc;
-		i_nungetc = i_ungetc;
-		i_ungetc = numchar_ungetc;
-	}
-	if (flagPool->nfc_f) {
-		i_nfc_getc = i_getc;
-		i_getc = nfc_getc;
-		i_nfc_ungetc = i_ungetc;
-		i_ungetc = nfc_ungetc;
-	}
-	if (flagPool->mime_f && flagPool->mimebuf_f == FIXED_MIME) {
-		i_mgetc = i_getc;
-		i_getc = mime_getc;
-		i_mungetc = i_ungetc;
-		i_ungetc = mime_ungetc;
-	}
-	if (flagPool->broken_f & 1) {
-		i_bgetc = i_getc;
-		i_getc = broken_getc;
-		i_bungetc = i_ungetc;
-		i_ungetc = broken_ungetc;
-	}
-	if (inputEncoding) {
-		set_iconv(-TRUE, nkf_enc_to_iconv(input_encoding));
-	} else {
-		set_iconv(FALSE, e_iconv);
-	}
+//	if (flagPool->cap_f) {
+//		i_cgetc = i_getc;
+//		i_getc = cap_getc;
+//		i_cungetc = i_ungetc;
+//		i_ungetc = cap_ungetc;
+//	}
+//	if (flagPool->url_f) {
+//		i_ugetc = i_getc;
+//		i_getc = url_getc;
+//		i_uungetc = i_ungetc;
+//		i_ungetc = url_ungetc;
+//	}
+//	if (flagPool->numchar_f) {
+//		i_ngetc = i_getc;
+//		i_getc = numchar_getc;
+//		i_nungetc = i_ungetc;
+//		i_ungetc = numchar_ungetc;
+//	}
+//	if (flagPool->nfc_f) {
+//		i_nfc_getc = i_getc;
+//		i_getc = nfc_getc;
+//		i_nfc_ungetc = i_ungetc;
+//		i_ungetc = nfc_ungetc;
+//	}
+//	if (flagPool->mime_f && flagPool->mimebuf_f == FIXED_MIME) {
+//		i_mgetc = i_getc;
+//		i_getc = mime_getc;
+//		i_mungetc = i_ungetc;
+//		i_ungetc = mime_ungetc;
+//	}
+//	if (flagPool->broken_f & 1) {
+//		i_bgetc = i_getc;
+//		i_getc = broken_getc;
+//		i_bungetc = i_ungetc;
+//		i_ungetc = broken_ungetc;
+//	}
+//	if (inputEncoding) {
+//		set_iconv(-TRUE, nkf_enc_to_iconv(input_encoding));
+//	} else {
+//		set_iconv(FALSE, e_iconv);
+//	}
 
-	{
-		struct input_code *p = input_code_list;
-		while (p->name) {
-			status_reinit(p++);
-		}
-	}
+//	{
+//		struct input_code *p = input_code_list;
+//		while (p->name) {
+//			status_reinit(p++);
+//		}
+//	}
 	return 0;
-
 }
 
 /**

@@ -8,6 +8,7 @@
 #ifndef NKFNATIVEENCODINGS_H_
 #define NKFNATIVEENCODINGS_H_
 
+#include <string>
 #include "FlagPool.h"
 #include "UTF8Table.h"
 #include "NKFBaseConfig.h"

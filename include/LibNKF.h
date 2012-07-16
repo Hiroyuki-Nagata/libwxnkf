@@ -1,6 +1,6 @@
 /*
  * LibNKF.h
- *
+ *	libnkfの中心となるクラス
  *  Created on: 2012/07/10
  * Contributor: Hiroyuki Nagata
  */
@@ -16,6 +16,7 @@
 #include "UTF8Table.h"
 #include "FlagPool.h"
 #include "UTF16Util.h"
+#include "GuessConv.h"
 #include "Util.h"
 
 using namespace std;
@@ -246,7 +247,18 @@ public:
 	 * 文字コードを変換する処理のラッパーで、外部に見せるメソッド
 	 */
 	int Convert(const wstring src, wstring dst);
-
+	/**
+	 * ファイルポインタから1バイトnkf用のデータを読み取って返す
+	 */
+	static nkf_char StdGetC(FILE *f) {
+		return getc(f);
+	};
+	/**
+	 * ファイルポインタではなく引数に指定したnkf_charを返す
+	 */
+	static nkf_char StdUnGetC(nkf_char c, FILE *f) {
+		return c;
+	};
 private:
 	/**
 	 * 文字コード変換された文字列の出力先
@@ -317,21 +329,20 @@ private:
 	 */
 	void CheckBom(FILE *f);
 	/**
-	 * ファイルポインタから1バイトnkf用のデータを読み取って返す
-	 */
-	static nkf_char StdGetC(FILE *f) {
-		return getc(f);
-	};
-	/**
-	 * ファイルポインタではなく引数に指定したnkf_charを返す
-	 */
-	static nkf_char StdUnGetC(nkf_char c, FILE *f) {
-		return c;
-	};
-	/**
 	 * ??
 	 */
 	static unsigned char prefix_table[256];
+	/*
+	 *
+	 */
+	struct inputCode inputCodeList[] = {
+	    {"EUC-JP",    0, 0, 0, {0, 0, 0}, e_status, e_iconv, 0},
+	    {"Shift_JIS", 0, 0, 0, {0, 0, 0}, s_status, s_iconv, 0},
+	    {"UTF-8",     0, 0, 0, {0, 0, 0}, w_status, w_iconv, 0},
+	    {"UTF-16",    0, 0, 0, {0, 0, 0}, NULL, w_iconv16, 0},
+	    {"UTF-32",    0, 0, 0, {0, 0, 0}, NULL, w_iconv32, 0},
+	    {NULL,        0, 0, 0, {0, 0, 0}, NULL, NULL, 0}
+	};
 };
 
 #endif /* LIBNKF_H_ */
