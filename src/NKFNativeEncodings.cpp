@@ -35,27 +35,25 @@ nkf_char NKFNativeEncoding::Iconv(nkf_char c2, nkf_char c1, nkf_char c0) {
 	switch (this->id) {
 
 	case : ASCII
-	EIconv(nkf_char c2, nkf_char c1, nkf_char c0);
+	EIconv(c2, c1, c0);
 	break;
 	case : ISO_2022_JP
-	EIconv(nkf_char c2, nkf_char c1, nkf_char c0);
+	EIconv(c2, c1, c0);
 	break;
 	case : SHIFT_JIS
-	SIconv(nkf_char c2, nkf_char c1, nkf_char c0);
+	SIconv(c2, c1, c0);
 	break;
 	case : EUC_JP
-	EIconv(nkf_char c2, nkf_char c1, nkf_char c0);
+	EIconv(c2, c1, c0);
 	break;
 	case : UTF_8
-	WIconv(nkf_char c2, nkf_char c1, nkf_char c0);
+	WIconv(c2, c1, c0);
 	break;
 	case : UTF_16
-	WIconv16(nkf_char c2, nkf_char c1, nkf_char c0);
+	WIconv16(c2, c1, c0);
 	break;
 	case : UTF_32
-	break;
-	WIconv32(nkf_char c2, nkf_char c1, nkf_char c0);
-	default:
+	WIconv32(c2, c1, c0);
 	break;
 	}
 }
@@ -64,29 +62,29 @@ void NKFNativeEncoding::Oconv(nkf_char c2, nkf_char c1) {
 
 	switch (this->id) {
 
-	case	: ASCII
-	EOconv(nkf_char c2, nkf_char c1);
+	case : ASCII
+	EOconv(c2, c1);
 	break;
 	case : ISO_2022_JP
-	JOconv(nkf_char c2, nkf_char c1);
+	JOconv(c2, c1);
 	break;
 	case : SHIFT_JIS
-	SOconv(nkf_char c2, nkf_char c1);
+	SOconv(c2, c1);
 	break;
 	case : EUC_JP
-	EOconv(nkf_char c2, nkf_char c1);
+	EOconv(c2, c1);
 	break;
 	case : UTF_8
-	WOconv(nkf_char c2, nkf_char c1);
+	WOconv(c2, c1);
 	break;
 	case : UTF_16
 	break;
-	WOconv16(nkf_char c2, nkf_char c1);
+	WOconv16(c2, c1);
 	break;
 	case : UTF_32
-	WIconv32(nkf_char c2, nkf_char c1);
+	WIconv32(c2, c1);
 	break;
-}
+	}
 }
 
 nkf_char NKFNativeEncoding::SIconv(nkf_char c2, nkf_char c1, nkf_char c0) {

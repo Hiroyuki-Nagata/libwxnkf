@@ -15,6 +15,7 @@
 #include "NKFEncoding.h"
 #include "UTF8Table.h"
 #include "FlagPool.h"
+#include "UTF16Util.h"
 #include "Util.h"
 
 using namespace std;
@@ -294,11 +295,11 @@ private:
 	/**
 	 * 入力された文字コードを元にフラグを設定する
 	 */
-	void SetInputEncoding(NKFNativeEncoding *enc);
+	void SetInputEncoding(NKFEncoding *enc);
 	/**
 	 * 出力する文字コード用にフラグを設定する
 	 */
-	void SetOutputEncoding(NKFNativeEncoding *enc);
+	void SetOutputEncoding(NKFEncoding *enc);
 	/**
 	 * 使い方の表示
 	 */
