@@ -259,7 +259,6 @@ public:
 	static nkf_char StdUnGetC(nkf_char c, FILE *f) {
 		return c;
 	};
-private:
 	/**
 	 * 文字コード変換された文字列の出力先
 	 */
@@ -269,6 +268,7 @@ private:
 	 */
 	static NKFEncoding* inputEncoding;
 	static NKFEncoding* outputEncoding;
+private:
 	/**
 	 * MIME mode B base64, Q hex
 	 */
@@ -332,17 +332,6 @@ private:
 	 * ??
 	 */
 	static unsigned char prefix_table[256];
-	/*
-	 *
-	 */
-	struct inputCode inputCodeList[] = {
-	    {"EUC-JP",    0, 0, 0, {0, 0, 0}, e_status, e_iconv, 0},
-	    {"Shift_JIS", 0, 0, 0, {0, 0, 0}, s_status, s_iconv, 0},
-	    {"UTF-8",     0, 0, 0, {0, 0, 0}, w_status, w_iconv, 0},
-	    {"UTF-16",    0, 0, 0, {0, 0, 0}, NULL, w_iconv16, 0},
-	    {"UTF-32",    0, 0, 0, {0, 0, 0}, NULL, w_iconv32, 0},
-	    {NULL,        0, 0, 0, {0, 0, 0}, NULL, NULL, 0}
-	};
 };
 
 #endif /* LIBNKF_H_ */

@@ -17,25 +17,25 @@ int GuessConv::GuessIConv(FILE* f, nkf_char c1, nkf_char c2) {
 	/** and it must be after 2 byte 8bit code            */
 
 	hold_count = 0;
-	pushHoldBuf(c1);
-	pushHoldBuf(c2);
+	PushHoldBuf(c1);
+	PushHoldBuf(c2);
 
 	while ((c2 = LibNKF::StdGetC(f)) != EOF) {
 		if (c2 == ESC) {
 			LibNKF::StdUnGetC(c2, f);
 			break;
 		}
-		code_status(c2);
-		if (pushHoldBuf(c2) == EOF || FlagPool::estab_f) {
+		CodeStatus(c2);
+		if (PushHoldBuf(c2) == EOF || FlagPool::estab_f) {
 			break;
 		}
 	}
 
-	if (!estab_f) {
-		struct input_code *p = input_code_list;
-		struct input_code *result = p;
+	if (!FlagPool::estab_f) {
+		struct inputCode *p = inputCodeList;
+		struct inputCode *result = p;
 		if (c2 == EOF) {
-			code_status(c2);
+			CodeStatus(c2);
 		}
 		while (p->name) {
 			if (p->status_func && p->score < result->score) {
@@ -77,7 +77,7 @@ int GuessConv::GuessIConv(FILE* f, nkf_char c1, nkf_char c2) {
 				c4 = EOF;
 				break;
 			}
-			code_status(c2);
+			CodeStatus(c2);
 		}
 		c3 = 0;
 		switch ((*iconv)(c1, c2, 0)) { /* can be EUC/SJIS/UTF-8 */
@@ -89,14 +89,14 @@ int GuessConv::GuessIConv(FILE* f, nkf_char c1, nkf_char c2) {
 				ret = EOF;
 				break;
 			}
-			code_status(c3);
+			CodeStatus(c3);
 			if (hold_index < hold_count) {
 				c4 = hold_buf[hold_index++];
 			} else if ((c4 = LibNKF::StdGetC(f)) == EOF) {
 				c3 = ret = EOF;
 				break;
 			}
-			code_status(c4);
+			CodeStatus(c4);
 			(*iconv)(c1, c2, (c3 << 8) | c4);
 			break;
 		case -1:
@@ -107,7 +107,7 @@ int GuessConv::GuessIConv(FILE* f, nkf_char c1, nkf_char c2) {
 				ret = EOF;
 				break;
 			} else {
-				code_status(c3);
+				CodeStatus(c3);
 			}
 			(*iconv)(c1, c2, c3);
 			break;
@@ -118,7 +118,45 @@ int GuessConv::GuessIConv(FILE* f, nkf_char c1, nkf_char c2) {
 	return ret;
 }
 
-nkf_char GuessConv::pushHoldBuf(nkf_char c2) {
+void GuessConv::CodeStatus(nkf_char c) {
+	int action_flag = 1;
+	struct inputCode *result = 0;
+	struct inputCode *p = inputCodeList;
+
+	while (p->name) {
+		if (!p->status_func) {
+			++p;
+			continue;
+		}
+		if (!p->status_func)
+			continue;
+		(p->status_func)(p, c);
+		if (p->stat > 0) {
+			action_flag = 0;
+		} else if (p->stat == 0) {
+			if (result) {
+				action_flag = 0;
+			} else {
+				result = p;
+			}
+		}
+		++p;
+	}
+
+	if (action_flag) {
+		if (result && !FlagPool::estab_f) {
+			set_iconv(TRUE, result->iconv_func);
+		} else if (c <= DEL) {
+			struct inputCode *ptr = inputCodeList;
+			while (ptr->name) {
+				status_reset(ptr);
+				++ptr;
+			}
+		}
+	}
+}
+
+nkf_char GuessConv::PushHoldBuf(nkf_char c2) {
 	if (hold_count >= HOLD_SIZE * 2)
 		return (EOF);
 	hold_buf[hold_count++] = c2;
