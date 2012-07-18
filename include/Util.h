@@ -26,7 +26,20 @@ public:
 	 * 文字コードを初期化する
 	 */
 	static NKFEncoding* NKFDefaultEncoding();
-
+	/**
+	 * EUC-JPからUTF-8への変換
+	 */
+	static nkf_char E2wConv(nkf_char c2, nkf_char c1);
+	/**
+	 * Shift_JISからEUC-JPへの変換
+	 */
+	static nkf_char S2eConv(nkf_char c2, nkf_char c1, nkf_char *p2,
+			nkf_char *p1);
+	/**
+	 * UTF-8からEUC-JPへの変換
+	 */
+	static nkf_char W2eConv(nkf_char c2, nkf_char c1, nkf_char c0, nkf_char *p2,
+			nkf_char *p1);
 private:
 	/**
 	 * 文字コード名から文字コードに対応するIDを取得する
@@ -43,15 +56,21 @@ private:
 
 	static nkf_char E2sConv(nkf_char c2, nkf_char c1, nkf_char *p2,
 			nkf_char *p1);
-	static nkf_char S2eConv(nkf_char c2, nkf_char c1, nkf_char *p2,
-			nkf_char *p1);
-
 	static nkf_char X0212Shift(nkf_char c);
 	static nkf_char X0212Unshift(nkf_char c);
 	static nkf_char W16eConv(nkf_char val, nkf_char *p2, nkf_char *p1);
 
+	/**
+	 * UnicodeからUTF-8への変換
+	 */
 	static void NKFUnicodeToUTF8(nkf_char val, nkf_char *p1, nkf_char *p2,
 			nkf_char *p3, nkf_char *p4);
+	/**
+	 * UTF-8からUnicodeへの変換
+	 */
+	static nkf_char NKFUTF8ToUnicode(nkf_char c1, nkf_char c2, nkf_char c3,
+			nkf_char c4);
+
 	static int UnicodeToJISCommon(nkf_char c2, nkf_char c1, nkf_char c0,
 			nkf_char *p2, nkf_char *p1);
 	static int UnicodeToJISCommon2(nkf_char c1, nkf_char c0,

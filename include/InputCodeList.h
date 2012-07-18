@@ -10,6 +10,7 @@
 
 #include <string>
 #include "FlagPool.h"
+#include "Util.h"
 #include "NKFNativeEncodings.h"
 #include "NKFEncoding.h"
 #include "LibNKF.h"
@@ -37,9 +38,22 @@
 
 #define SCORE_INIT (SCORE_iMIME)
 
+static const nkf_char score_table_A0[] = {
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, SCORE_DEPEND, SCORE_DEPEND, SCORE_DEPEND,
+    SCORE_DEPEND, SCORE_DEPEND, SCORE_DEPEND, SCORE_NO_EXIST,
+};
+
+static const nkf_char score_table_F0[] = {
+    SCORE_L2, SCORE_L2, SCORE_L2, SCORE_L2,
+    SCORE_L2, SCORE_DEPEND, SCORE_NO_EXIST, SCORE_NO_EXIST,
+    SCORE_DEPEND, SCORE_DEPEND, SCORE_CP932, SCORE_CP932,
+    SCORE_CP932, SCORE_NO_EXIST, SCORE_NO_EXIST, SCORE_ERROR,
+};
+
 class InputCode {
 public:
-	InputCode();
 	std::string name;
 	nkf_char stat;
 	nkf_char score;
@@ -70,6 +84,10 @@ private:
 	static void StatusCheck(InputCode* ptr, nkf_char c);
 	static void StatusReset(InputCode* ptr);
 	static void StatusClear(InputCode* ptr);
+	static void StatusPushCh(InputCode* ptr, nkf_char c);
+	static void StatusDisable(InputCode* ptr);
+	static void CodeScore(InputCode* ptr);
+	static void SetCodeScore(InputCode* ptr, nkf_char score);
 };
 
 #endif /* INPUTCODELIST_H_ */

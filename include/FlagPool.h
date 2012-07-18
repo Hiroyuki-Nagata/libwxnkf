@@ -51,10 +51,19 @@ public:
 	static int option_mode;
 
 	/* all flags */
+
+	/**
+	 * バッファリングを行うかどうかのフラグ
+	 */
 	static int unbuf_f;
+	/**
+	 * 文字コードが確立したかどうかを示すフラグ
+	 */
 	static int estab_f;
 	static int nop_f;
-	/** binary mode */
+	/**
+	 * バイナリモードフラグ
+	 */
 	static int binmode_f;
 	/* rot14/43 mode */
 	static int rot_f;

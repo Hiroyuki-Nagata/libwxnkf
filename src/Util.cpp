@@ -697,3 +697,93 @@ int Util::UnicodeToJISCommon2(nkf_char c1, nkf_char c0,
 	return 0;
 }
 
+nkf_char Util::E2wConv(nkf_char c2, nkf_char c1) {
+	const unsigned short *p;
+
+	if (c2 == JIS_X_0201_1976_K) {
+		if (FlagPool::ms_ucs_map_f == UCS_MAP_CP10001) {
+			switch (c1) {
+			case 0x20:
+				return 0xA0;
+			case 0x7D:
+				return 0xA9;
+			}
+		}
+		p = euc_to_utf8_1byte;
+	} else if (is_eucg3(c2)) {
+		if (FlagPool::ms_ucs_map_f == UCS_MAP_ASCII && c2 == NKF_INT32_C(0x8F22)
+				&& c1 == 0x43) {
+			return 0xA6;
+		}
+		c2 = (c2 & 0x7f) - 0x21;
+		if (0 <= c2 && c2 < sizeof_euc_to_utf8_2bytes)
+			p = x0212_to_utf8_2bytes[c2];
+		else
+			return 0;
+	} else {
+		c2 &= 0x7f;
+		c2 = (c2 & 0x7f) - 0x21;
+		if (0 <= c2 && c2 < sizeof_euc_to_utf8_2bytes)
+			p = FlagPool::ms_ucs_map_f == UCS_MAP_ASCII ?
+					euc_to_utf8_2bytes[c2] :
+				FlagPool::ms_ucs_map_f == UCS_MAP_CP10001 ?
+						euc_to_utf8_2bytes_mac[c2] : euc_to_utf8_2bytes_ms[c2];
+		else
+			return 0;
+	}
+	if (!p)
+		return 0;
+	c1 = (c1 & 0x7f) - 0x21;
+	if (0 <= c1 && c1 < sizeof_euc_to_utf8_1byte)
+		return p[c1];
+	return 0;
+}
+
+nkf_char Util::W2eConv(nkf_char c2, nkf_char c1, nkf_char c0, nkf_char* p2,
+		nkf_char* p1) {
+	nkf_char ret = 0;
+
+	if (!c1) {
+		*p2 = 0;
+		*p1 = c2;
+	} else if (0xc0 <= c2 && c2 <= 0xef) {
+		ret = Util::UnicodeToJISCommon(c2, c1, c0, p2, p1);
+		if (ret > 0) {
+			if (p2) *p2 = 0;
+			if (p1) *p1 = nkf_char_unicode_new(Util::NKFUTF8ToUnicode(c2, c1, c0, 0));
+			ret = 0;
+		}
+	}
+	return ret;
+}
+
+nkf_char Util::NKFUTF8ToUnicode(nkf_char c1, nkf_char c2, nkf_char c3,
+		nkf_char c4) {
+	nkf_char wc;
+	if (c1 <= 0x7F) {
+		/* single byte */
+		wc = c1;
+	} else if (c1 <= 0xC3) {
+		/* trail byte or invalid */
+		return -1;
+	} else if (c1 <= 0xDF) {
+		/* 2 bytes */
+		wc = (c1 & 0x1F) << 6;
+		wc |= (c2 & 0x3F);
+	} else if (c1 <= 0xEF) {
+		/* 3 bytes */
+		wc = (c1 & 0x0F) << 12;
+		wc |= (c2 & 0x3F) << 6;
+		wc |= (c3 & 0x3F);
+	} else if (c2 <= 0xF4) {
+		/* 4 bytes */
+		wc = (c1 & 0x0F) << 18;
+		wc |= (c2 & 0x3F) << 12;
+		wc |= (c3 & 0x3F) << 6;
+		wc |= (c4 & 0x3F);
+	} else {
+		return -1;
+	}
+	return wc;
+}
+

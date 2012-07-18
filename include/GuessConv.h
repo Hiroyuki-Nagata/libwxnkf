@@ -15,6 +15,8 @@
 #include "LibNKF.h"
 #include "InputCodeList.h"
 
+#define         HOLD_SIZE       1024
+
 class GuessConv {
 public:
 	/**
@@ -25,26 +27,28 @@ public:
 	 * 文字コードの状態を判定するしてクラスに設定する
 	 */
 	static void CodeStatus(nkf_char c);
-
+	/**
+	 * 入力する文字コードとその処理を決定する
+	 */
+	static void SetIconv(nkf_char f, std::string name);
 private:
-	static nkf_char hold_buf[HOLD_SIZE * 2];
 
+	static nkf_char hold_buf[HOLD_SIZE * 2];
 	static int hold_count;
+	static std::string iconvForCheck;
 
 	/**
 	 * ファイルポインタから1バイトnkf用のデータを読み取って返す
 	 */
 	static nkf_char StdGetC(FILE *f) {
 		return getc(f);
-	}
-	;
+	};
 	/**
 	 * ファイルポインタではなく引数に指定したnkf_charを返す
 	 */
 	static nkf_char StdUnGetC(nkf_char c, FILE *f) {
 		return c;
-	}
-	;
+	};
 	/**
 	 *
 	 */

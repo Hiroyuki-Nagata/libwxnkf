@@ -265,9 +265,16 @@ public:
 	wstring oConvStr;
 	/**
 	 * 入力された文字コード・出力する文字コード
+	 * このオブジェクトはLibNKFクラスにそれぞれ一つしか存在しない
 	 */
 	static NKFEncoding* inputEncoding;
 	static NKFEncoding* outputEncoding;
+	/**
+	 * 入力された文字コード名称を保存する
+	 * NULL: unestablished, "": BINARY
+	 */
+	static std::string inputCodeName;
+
 private:
 	/**
 	 * MIME mode B base64, Q hex
@@ -285,8 +292,8 @@ private:
 	/*
 	 * 入出力の文字コード設定
 	 */
-	static int outputMode;
 	static int inputMode;
+	static int outputMode;
 	/**
 	 * 文字コードの種類判別
 	 */
@@ -312,6 +319,10 @@ private:
 	 * 出力する文字コード用にフラグを設定する
 	 */
 	void SetOutputEncoding(NKFEncoding *enc);
+	/**
+	 * 入力する文字コードとその処理を決定する
+	 */
+	void SetIconv(nkf_char f, std::string name);
 	/**
 	 * 使い方の表示
 	 */
