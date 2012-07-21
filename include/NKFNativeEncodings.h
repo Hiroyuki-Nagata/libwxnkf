@@ -14,6 +14,15 @@
 #include "NKFBaseConfig.h"
 
 /**
+ * LibNKFクラスを名前空間の形で参照する
+ * LibNKFとNKFNativeEncodingは相互参照、なんだかめちゃくちゃですなあ
+ */
+namespace LibNKFRef
+{
+	class LibNKF;
+}
+
+/**
  * 構造体：nkf_native_encodingをクラス化したもの
  * "ASCII" "ISO-2022-JP" "Shift_JIS" "EUC-JP" "UTF-8" "UTF-16" "UTF-32" が存在する
  * フラグによってIconvメソッドとOconvメソッドの処理を変える
