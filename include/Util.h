@@ -9,6 +9,7 @@
 #define UTIL_H_
 
 #include "FlagPool.h"
+#include "UTF8Table.h"
 #include "NKFNativeEncodings.h"
 #include "NKFEncoding.h"
 

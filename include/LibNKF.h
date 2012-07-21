@@ -158,38 +158,6 @@ static struct {
 #define	    DEFAULT_ENCIDX UTF_8
 #endif
 
-#define		is_alnum(c)  \
-    (('a'<=c && c<='z')||('A'<= c && c<='Z')||('0'<=c && c<='9'))
-
-/* I don't trust portablity of toupper */
-#define nkf_toupper(c)  (('a'<=c && c<='z')?(c-('a'-'A')):c)
-#define nkf_isoctal(c)  ('0'<=c && c<='7')
-#define nkf_isdigit(c)  ('0'<=c && c<='9')
-#define nkf_isxdigit(c)  (nkf_isdigit(c) || ('a'<=c && c<='f') || ('A'<=c && c <= 'F'))
-#define nkf_isblank(c) (c == SP || c == TAB)
-#define nkf_isspace(c) (nkf_isblank(c) || c == CR || c == LF)
-#define nkf_isalpha(c) (('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z'))
-#define nkf_isalnum(c) (nkf_isdigit(c) || nkf_isalpha(c))
-#define nkf_isprint(c) (SP<=c && c<='~')
-#define nkf_isgraph(c) ('!'<=c && c<='~')
-#define hex2bin(c) (('0'<=c&&c<='9') ? (c-'0') : \
-		    ('A'<=c&&c<='F') ? (c-'A'+10) : \
-		    ('a'<=c&&c<='f') ? (c-'a'+10) : 0)
-#define bin2hex(c) ("0123456789ABCDEF"[c&15])
-#define is_eucg3(c2) (((unsigned short)c2 >> 8) == SS3)
-#define nkf_noescape_mime(c) ((c == CR) || (c == LF) || \
-			      ((c > SP) && (c < DEL) && (c != '?') && (c != '=') && (c != '_') \
-			       && (c != '(') && (c != ')') && (c != '.') && (c != 0x22)))
-
-#define is_ibmext_in_sjis(c2) (CP932_TABLE_BEGIN <= c2 && c2 <= CP932_TABLE_END)
-#define nkf_byte_jisx0201_katakana_p(c) (SP <= c && c <= 0x5F)
-
-#define nkf_char_euc3_new(c) ((c) | PREFIX_EUCG3)
-#define nkf_char_unicode_new(c) ((c) | CLASS_UNICODE)
-#define nkf_char_unicode_p(c) ((c & CLASS_MASK) == CLASS_UNICODE)
-#define nkf_char_unicode_bmp_p(c) ((c & VALUE_MASK) <= UNICODE_BMP_MAX)
-#define nkf_char_unicode_value_p(c) ((c & VALUE_MASK) <= UNICODE_MAX)
-
 /* NKFEncodingに関するマクロ */
 #define nkf_enc_name(enc) (enc)->name	// ←　単にクラスのポインタから名前をとればいいのでは？
 #define nkf_enc_to_index(enc) (enc)->id // ←　単にクラスのポインタからidをとればいいのでは？

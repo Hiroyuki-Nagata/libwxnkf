@@ -711,7 +711,7 @@ nkf_char Util::E2wConv(nkf_char c2, nkf_char c1) {
 				return 0xA9;
 			}
 		}
-		p = euc_to_utf8_1byte;
+		p = UTF8Table::euc_to_utf8_1byte;
 	} else if (is_eucg3(c2)) {
 		if (FlagPool::ms_ucs_map_f == UCS_MAP_ASCII && c2 == NKF_INT32_C(0x8F22)
 				&& c1 == 0x43) {
@@ -719,7 +719,7 @@ nkf_char Util::E2wConv(nkf_char c2, nkf_char c1) {
 		}
 		c2 = (c2 & 0x7f) - 0x21;
 		if (0 <= c2 && c2 < sizeof_euc_to_utf8_2bytes)
-			p = x0212_to_utf8_2bytes[c2];
+			p = UTF8Table::x0212_to_utf8_2bytes[c2];
 		else
 			return 0;
 	} else {
@@ -727,9 +727,10 @@ nkf_char Util::E2wConv(nkf_char c2, nkf_char c1) {
 		c2 = (c2 & 0x7f) - 0x21;
 		if (0 <= c2 && c2 < sizeof_euc_to_utf8_2bytes)
 			p = FlagPool::ms_ucs_map_f == UCS_MAP_ASCII ?
-					euc_to_utf8_2bytes[c2] :
+					UTF8Table::euc_to_utf8_2bytes[c2] :
 				FlagPool::ms_ucs_map_f == UCS_MAP_CP10001 ?
-						euc_to_utf8_2bytes_mac[c2] : euc_to_utf8_2bytes_ms[c2];
+						UTF8Table::euc_to_utf8_2bytes_mac[c2] :
+						UTF8Table::euc_to_utf8_2bytes_ms[c2];
 		else
 			return 0;
 	}
