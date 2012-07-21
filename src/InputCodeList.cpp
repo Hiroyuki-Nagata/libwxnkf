@@ -267,6 +267,33 @@ void InputCode::CodeScore(InputCode* ptr) {
 		SetCodeScore(ptr, SCORE_L2);
 	}
 }
+/**
+ * 関数名からInputCode名を引く
+ */
+InputCode* InputCode::FindInputcodeByFunc(std::string funcName) {
+
+	InputCode* inputCode;
+
+	if (funcName == "e_iconv") {
+		inputCode->name = "EUC-JP";
+	} else if (funcName == "s_iconv") {
+		inputCode->name = "Shift_JIS";
+	} else if (funcName == "w_iconv") {
+		inputCode->name = "UTF-8";
+	} else {
+		// do nothing
+	}
+
+	return inputCode;
+}
+/**
+ * Scoreの設定を行う
+ */
+void InputCode::ClrCodeScore(InputCode* ptr, nkf_char score) {
+	if (ptr) {
+		ptr->score &= ~score;
+	}
+}
 
 void InputCode::SetCodeScore(InputCode* ptr, nkf_char score) {
 	if (ptr) {

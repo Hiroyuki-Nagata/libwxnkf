@@ -63,6 +63,15 @@ public:
 	nkf_char IconvFunc(nkf_char c2, nkf_char c1, nkf_char c0);
 	int _file_stat;
 
+	/**
+	 * 関数名からInputCodeを引く
+	 */
+	static InputCode* FindInputcodeByFunc(std::string funcName);
+	/**
+	 * Scoreの設定を行う
+	 */
+	static void ClrCodeScore(InputCode* ptr, nkf_char score);
+
 private:
 	/**
 	 * StatusFunc内部のstatus関数

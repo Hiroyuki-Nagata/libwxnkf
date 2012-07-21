@@ -5,6 +5,7 @@
  * Contributor: Hiroyuki Nagata
  */
 
+#include "LibNKF.h"
 #include "UTF16Util.h"
 
 nkf_char UTF16Util::NKFIconvUTF16(nkf_char c1, nkf_char c2, nkf_char c3,
@@ -16,7 +17,7 @@ nkf_char UTF16Util::NKFIconvUTF16(nkf_char c1, nkf_char c2, nkf_char c3,
 		return EOF;
 	}
 
-	if (input_endian == ENDIAN_BIG) {
+	if (LibNKF::inputEndian == ENDIAN_BIG) {
 		if (0xD8 <= c1 && c1 <= 0xDB) {
 			if (0xDC <= c3 && c3 <= 0xDF) {
 				wc = UTF16_TO_UTF32(c1 << 8 | c2, c3 << 8 | c4);

@@ -34,25 +34,25 @@ nkf_char NKFNativeEncoding::Iconv(nkf_char c2, nkf_char c1, nkf_char c0) {
 
 	switch (this->id) {
 
-	case : ASCII
+	case ASCII:
 	EIconv(c2, c1, c0);
 	break;
-	case : ISO_2022_JP
+	case ISO_2022_JP:
 	EIconv(c2, c1, c0);
 	break;
-	case : SHIFT_JIS
+	case SHIFT_JIS:
 	SIconv(c2, c1, c0);
 	break;
-	case : EUC_JP
+	case EUC_JP:
 	EIconv(c2, c1, c0);
 	break;
-	case : UTF_8
+	case UTF_8:
 	WIconv(c2, c1, c0);
 	break;
-	case : UTF_16
+	case UTF_16:
 	WIconv16(c2, c1, c0);
 	break;
-	case : UTF_32
+	case UTF_32:
 	WIconv32(c2, c1, c0);
 	break;
 	}
@@ -62,27 +62,27 @@ void NKFNativeEncoding::Oconv(nkf_char c2, nkf_char c1) {
 
 	switch (this->id) {
 
-	case : ASCII
+	case ASCII:
 	EOconv(c2, c1);
 	break;
-	case : ISO_2022_JP
+	case ISO_2022_JP:
 	JOconv(c2, c1);
 	break;
-	case : SHIFT_JIS
+	case SHIFT_JIS:
 	SOconv(c2, c1);
 	break;
-	case : EUC_JP
+	case EUC_JP:
 	EOconv(c2, c1);
 	break;
-	case : UTF_8
+	case UTF_8:
 	WOconv(c2, c1);
 	break;
-	case : UTF_16
+	case UTF_16:
 	break;
 	WOconv16(c2, c1);
 	break;
-	case : UTF_32
-	WIconv32(c2, c1);
+	case UTF_32:
+	WOconv32(c2, c1);
 	break;
 	}
 }

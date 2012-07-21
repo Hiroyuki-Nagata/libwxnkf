@@ -29,7 +29,9 @@ NKFEncoding* Util::NKFEncFromIndex(int idx) {
 }
 
 NKFEncoding* Util::NKFDefaultEncoding() {
-	NKFNativeEncoding* enc;
+
+	NKFEncoding* enc;
+	NKFNativeEncoding* bEnc;
 	enc->id = 0;
 
 #ifdef DEFAULT_CODE_LOCALE
@@ -38,7 +40,7 @@ NKFEncoding* Util::NKFDefaultEncoding() {
 	enc = Util::NKFEncFromIndex(DEFAULT_ENCIDX);
 #endif
 	if (!enc)
-		NKFNativeEncoding* enc;
+		NKFEncoding* enc;
 
 	return enc;
 }
@@ -51,7 +53,7 @@ int Util::NKFEncFindIndex(const char* name) {
 	if (name[0] == 'X' && *(name + 1) == '-')
 		name += 2;
 	for (i = 0; encoding_name_to_id_table[i].id >= 0; i++) {
-		if (nkf_str_caseeql(encoding_name_to_id_table[i].name, name)) {
+		if (NKFStrCaseEql(encoding_name_to_id_table[i].name, name)) {
 			return encoding_name_to_id_table[i].id;
 		}
 	}
@@ -263,7 +265,7 @@ NKFEncoding* Util::NKFEncodingTable(int idx) {
 	} else {
 		// idxが異常な値だった場合
 		enc->id = -1;
-		enc->name = NULL;
+		enc->name = "";
 		enc->baseEncoding = NULL;
 	}
 
@@ -273,12 +275,12 @@ NKFEncoding* Util::NKFEncodingTable(int idx) {
  * OSのロケールカらデフォルトのNKFEncodingを取得し返す
  */
 NKFEncoding* Util::NKFLocaleEncoding() {
-	NKFNativeEncoding* enc;
-	enc->id = 0;
+	NKFEncoding* enc;
 	const char *encname = Util::NKFLocaleCharmap();
 	if (encname)
 		// encnameに何らかの文字列が設定されていた場合
 		enc = Util::NKFEncFind(encname);
+
 	return enc;
 }
 
@@ -749,8 +751,11 @@ nkf_char Util::W2eConv(nkf_char c2, nkf_char c1, nkf_char c0, nkf_char* p2,
 	} else if (0xc0 <= c2 && c2 <= 0xef) {
 		ret = Util::UnicodeToJISCommon(c2, c1, c0, p2, p1);
 		if (ret > 0) {
-			if (p2) *p2 = 0;
-			if (p1) *p1 = nkf_char_unicode_new(Util::NKFUTF8ToUnicode(c2, c1, c0, 0));
+			if (p2)
+				*p2 = 0;
+			if (p1)
+				*p1 = nkf_char_unicode_new(
+						Util::NKFUTF8ToUnicode(c2, c1, c0, 0));
 			ret = 0;
 		}
 	}
@@ -785,5 +790,17 @@ nkf_char Util::NKFUTF8ToUnicode(nkf_char c1, nkf_char c2, nkf_char c3,
 		return -1;
 	}
 	return wc;
+}
+
+int Util::NKFStrCaseEql(const char* src, const char* target) {
+	int i;
+	for (i = 0; src[i] && target[i]; i++) {
+		if (nkf_toupper(src[i]) != nkf_toupper(target[i]))
+			return FALSE;
+	}
+	if (src[i] || target[i])
+		return FALSE;
+	else
+		return TRUE;
 }
 

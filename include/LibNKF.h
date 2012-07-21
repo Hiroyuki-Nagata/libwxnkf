@@ -16,6 +16,7 @@
 #include "UTF8Table.h"
 #include "FlagPool.h"
 #include "UTF16Util.h"
+#include "InputCodeList.h"
 #include "GuessConv.h"
 #include "Util.h"
 
@@ -114,39 +115,36 @@ static const struct {
 				"numchar-input", "" }, { "no-output", "" }, { "debug", "" }, {
 				"cp932inv", "" }, { "prefix=", "" }, };
 
-/*
- * エンコード名とIDのテーブル
+/**
+ * Mime名のパターン
  */
-struct {
-	const char *name;
-	const int id;
-} encoding_name_to_id_table[] = { { "US-ASCII", ASCII }, { "ASCII", ASCII },
-		{ "646", ASCII }, { "ROMAN8", ASCII },
-		{ "ISO-2022-JP", ISO_2022_JP }, { "ISO2022JP-CP932", CP50220 }, {
-				"CP50220", CP50220 }, { "CP50221", CP50221 }, {
-				"CSISO2022JP", CP50221 }, { "CP50222", CP50222 }, {
-				"ISO-2022-JP-1", ISO_2022_JP_1 }, { "ISO-2022-JP-3",
-				ISO_2022_JP_3 }, { "ISO-2022-JP-2004", ISO_2022_JP_2004 }, {
-				"SHIFT_JIS", SHIFT_JIS }, { "SJIS", SHIFT_JIS }, {
-				"MS_Kanji", SHIFT_JIS }, { "PCK", SHIFT_JIS }, {
-				"WINDOWS-31J", WINDOWS_31J },
-		{ "CSWINDOWS31J", WINDOWS_31J }, { "CP932", WINDOWS_31J }, {
-				"MS932", WINDOWS_31J }, { "CP10001", CP10001 }, { "EUCJP",
-				EUC_JP }, { "EUC-JP", EUC_JP }, { "EUCJP-NKF", EUCJP_NKF },
-		{ "CP51932", CP51932 }, { "EUC-JP-MS", EUCJP_MS }, { "EUCJP-MS",
-				EUCJP_MS }, { "EUCJPMS", EUCJP_MS }, { "EUC-JP-ASCII",
-				EUCJP_ASCII }, { "EUCJP-ASCII", EUCJP_ASCII }, {
-				"SHIFT_JISX0213", SHIFT_JISX0213 }, { "SHIFT_JIS-2004",
-				SHIFT_JIS_2004 }, { "EUC-JISX0213", EUC_JISX0213 }, {
-				"EUC-JIS-2004", EUC_JIS_2004 }, { "UTF-8", UTF_8 }, {
-				"UTF-8N", UTF_8N }, { "UTF-8-BOM", UTF_8_BOM }, {
-				"UTF8-MAC", UTF8_MAC }, { "UTF-8-MAC", UTF8_MAC }, {
-				"UTF-16", UTF_16 }, { "UTF-16BE", UTF_16BE }, {
-				"UTF-16BE-BOM", UTF_16BE_BOM }, { "UTF-16LE", UTF_16LE }, {
-				"UTF-16LE-BOM", UTF_16LE_BOM }, { "UTF-32", UTF_32 }, {
-				"UTF-32BE", UTF_32BE }, { "UTF-32BE-BOM", UTF_32BE_BOM }, {
-				"UTF-32LE", UTF_32LE }, { "UTF-32LE-BOM", UTF_32LE_BOM }, {
-				"BINARY", BINARY }, { NULL, -1 } };
+static const unsigned char *mime_pattern[] = {
+    (const unsigned char *)"\075?EUC-JP?B?",
+    (const unsigned char *)"\075?SHIFT_JIS?B?",
+    (const unsigned char *)"\075?ISO-8859-1?Q?",
+    (const unsigned char *)"\075?ISO-8859-1?B?",
+    (const unsigned char *)"\075?ISO-2022-JP?B?",
+    (const unsigned char *)"\075?ISO-2022-JP?B?",
+    (const unsigned char *)"\075?ISO-2022-JP?Q?",
+#if defined(UTF8_INPUT_ENABLE)
+    (const unsigned char *)"\075?UTF-8?B?",
+    (const unsigned char *)"\075?UTF-8?Q?",
+#endif
+    (const unsigned char *)"\075?US-ASCII?Q?",
+    NULL
+};
+
+/* MIME preprocessor fifo */
+
+#define MIME_BUF_SIZE   (1024)    /* 2^n ring buffer */
+#define MIME_BUF_MASK   (MIME_BUF_SIZE-1)
+#define mime_input_buf(n)        mime_input_state.buf[(n)&MIME_BUF_MASK]
+static struct {
+    unsigned char buf[MIME_BUF_SIZE];
+    unsigned int  top;
+    unsigned int  last;  /* decoded */
+    unsigned int  input; /* undecoded */
+} mime_input_state;
 
 #if defined(DEFAULT_CODE_JIS)
 #define	    DEFAULT_ENCIDX ISO_2022_JP
@@ -226,6 +224,9 @@ struct {
 
 class LibNKF {
 
+	// UTF16Utilはフレンドクラス指定する
+	friend class UTF16Util;
+
 public:
 	/**
 	 * すべてのフラグを集合させたクラス
@@ -271,6 +272,7 @@ public:
 	static NKFEncoding* outputEncoding;
 	/**
 	 * 入力された文字コード名称を保存する
+	 * 入力文字コードの推測のために使われる
 	 * NULL: unestablished, "": BINARY
 	 */
 	static std::string inputCodeName;
@@ -294,6 +296,10 @@ private:
 	 */
 	static int inputMode;
 	static int outputMode;
+	/**
+	 *
+	 */
+	static int shiftMode;
 	/**
 	 * 文字コードの種類判別
 	 */
@@ -320,9 +326,13 @@ private:
 	 */
 	void SetOutputEncoding(NKFEncoding *enc);
 	/**
-	 * 入力する文字コードとその処理を決定する
+	 * 入力文字コードを設定する
 	 */
-	void SetIconv(nkf_char f, std::string name);
+	void SetInputMode(int mode);
+	/**
+	 * 入力文字コードを設定する
+	 */
+	void SetInputCodeName(std::string codeName);
 	/**
 	 * 使い方の表示
 	 */
@@ -340,9 +350,37 @@ private:
 	 */
 	void CheckBom(FILE *f);
 	/**
+	 *
+	 */
+	nkf_char MimeBeginStrict(FILE *f);
+	/**
+	 * 判定したMime名を保存する文字列
+	 */
+	std::string mimeIconvBack;
+	/**
+	 *
+	 */
+	nkf_char MimeBegin(FILE *f);
+	/**
+	 * Mimeの完全性をチェックする
+	 */
+	nkf_char MimeIntegrity(FILE *f, const unsigned char *p);
+	/**
+	 * 入力する文字コードとその処理を決定する
+	 */
+	static void SetIconv(nkf_char f, std::string name);
+	/**
+	 * SetIconvの検証のための文字列
+	 */
+	static std::string iconvForCheck;
+	/**
 	 * ??
 	 */
 	static unsigned char prefix_table[256];
+	/**
+	 * Mime読み取りの際GetC関数の挙動を変更する
+	 */
+	static void SwitchMimeGetC(void);
 };
 
 #endif /* LIBNKF_H_ */

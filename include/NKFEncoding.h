@@ -8,7 +8,7 @@
 #ifndef NKFENCODING_H_
 #define NKFENCODING_H_
 
-#include <string>
+#include "NKFNativeEncodings.h"
 
 class NKFEncoding {
 public:

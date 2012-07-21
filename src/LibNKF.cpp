@@ -40,7 +40,6 @@ LibNKF::LibNKF() {
 	mimeout_mode = 0;
 	outputMode = ASCII;
 	inputMode = ASCII;
-	inputCodeName = NULL;
 }
 
 /**
@@ -785,11 +784,11 @@ int LibNKF::KanjiConvert(FILE* f) {
 						/* =? is mime conversion start sequence */
 						if (flagPool->mime_f == STRICT_MIME) {
 							/* check in real detail */
-							if (mime_begin_strict(f) == EOF)
+							if (MimeBeginStrict(f) == EOF)
 								LAST;
 							SKIP
 							;
-						} else if (mime_begin(f) == EOF)
+						} else if (MimeBegin(f) == EOF)
 							LAST;
 						SKIP
 						;
@@ -832,7 +831,7 @@ int LibNKF::KanjiConvert(FILE* f) {
 						LAST;
 					} else if (c1 == '@' || c1 == 'B') {
 						/* JIS X 0208 */
-						set_inputMode(JIS_X_0208);
+						SetInputMode(JIS_X_0208);
 						SKIP
 						;
 					} else if (c1 == '(') {
@@ -846,19 +845,19 @@ int LibNKF::KanjiConvert(FILE* f) {
 							LAST;
 						} else if (c1 == '@' || c1 == 'B') {
 							/* JIS X 0208 */
-							set_inputMode(JIS_X_0208);
+							SetInputMode(JIS_X_0208);
 							SKIP
 							;
 						} else if (c1 == 'D') {
-							set_inputMode(JIS_X_0212);
+							SetInputMode(JIS_X_0212);
 							SKIP
 							;
 						} else if (c1 == 'O' || c1 == 'Q') {
-							set_inputMode(JIS_X_0213_1);
+							SetInputMode(JIS_X_0213_1);
 							SKIP
 							;
 						} else if (c1 == 'P') {
-							set_inputMode(JIS_X_0213_2);
+							SetInputMode(JIS_X_0213_2);
 							SKIP
 							;
 						} else {
@@ -892,16 +891,16 @@ int LibNKF::KanjiConvert(FILE* f) {
 						LAST;
 					} else if (c1 == 'I') {
 						/* JIS X 0201 Katakana */
-						set_inputMode(JIS_X_0201_1976_K);
+						SetInputMode(JIS_X_0201_1976_K);
 						SKIP
 						;
 					} else if (c1 == 'B' || c1 == 'J' || c1 == 'H') {
 						/* ISO-646IRV:1983 or JIS X 0201 Roman or JUNET */
-						set_inputMode(ASCII);
+						SetInputMode(ASCII);
 						SKIP
 						;
-					} else if (broken_f & 0x2) {
-						set_inputMode(ASCII);
+					} else if (flagPool->broken_f & 0x2) {
+						SetInputMode(ASCII);
 						SKIP
 						;
 					} else {
@@ -940,7 +939,8 @@ int LibNKF::KanjiConvert(FILE* f) {
 					outputEncoding->baseEncoding->Oconv(0, ESC);
 					SEND;
 				}
-			} else if (c1 == ESC && inputEncoding->baseEncoding->iconvName == "s_iconv") {
+			} else if (c1 == ESC
+					&& inputEncoding->baseEncoding->iconvName == "s_iconv") {
 				/* ESC in Shift_JIS */
 				if ((c1 = LibNKF::StdGetC(f)) == EOF) {
 					outputEncoding->baseEncoding->Oconv(0, ESC);
@@ -1028,19 +1028,19 @@ int LibNKF::KanjiConvert(FILE* f) {
 			case -2:
 				/* 4 bytes UTF-8 */
 				if ((c3 = LibNKF::StdGetC(f)) != EOF) {
-					code_status(c3);
+					GuessConv::CodeStatus(c3);
 					c3 <<= 8;
 					if ((c4 = LibNKF::StdGetC(f)) != EOF) {
-						code_status(c4);
-						(*iconv)(c2, c1, c3 | c4);
+						GuessConv::CodeStatus(c4);
+						inputEncoding->baseEncoding->Iconv(c2, c1, c3 | c4);
 					}
 				}
 				break;
 			case -1:
 				/* 3 bytes EUC or UTF-8 */
 				if ((c3 = LibNKF::StdGetC(f)) != EOF) {
-					code_status(c3);
-					(*iconv)(c2, c1, c3);
+					GuessConv::CodeStatus(c3);
+					inputEncoding->baseEncoding->Iconv(c2, c1, c3);
 				}
 				break;
 			}
@@ -1053,16 +1053,16 @@ int LibNKF::KanjiConvert(FILE* f) {
 				c1 = nkf_char_unicode_new((c2 - 0x7F) * 94 + c1 - 0x21 + 0xE000);
 				c2 = 0;
 			}
-			(*oconv)(c2, c1); /* this is JIS, not SJIS/EUC case */
+			outputEncoding->baseEncoding->Oconv(c2, c1); /* this is JIS, not SJIS/EUC case */
 			break;
 		case JIS_X_0212:
-			(*oconv)(PREFIX_EUCG3 | c2, c1);
+			outputEncoding->baseEncoding->Oconv(PREFIX_EUCG3 | c2, c1);
 			break;
 		case JIS_X_0213_2:
-			(*oconv)(PREFIX_EUCG3 | c2, c1);
+			outputEncoding->baseEncoding->Oconv(PREFIX_EUCG3 | c2, c1);
 			break;
 		default:
-			(*oconv)(inputMode, c1); /* other special case */
+			outputEncoding->baseEncoding->Oconv(inputMode, c1); /* other special case */
 		}
 
 		c2 = 0;
@@ -1073,20 +1073,20 @@ int LibNKF::KanjiConvert(FILE* f) {
 
 	finished:
 	/* epilogue */
-	(*iconv)(EOF, 0, 0);
-	if (!input_codename) {
-		if (is_8bit) {
-			struct input_code *p = input_code_list;
-			struct input_code *result = p;
-			while (p->name) {
-				if (p->score < result->score)
-					result = p;
-				++p;
-			}
-			set_input_codename(result->name);
-			debug(result->name);
-		}
-	}
+	inputEncoding->baseEncoding->Iconv(EOF, 0, 0);
+//	if (!input_codename) {
+//		if (is_8bit) {
+//			struct input_code *p = input_code_list;
+//			struct input_code *result = p;
+//			while (p->name) {
+//				if (p->score < result->score)
+//					result = p;
+//				++p;
+//			}
+//			set_input_codename(result->name);
+//			debug(result->name);
+//		}
+//	}
 	return 0;
 }
 /**
@@ -1667,5 +1667,232 @@ void LibNKF::ShowConfiguration() {
 			"STDOUT"
 #endif
 			"\n");
+}
+
+#define MAXRECOVER 20
+
+nkf_char LibNKF::MimeBeginStrict(FILE* f) {
+	nkf_char c1 = 0;
+	int i, j, k;
+	const unsigned char *p, *q;
+	nkf_char r[MAXRECOVER]; /* recovery buffer, max mime pattern length */
+
+	mime_decode_mode = FALSE;
+	/* =? has been checked */
+	j = 0;
+	p = mime_pattern[j];
+	r[0] = '=';
+	r[1] = '?';
+
+	for (i = 2; p[i] > SP; i++) { /* start at =? */
+		if (((r[i] = c1 = LibNKF::StdGetC(f)) == EOF)
+				|| nkf_toupper(c1) != p[i]) {
+			/* pattern fails, try next one */
+			q = p;
+			while (mime_pattern[++j]) {
+				p = mime_pattern[j];
+				for (k = 2; k < i; k++) /* assume length(p) > i */
+					if (p[k] != q[k])
+						break;
+				if (k == i && nkf_toupper(c1) == p[k])
+					break;
+			}
+			p = mime_pattern[j];
+			if (p)
+				continue; /* found next one, continue */
+			/* all fails, output from recovery buffer */
+			LibNKF::StdUnGetC(c1, f);
+			for (j = 0; j < i; j++) {
+				outputEncoding->baseEncoding->Oconv(0, r[j]);
+			}
+			return c1;
+		}
+	}
+	mime_decode_mode = p[i - 2];
+	mimeIconvBack = inputEncoding->baseEncoding->iconvName;
+
+	// Mimeそれぞれに優先すべき関数名
+	std::string mimePriorityFunc[] = { "e_iconv", "s_iconv", 0, 0, 0, 0, 0,
+			"w_iconv", "w_iconv", 0 };
+	SetIconv(FALSE, mimePriorityFunc[j]);
+	InputCode::ClrCodeScore(InputCode::FindInputcodeByFunc(mimePriorityFunc[j]),
+			SCORE_iMIME);
+
+	if (mime_decode_mode == 'B') {
+		flagPool->mimebuf_f = flagPool->unbuf_f;
+		if (!flagPool->unbuf_f) {
+			/* do MIME integrity check */
+			return MimeIntegrity(f, mime_pattern[j]);
+		}
+	}
+	SwitchMimeGetC();
+	flagPool->mimebuf_f = TRUE;
+	return c1;
+}
+
+nkf_char LibNKF::MimeBegin(FILE* f) {
+	nkf_char c1;
+	int i, k;
+
+	/* In NONSTRICT mode, only =? is checked. In case of failure, we  */
+	/* re-read and convert again from mime_buffer.  */
+
+	/* =? has been checked */
+	k = mime_input_state.last;
+	mime_input_buf(mime_input_state.last++) = '=';
+	mime_input_buf(mime_input_state.last++) = '?';
+	for (i = 2; i < MAXRECOVER; i++) { /* start at =? */
+		/* We accept any character type even if it is breaked by new lines */
+		c1 = LibNKF::StdGetC(f);
+		mime_input_buf(mime_input_state.last++) = (unsigned char) c1;
+		if (c1 == LF || c1 == SP || c1 == CR
+				|| c1 == '-'||c1=='_'||is_alnum(c1))continue
+;
+		if (c1 == '=') {
+			/* Failed. But this could be another MIME preemble */
+			LibNKF::StdUnGetC(c1, f);
+			mime_input_state.last--;
+			break;
+		}
+		if (c1 != '?')
+			break;
+		else {
+			/* c1=='?' */
+			c1 = LibNKF::StdGetC(f);
+			mime_input_buf(mime_input_state.last++) = (unsigned char) c1;
+			if (!(++i < MAXRECOVER) || c1 == EOF)
+				break;
+			if (c1 == 'b' || c1 == 'B') {
+				mime_decode_mode = 'B';
+			} else if (c1 == 'q' || c1 == 'Q') {
+				mime_decode_mode = 'Q';
+			} else {
+				break;
+			}
+			c1 = LibNKF::StdGetC(f);
+			mime_input_buf(mime_input_state.last++) = (unsigned char) c1;
+			if (!(++i < MAXRECOVER) || c1 == EOF)
+				break;
+			if (c1 != '?') {
+				mime_decode_mode = FALSE;
+			}
+			break;
+		}
+	}
+	SwitchMimeGetC();
+	if (!mime_decode_mode) {
+		/* false MIME premble, restart from mime_buffer */
+		mime_decode_mode = 1; /* no decode, but read from the mime_buffer */
+		/* Since we are in MIME mode until buffer becomes empty,    */
+		/* we never go into mime_begin again for a while.           */
+		return c1;
+	}
+	/* discard mime preemble, and goto MIME mode */
+	mime_input_state.last = k;
+	/* do no MIME integrity check */
+	return c1; /* used only for checking EOF */
+}
+/**
+ * 入力する文字コードとその処理を決定する
+ * inputEncoding, inputCodeNameの決定を行う
+ */
+void LibNKF::SetIconv(nkf_char f, std::string name) {
+
+	/**
+	 * inputEncodingが確定していない場合確定フラグを立てる
+	 */
+	if (f || !inputEncoding) {
+		if (FlagPool::estab_f != f) {
+			FlagPool::estab_f = f;
+		}
+	}
+	/**
+	 * -TRUE means "FORCE"
+	 * inputEncodingが確定していない場合
+	 */
+	if (name.empty() && (f == -TRUE || !inputEncoding->name.empty())) {
+		inputEncoding->name = name;
+	}
+	if (FlagPool::estab_f && iconvForCheck != name) {
+		// 入力文字コードが確定している場合
+		inputCodeName = name;
+		iconvForCheck = name;
+	}
+}
+/**
+ * Mimeの完全性をチェックする
+ */
+nkf_char LibNKF::MimeIntegrity(FILE* f, const unsigned char* p) {
+
+	nkf_char c, d;
+	unsigned int q;
+	/*
+	 * In buffered mode, read until =? or NL or buffer full
+	 */
+	mime_input_state.input = mime_input_state.top;
+	mime_input_state.last = mime_input_state.top;
+
+	while (*p)
+		mime_input_buf(mime_input_state.input++) = *p++;
+	d = 0;
+	q = mime_input_state.input;
+	while ((c = LibNKF::StdGetC(f)) != EOF) {
+		if (((mime_input_state.input - mime_input_state.top) & MIME_BUF_MASK)
+				== 0) {
+			break; /* buffer full */
+		}
+		if (c == '=' && d == '?') {
+			/* checked. skip header, start decode */
+			mime_input_buf(mime_input_state.input++) = (unsigned char) c;
+			/* mime_last_input = mime_input_state.input; */
+			mime_input_state.input = q;
+			SwitchMimeGetC();
+			return 1;
+		}
+		if (!((c == '+' || c == '/' || c == '=' || c == '?' || is_alnum(c))))
+			break;
+		/* Should we check length mod 4? */mime_input_buf(mime_input_state.input++) =
+				(unsigned char) c;
+		d = c;
+	}
+	/* In case of Incomplete MIME, no MIME decode  */mime_input_buf(mime_input_state.input++) =
+			(unsigned char) c;
+	mime_input_state.last = mime_input_state.input; /* point undecoded buffer */
+	mime_decode_mode = 1; /* no decode on mime_input_buf last in mime_getc */
+	SwitchMimeGetC(); /* anyway we need buffered getc */
+	return 1;
+}
+/**
+ * 入力文字コードを設定する
+ */
+void LibNKF::SetInputMode(int mode) {
+	inputMode = mode;
+	shiftMode = 0;
+	SetInputCodeName("ISO-2022-JP");
+	//debug("ISO-2022-JP");
+}
+/**
+ * 入力文字コードを設定する
+ */
+void LibNKF::SetInputCodeName(std::string codeName) {
+	inputCodeName = codeName;
+}
+/**
+ * Mime読み取りの際GetC関数の挙動を変更する
+ */
+void LibNKF::SwitchMimeGetC(void) {
+//  とりあえずスタブで
+//	if (i_getc != mime_getc) {
+//		i_mgetc = i_getc;
+//		i_getc = mime_getc;
+//		i_mungetc = i_ungetc;
+//		i_ungetc = mime_ungetc;
+//		if (mime_f == STRICT_MIME) {
+//			i_mgetc_buf = i_mgetc;
+//			i_mgetc = mime_getc_buf;
+//			i_mungetc_buf = i_mungetc;
+//			i_mungetc = mime_ungetc_buf;
+//		}
+//	}
 }
 
