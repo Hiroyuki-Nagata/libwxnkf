@@ -22,6 +22,7 @@
  */
 
 #include "LibNKF.h"
+
 #define NKF_VERSION "2.1.2"
 #define NKF_RELEASE_DATE "2011-09-08"
 #define COPY_RIGHT \

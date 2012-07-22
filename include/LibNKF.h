@@ -11,10 +11,10 @@
 #include <iostream>
 #include <string>
 #include <sys/stat.h>
+#include "FlagPool.h"
 #include "NKFNativeEncodings.h"
 #include "NKFEncoding.h"
 #include "UTF8Table.h"
-#include "FlagPool.h"
 #include "UTF16Util.h"
 #include "InputCodeList.h"
 #include "GuessConv.h"
@@ -155,11 +155,11 @@ static struct {
 #endif
 
 /* NKFEncodingに関するマクロ */
-#define nkf_enc_name(enc) (enc)->name	// ←　単にクラスのポインタから名前をとればいいのでは？
-#define nkf_enc_to_index(enc) (enc)->id // ←　単にクラスのポインタからidをとればいいのでは？
-#define nkf_enc_to_base_encoding(enc) (enc)->base_encoding // ←　単にクラスのポインタからbaseEncodingをとればいいのでは？
-#define nkf_enc_to_iconv(enc) nkf_enc_to_base_encoding(enc)->iconv //
-#define nkf_enc_to_oconv(enc) nkf_enc_to_base_encoding(enc)->oconv //
+#define nkf_enc_name(enc) (enc)->name
+#define nkf_enc_to_index(enc) (enc)->id
+#define nkf_enc_to_base_encoding(enc) (enc)->base_encoding
+#define nkf_enc_to_iconv(enc) nkf_enc_to_base_encoding(enc)->iconv
+#define nkf_enc_to_oconv(enc) nkf_enc_to_base_encoding(enc)->oconv
 #define nkf_enc_asciicompat(enc) ( nkf_enc_to_base_encoding(enc) == &NkfEncodingASCII || nkf_enc_to_base_encoding(enc) == &NkfEncodingISO_2022_JP)
 #define nkf_enc_unicode_p(enc) (nkf_enc_to_base_encoding(enc) == &NkfEncodingUTF_8 || nkf_enc_to_base_encoding(enc) == &NkfEncodingUTF_16 || nkf_enc_to_base_encoding(enc) == &NkfEncodingUTF_32)
 #define nkf_enc_cp5022x_p(enc) (nkf_enc_to_index(enc) == CP50220 ||	nkf_enc_to_index(enc) == CP50221 ||	nkf_enc_to_index(enc) == CP50222)
@@ -270,6 +270,19 @@ public:
 	 * ??
 	 */
 	static unsigned char prefix_table[256];
+	/**
+	 * 使い方の表示
+	 */
+	static void ShowUsage();
+	/**
+	 * バージョン情報の表示
+	 */
+	static void ShowVersion();
+	/**
+	 * 設定情報の表示
+	 */
+	static void ShowConfiguration();
+
 private:
 	/**
 	 * MIME mode B base64, Q hex
@@ -321,18 +334,6 @@ private:
 	 * 入力文字コードを設定する
 	 */
 	void SetInputCodeName(std::string codeName);
-	/**
-	 * 使い方の表示
-	 */
-	static void ShowUsage();
-	/**
-	 * バージョン情報の表示
-	 */
-	static void ShowVersion();
-	/**
-	 * 設定情報の表示
-	 */
-	static void ShowConfiguration();
 	/**
 	 * BOMが存在するかチェックし、存在すれば無視する
 	 */

@@ -8,6 +8,13 @@
 TARGET  = libnkfcpp.a
 SOURCES = $(notdir $(shell find . -name '*.cpp'))
 OBJECTS = $(SOURCES:.cpp=.o)
+# sources for dependency
+DEPSRCS = $(shell find . -name '*.cpp')
+# test sources and objects
+TESTS	= test
+TESTSBIN= test1
+TESTSRC	= test1.cpp
+TESTOBJ	= $(TESTSRC:.cpp=.o)
 
 # basic command
 CXX		:= g++ -gstabs
@@ -23,15 +30,24 @@ LDFLAGS := -static
 ARFLAG	:= crsv
 
 # dummy target
-.PHONY: clean
+.PHONY: dep clean test
 # make all
-all:	$(TARGET) $(OBJECTS)
+all:	$(TARGET) $(OBJECTS) $(TESTS)
 # suffix rule
 .cpp.o:
 		$(CXX) $(CXXFLAGS) -c $<
+# make dependency
+dep:
+	$(CXX) -MM -MG $(DEPSRCS) >makefile.depend
 # build library
 $(TARGET): $(OBJECTS) $(SOURCES)
 		$(AR) $(ARFLAG) $(TARGET) $(OBJECTS)
+# build test code
+$(TESTS): $(TESTSBIN)
+$(TESTSBIN):$(TESTOBJ)
+		$(CXX) $^ -o $@ $(LDFLAGS) -L. -lnkfcpp
 # clean
 clean:
 		$(RM) -f *.o $(TARGET)
+# dependency
+-include makefile.dep
