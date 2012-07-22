@@ -63,6 +63,8 @@ void LibNKF::ReInit() {
 		prefix_table[i] = 0;
 	}
 	//　以降のコーディングで必要と思われる初期化処理はここに記述
+	kanji_intro = DEFAULT_J;
+	ascii_intro = DEFAULT_R;
 }
 
 /**
@@ -72,7 +74,7 @@ void LibNKF::ReInit() {
  *    0: success
  *   -1: ArgumentError
  */
-int LibNKF::SetOption(const string option) {
+int LibNKF::SetOption(const std::string option) {
 
 	// LibNKFの初期化
 	LibNKF::ReInit();
@@ -630,7 +632,7 @@ int LibNKF::SetOption(const string option) {
 /**
  * 文字コードを変換する処理のラッパーで、外部に見せるメソッド
  */
-int LibNKF::Convert(const wstring src, wstring dst) {
+int LibNKF::Convert(const std::wstring src, std::wstring dst) {
 	return 0;
 }
 /**
@@ -1895,4 +1897,16 @@ void LibNKF::SwitchMimeGetC(void) {
 //		}
 //	}
 }
+/**
+ * Asciiコードが混じった場合のエスケープシーケンス
+ */
+void LibNKF::OutputAsciiEscapeSequence(int mode) {
+	if (outputMode != ASCII && outputMode != ISO_8859_1) {
+		OPutC(ESC);
+		OPutC('(');
+		OPutC(ascii_intro);
+	    outputMode = mode;
+	}
+}
+
 

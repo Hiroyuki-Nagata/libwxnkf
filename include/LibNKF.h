@@ -20,8 +20,6 @@
 #include "GuessConv.h"
 #include "Util.h"
 
-using namespace std;
-
 /* MIME_DECODE_DEFAULT */
 #define MIME_DECODE_DEFAULT STRICT_MIME
 
@@ -119,20 +117,18 @@ static const struct {
  * Mime名のパターン
  */
 static const unsigned char *mime_pattern[] = {
-    (const unsigned char *)"\075?EUC-JP?B?",
-    (const unsigned char *)"\075?SHIFT_JIS?B?",
-    (const unsigned char *)"\075?ISO-8859-1?Q?",
-    (const unsigned char *)"\075?ISO-8859-1?B?",
-    (const unsigned char *)"\075?ISO-2022-JP?B?",
-    (const unsigned char *)"\075?ISO-2022-JP?B?",
-    (const unsigned char *)"\075?ISO-2022-JP?Q?",
+		(const unsigned char *) "\075?EUC-JP?B?",
+		(const unsigned char *) "\075?SHIFT_JIS?B?",
+		(const unsigned char *) "\075?ISO-8859-1?Q?",
+		(const unsigned char *) "\075?ISO-8859-1?B?",
+		(const unsigned char *) "\075?ISO-2022-JP?B?",
+		(const unsigned char *) "\075?ISO-2022-JP?B?",
+		(const unsigned char *) "\075?ISO-2022-JP?Q?",
 #if defined(UTF8_INPUT_ENABLE)
-    (const unsigned char *)"\075?UTF-8?B?",
-    (const unsigned char *)"\075?UTF-8?Q?",
+		(const unsigned char *)"\075?UTF-8?B?",
+		(const unsigned char *)"\075?UTF-8?Q?",
 #endif
-    (const unsigned char *)"\075?US-ASCII?Q?",
-    NULL
-};
+		(const unsigned char *) "\075?US-ASCII?Q?", NULL };
 
 /* MIME preprocessor fifo */
 
@@ -140,10 +136,10 @@ static const unsigned char *mime_pattern[] = {
 #define MIME_BUF_MASK   (MIME_BUF_SIZE-1)
 #define mime_input_buf(n)        mime_input_state.buf[(n)&MIME_BUF_MASK]
 static struct {
-    unsigned char buf[MIME_BUF_SIZE];
-    unsigned int  top;
-    unsigned int  last;  /* decoded */
-    unsigned int  input; /* undecoded */
+	unsigned char buf[MIME_BUF_SIZE];
+	unsigned int top;
+	unsigned int last; /* decoded */
+	unsigned int input; /* undecoded */
 } mime_input_state;
 
 #if defined(DEFAULT_CODE_JIS)
@@ -211,27 +207,35 @@ public:
 	/**
 	 * nkf用にオプションをセットする
 	 */
-	int SetOption(const string option);
+	int SetOption(const std::string option);
 	/**
 	 * 文字コードを変換する処理のラッパーで、外部に見せるメソッド
 	 */
-	int Convert(const wstring src, wstring dst);
+	int Convert(const std::wstring src, std::wstring dst);
 	/**
 	 * ファイルポインタから1バイトnkf用のデータを読み取って返す
 	 */
 	static nkf_char StdGetC(FILE *f) {
 		return getc(f);
-	};
+	}
+	;
 	/**
 	 * ファイルポインタではなく引数に指定したnkf_charを返す
 	 */
 	static nkf_char StdUnGetC(nkf_char c, FILE *f) {
 		return c;
-	};
+	}
+	;
+	/**
+	 * 出力用のwstringの末尾に１バイト加える
+	 */
+	static void OPutC(nkf_char c) {
+		oConvStr.push_back(c);
+	}
 	/**
 	 * 文字コード変換された文字列の出力先
 	 */
-	wstring oConvStr;
+	static std::wstring oConvStr;
 	/**
 	 * 入力された文字コード・出力する文字コード
 	 * このオブジェクトはLibNKFクラスにそれぞれ一つしか存在しない
@@ -244,7 +248,28 @@ public:
 	 * NULL: unestablished, "": BINARY
 	 */
 	static std::string inputCodeName;
-
+	/**
+	 * Asciiコードが混じった場合のエスケープシーケンス
+	 */
+	static void OutputAsciiEscapeSequence(int mode);
+	/*
+	 * 入出力の文字コード設定
+	 */
+	static int inputMode;
+	static int outputMode;
+	/**
+	 * 入力されるバイトの並び・出力するバイトの並び
+	 */
+	static int inputEndian;
+	static int outputEndian;
+	/**
+	 * 入力する文字コードとその処理を決定する
+	 */
+	static void SetIconv(nkf_char f, std::string name);
+	/**
+	 * ??
+	 */
+	static unsigned char prefix_table[256];
 private:
 	/**
 	 * MIME mode B base64, Q hex
@@ -255,19 +280,14 @@ private:
 	 */
 	static int mimeout_mode;
 	/**
-	 * 入力されるバイトの並び・出力するバイトの並び
-	 */
-	static int inputEndian;
-	static int outputEndian;
-	/*
-	 * 入出力の文字コード設定
-	 */
-	static int inputMode;
-	static int outputMode;
-	/**
 	 *
 	 */
 	static int shiftMode;
+	/**
+	 * option
+	 */
+	static unsigned char kanji_intro;
+	static unsigned char ascii_intro;
 	/**
 	 * 文字コードの種類判別
 	 */
@@ -334,17 +354,9 @@ private:
 	 */
 	nkf_char MimeIntegrity(FILE *f, const unsigned char *p);
 	/**
-	 * 入力する文字コードとその処理を決定する
-	 */
-	static void SetIconv(nkf_char f, std::string name);
-	/**
 	 * SetIconvの検証のための文字列
 	 */
 	static std::string iconvForCheck;
-	/**
-	 * ??
-	 */
-	static unsigned char prefix_table[256];
 	/**
 	 * Mime読み取りの際GetC関数の挙動を変更する
 	 */

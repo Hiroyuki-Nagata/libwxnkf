@@ -10,7 +10,6 @@
 
 #include "FlagPool.h"
 #include "UTF8Table.h"
-#include "NKFNativeEncodings.h"
 #include "NKFEncoding.h"
 
 /*
@@ -71,7 +70,6 @@ public:
 	 */
 	static nkf_char W2eConv(nkf_char c2, nkf_char c1, nkf_char c0, nkf_char *p2,
 			nkf_char *p1);
-private:
 	/**
 	 * 文字コード名から文字コードに対応するIDを取得する
 	 */
