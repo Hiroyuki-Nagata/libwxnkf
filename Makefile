@@ -6,10 +6,17 @@
 
 # target and sources
 TARGET  = libnkfcpp.a
-SOURCES = $(notdir $(shell find . -name '*.cpp'))
+SOURCES = FlagPool.cpp			 \
+		  GuessConv.cpp			 \
+		  InputCodeList.cpp 	 \
+		  LibNKF.cpp			 \
+		  NKFNativeEncodings.cpp \
+		  UTF16Util.cpp			 \
+		  UTF8Table.cpp			 \
+		  Util.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 # sources for dependency
-DEPSRCS = $(shell find . -name '*.cpp')
+DEPSRCS = $(SOURCES)
 # test sources and objects
 TESTS	= test
 TESTSBIN= test1
@@ -48,6 +55,6 @@ $(TESTSBIN):$(TESTOBJ)
 		$(CXX) $^ -o $@ $(LDFLAGS) -L. -lnkfcpp
 # clean
 clean:
-		$(RM) -f *.o $(TARGET)
+		$(RM) -f *.o $(TARGET) $(TESTS)1.exe 
 # dependency
 -include makefile.dep
