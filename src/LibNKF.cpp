@@ -33,6 +33,9 @@
  * コンストラクタ
  */
 LibNKF::LibNKF() {
+	flagPool = new FlagPool();
+	enc = new NKFEncoding();
+
 	inputEncoding = NULL;
 	outputEncoding = NULL;
 	inputEndian = ENDIAN_BIG;
@@ -54,6 +57,9 @@ LibNKF::~LibNKF() {
 		delete enc;
 	if (NULL != flagPool)
 		delete flagPool;
+
+	delete flagPool;
+	delete enc;
 }
 
 /**
@@ -84,8 +90,6 @@ int LibNKF::SetOption(const std::string option) {
 	nkf_char i, j;
 	unsigned char *p;
 	unsigned char *cp_back = NULL;
-	enc = new NKFEncoding();
-	flagPool = new FlagPool();
 
 	if (flagPool->option_mode == 1)
 		return 0;
@@ -696,7 +700,7 @@ int LibNKF::KanjiConvert(FILE* f) {
 					/**
 					 * まだ文字コードが確定しておらず曖昧な状態
 					 */
-					if (GuessConv::GuessIConv(f, c2, c1) == EOF) {
+					if (GuessConv::GuessIConv(f, c2, c1, flagPool) == EOF) {
 						LAST;
 					} else {
 						SKIP
@@ -717,7 +721,7 @@ int LibNKF::KanjiConvert(FILE* f) {
 				SEND;
 			}
 		} else if (nkf_char_unicode_p(c1)) {
-			outputEncoding->baseEncoding->Oconv(0, c1);
+			outputEncoding->baseEncoding->Oconv(0, c1, flagPool);
 			NEXT;
 		} else {
 			/* first byte */
@@ -781,7 +785,7 @@ int LibNKF::KanjiConvert(FILE* f) {
 				} else if (c1 == '=' && flagPool->mime_f && !mime_decode_mode) {
 					/* Check MIME code */
 					if ((c1 = LibNKF::StdGetC(f)) == EOF) {
-						outputEncoding->baseEncoding->Oconv(0, '=');
+						outputEncoding->baseEncoding->Oconv(0, '=', flagPool);
 						LAST;
 					} else if (c1 == '?') {
 						/* =? is mime conversion start sequence */
@@ -796,7 +800,7 @@ int LibNKF::KanjiConvert(FILE* f) {
 						SKIP
 						;
 					} else {
-						outputEncoding->baseEncoding->Oconv(0, '=');
+						outputEncoding->baseEncoding->Oconv(0, '=', flagPool);
 						LibNKF::StdUnGetC(c1, f);
 						SKIP
 						;
@@ -815,7 +819,7 @@ int LibNKF::KanjiConvert(FILE* f) {
 				;
 			} else if (c1 == ESC && (!is_8bit || mime_decode_mode)) {
 				if ((c1 = LibNKF::StdGetC(f)) == EOF) {
-					outputEncoding->baseEncoding->Oconv(0, ESC);
+					outputEncoding->baseEncoding->Oconv(0, ESC, flagPool);
 					LAST;
 				} else if (c1 == '&') {
 					/* IRR */
@@ -865,10 +869,10 @@ int LibNKF::KanjiConvert(FILE* f) {
 							;
 						} else {
 							/* could be some special code */
-							outputEncoding->baseEncoding->Oconv(0, ESC);
-							outputEncoding->baseEncoding->Oconv(0, '$');
-							outputEncoding->baseEncoding->Oconv(0, '(');
-							outputEncoding->baseEncoding->Oconv(0, c1);
+							outputEncoding->baseEncoding->Oconv(0, ESC, flagPool);
+							outputEncoding->baseEncoding->Oconv(0, '$', flagPool);
+							outputEncoding->baseEncoding->Oconv(0, '(', flagPool);
+							outputEncoding->baseEncoding->Oconv(0, c1, flagPool);
 							SKIP
 							;
 						}
@@ -879,9 +883,9 @@ int LibNKF::KanjiConvert(FILE* f) {
 						SKIP
 						;
 					} else {
-						outputEncoding->baseEncoding->Oconv(0, ESC);
-						outputEncoding->baseEncoding->Oconv(0, '$');
-						outputEncoding->baseEncoding->Oconv(0, c1);
+						outputEncoding->baseEncoding->Oconv(0, ESC, flagPool);
+						outputEncoding->baseEncoding->Oconv(0, '$', flagPool);
+						outputEncoding->baseEncoding->Oconv(0, c1, flagPool);
 						SKIP
 						;
 					}
@@ -907,8 +911,8 @@ int LibNKF::KanjiConvert(FILE* f) {
 						SKIP
 						;
 					} else {
-						outputEncoding->baseEncoding->Oconv(0, ESC);
-						outputEncoding->baseEncoding->Oconv(0, '(');
+						outputEncoding->baseEncoding->Oconv(0, ESC, flagPool);
+						outputEncoding->baseEncoding->Oconv(0, '(', flagPool);
 						SEND;
 					}
 				} else if (c1 == '.') {
@@ -921,8 +925,8 @@ int LibNKF::KanjiConvert(FILE* f) {
 						SKIP
 						;
 					} else {
-						outputEncoding->baseEncoding->Oconv(0, ESC);
-						outputEncoding->baseEncoding->Oconv(0, '.');
+						outputEncoding->baseEncoding->Oconv(0, ESC, flagPool);
+						outputEncoding->baseEncoding->Oconv(0, '.', flagPool);
 						SEND;
 					}
 				} else if (c1 == 'N') {
@@ -934,19 +938,19 @@ int LibNKF::KanjiConvert(FILE* f) {
 					} else {
 						LibNKF::StdUnGetC(c1, f);
 						/* lonely ESC  */
-						outputEncoding->baseEncoding->Oconv(0, ESC);
+						outputEncoding->baseEncoding->Oconv(0, ESC, flagPool);
 						SEND;
 					}
 				} else {
 					/* lonely ESC  */
-					outputEncoding->baseEncoding->Oconv(0, ESC);
+					outputEncoding->baseEncoding->Oconv(0, ESC, flagPool);
 					SEND;
 				}
 			} else if (c1 == ESC
 					&& inputEncoding->baseEncoding->iconvName == "s_iconv") {
 				/* ESC in Shift_JIS */
 				if ((c1 = LibNKF::StdGetC(f)) == EOF) {
-					outputEncoding->baseEncoding->Oconv(0, ESC);
+					outputEncoding->baseEncoding->Oconv(0, ESC, flagPool);
 					LAST;
 				} else if (c1 == '$') {
 					/* J-PHONE emoji */
@@ -969,26 +973,26 @@ int LibNKF::KanjiConvert(FILE* f) {
 						if ((c1 = LibNKF::StdGetC(f)) == EOF)
 							LAST;
 						while (SP <= c1 && c1 <= 'z') {
-							outputEncoding->baseEncoding->Oconv(0, c1 + c3);
+							outputEncoding->baseEncoding->Oconv(0, c1 + c3, flagPool);
 							if ((c1 = LibNKF::StdGetC(f)) == EOF)
 								LAST;
 						}
 						SKIP
 						;
 					} else {
-						outputEncoding->baseEncoding->Oconv(0, ESC);
-						outputEncoding->baseEncoding->Oconv(0, '$');
+						outputEncoding->baseEncoding->Oconv(0, ESC, flagPool);
+						outputEncoding->baseEncoding->Oconv(0, '$', flagPool);
 						SEND;
 					}
 				} else {
 					/* lonely ESC  */
-					outputEncoding->baseEncoding->Oconv(0, ESC);
+					outputEncoding->baseEncoding->Oconv(0, ESC, flagPool);
 					SEND;
 				}
 			} else if (c1 == LF || c1 == CR) {
 				if (flagPool->broken_f & 4) {
 					inputMode = ASCII;
-					SetIconv(FALSE, 0);
+					SetIconv(FALSE, 0, flagPool);
 					SEND;
 				} else if (flagPool->mime_decode_f && !mime_decode_mode) {
 					if (c1 == LF) {
@@ -1027,23 +1031,23 @@ int LibNKF::KanjiConvert(FILE* f) {
 		/* send: */
 		switch (inputMode) {
 		case ASCII:
-			switch (inputEncoding->baseEncoding->Iconv(c2, c1, 0)) { /* can be EUC / SJIS / UTF-8 */
+			switch (inputEncoding->baseEncoding->Iconv(c2, c1, 0, flagPool)) { /* can be EUC / SJIS / UTF-8 */
 			case -2:
 				/* 4 bytes UTF-8 */
 				if ((c3 = LibNKF::StdGetC(f)) != EOF) {
-					GuessConv::CodeStatus(c3);
+					GuessConv::CodeStatus(c3, flagPool);
 					c3 <<= 8;
 					if ((c4 = LibNKF::StdGetC(f)) != EOF) {
-						GuessConv::CodeStatus(c4);
-						inputEncoding->baseEncoding->Iconv(c2, c1, c3 | c4);
+						GuessConv::CodeStatus(c4, flagPool);
+						inputEncoding->baseEncoding->Iconv(c2, c1, c3 | c4, flagPool);
 					}
 				}
 				break;
 			case -1:
 				/* 3 bytes EUC or UTF-8 */
 				if ((c3 = LibNKF::StdGetC(f)) != EOF) {
-					GuessConv::CodeStatus(c3);
-					inputEncoding->baseEncoding->Iconv(c2, c1, c3);
+					GuessConv::CodeStatus(c3, flagPool);
+					inputEncoding->baseEncoding->Iconv(c2, c1, c3, flagPool);
 				}
 				break;
 			}
@@ -1056,16 +1060,16 @@ int LibNKF::KanjiConvert(FILE* f) {
 				c1 = nkf_char_unicode_new((c2 - 0x7F) * 94 + c1 - 0x21 + 0xE000);
 				c2 = 0;
 			}
-			outputEncoding->baseEncoding->Oconv(c2, c1); /* this is JIS, not SJIS/EUC case */
+			outputEncoding->baseEncoding->Oconv(c2, c1, flagPool); /* this is JIS, not SJIS/EUC case */
 			break;
 		case JIS_X_0212:
-			outputEncoding->baseEncoding->Oconv(PREFIX_EUCG3 | c2, c1);
+			outputEncoding->baseEncoding->Oconv(PREFIX_EUCG3 | c2, c1, flagPool);
 			break;
 		case JIS_X_0213_2:
-			outputEncoding->baseEncoding->Oconv(PREFIX_EUCG3 | c2, c1);
+			outputEncoding->baseEncoding->Oconv(PREFIX_EUCG3 | c2, c1, flagPool);
 			break;
 		default:
-			outputEncoding->baseEncoding->Oconv(inputMode, c1); /* other special case */
+			outputEncoding->baseEncoding->Oconv(inputMode, c1, flagPool); /* other special case */
 		}
 
 		c2 = 0;
@@ -1076,7 +1080,7 @@ int LibNKF::KanjiConvert(FILE* f) {
 
 	finished:
 	/* epilogue */
-	inputEncoding->baseEncoding->Iconv(EOF, 0, 0);
+	inputEncoding->baseEncoding->Iconv(EOF, 0, 0, flagPool);
 //	if (!input_codename) {
 //		if (is_8bit) {
 //			struct input_code *p = input_code_list;
@@ -1315,25 +1319,25 @@ void LibNKF::SetInputEncoding(NKFEncoding *enc) {
  * 入力する文字コードとその処理を決定する
  * inputEncoding, inputCodeNameの決定を行う
  */
-void GuessConv::SetIconv(nkf_char f, std::string name) {
+void LibNKF::SetIconv(nkf_char f, std::string name, FlagPool* flagPool) {
 	/**
 	 * inputEncodingが確定していない場合確定フラグを立てる
 	 */
 	if (f || !LibNKF::inputEncoding) {
-		if (FlagPool::estab_f != f) {
-			FlagPool::estab_f = f;
+		if (flagPool->estab_f != f) {
+			flagPool->estab_f = f;
 		}
 	}
 	/**
 	 * -TRUE means "FORCE"
 	 * inputEncodingが確定していない場合
 	 */
-	if (name.empty() && (f == -TRUE || !LibNKF::inputEncoding->name.empty())) {
-		LibNKF::inputEncoding->name = name;
+	if (name.empty() && (f == -TRUE || !inputEncoding->name.empty())) {
+		inputEncoding->name = name;
 	}
-	if (FlagPool::estab_f && iconvForCheck != name) {
+	if (flagPool->estab_f && iconvForCheck != name) {
 		// 入力文字コードが確定している場合
-		LibNKF::inputCodeName = name;
+		inputCodeName = name;
 		iconvForCheck = name;
 	}
 }
@@ -1706,7 +1710,7 @@ nkf_char LibNKF::MimeBeginStrict(FILE* f) {
 			/* all fails, output from recovery buffer */
 			LibNKF::StdUnGetC(c1, f);
 			for (j = 0; j < i; j++) {
-				outputEncoding->baseEncoding->Oconv(0, r[j]);
+				outputEncoding->baseEncoding->Oconv(0, r[j], flagPool);
 			}
 			return c1;
 		}
@@ -1717,7 +1721,7 @@ nkf_char LibNKF::MimeBeginStrict(FILE* f) {
 	// Mimeそれぞれに優先すべき関数名
 	std::string mimePriorityFunc[] = { "e_iconv", "s_iconv", 0, 0, 0, 0, 0,
 			"w_iconv", "w_iconv", 0 };
-	SetIconv(FALSE, mimePriorityFunc[j]);
+	SetIconv(FALSE, mimePriorityFunc[j], flagPool);
 	InputCode::ClrCodeScore(InputCode::FindInputcodeByFunc(mimePriorityFunc[j]),
 			SCORE_iMIME);
 
@@ -1794,33 +1798,6 @@ nkf_char LibNKF::MimeBegin(FILE* f) {
 	mime_input_state.last = k;
 	/* do no MIME integrity check */
 	return c1; /* used only for checking EOF */
-}
-/**
- * 入力する文字コードとその処理を決定する
- * inputEncoding, inputCodeNameの決定を行う
- */
-void LibNKF::SetIconv(nkf_char f, std::string name) {
-
-	/**
-	 * inputEncodingが確定していない場合確定フラグを立てる
-	 */
-	if (f || !inputEncoding) {
-		if (FlagPool::estab_f != f) {
-			FlagPool::estab_f = f;
-		}
-	}
-	/**
-	 * -TRUE means "FORCE"
-	 * inputEncodingが確定していない場合
-	 */
-	if (name.empty() && (f == -TRUE || !inputEncoding->name.empty())) {
-		inputEncoding->name = name;
-	}
-	if (FlagPool::estab_f && iconvForCheck != name) {
-		// 入力文字コードが確定している場合
-		inputCodeName = name;
-		iconvForCheck = name;
-	}
 }
 /**
  * Mimeの完全性をチェックする

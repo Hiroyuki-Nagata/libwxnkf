@@ -265,7 +265,7 @@ public:
 	/**
 	 * 入力する文字コードとその処理を決定する
 	 */
-	static void SetIconv(nkf_char f, std::string name);
+	void SetIconv(nkf_char f, std::string name, FlagPool* flagPool);
 	/**
 	 * ??
 	 */

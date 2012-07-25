@@ -31,68 +31,70 @@ NKFNativeEncoding::NKFNativeEncoding(const std::string name) {
 	}
 }
 
-nkf_char NKFNativeEncoding::Iconv(nkf_char c2, nkf_char c1, nkf_char c0) {
+nkf_char NKFNativeEncoding::Iconv(nkf_char c2, nkf_char c1, nkf_char c0,
+		FlagPool* flagPool) {
 
 	switch (this->id) {
 
 	case ASCII:
-		return EIconv(c2, c1, c0);
+		return EIconv(c2, c1, c0, flagPool);
 		break;
 	case ISO_2022_JP:
-		return EIconv(c2, c1, c0);
+		return EIconv(c2, c1, c0, flagPool);
 		break;
 	case SHIFT_JIS:
-		return SIconv(c2, c1, c0);
+		return SIconv(c2, c1, c0, flagPool);
 		break;
 	case EUC_JP:
-		return EIconv(c2, c1, c0);
+		return EIconv(c2, c1, c0, flagPool);
 		break;
 	case UTF_8:
-		return WIconv(c2, c1, c0);
+		return WIconv(c2, c1, c0, flagPool);
 		break;
 	case UTF_16:
-		return WIconv16(c2, c1, c0);
+		return WIconv16(c2, c1, c0, flagPool);
 		break;
 	case UTF_32:
-		return WIconv32(c2, c1, c0);
+		return WIconv32(c2, c1, c0, flagPool);
 		break;
 	default:
 		return -1;
 	}
 }
 
-void NKFNativeEncoding::Oconv(nkf_char c2, nkf_char c1) {
+void NKFNativeEncoding::Oconv(nkf_char c2, nkf_char c1, FlagPool* flagPool) {
 
 	switch (this->id) {
 
 	case ASCII:
-		EOconv(c2, c1);
+		EOconv(c2, c1, flagPool);
 		break;
 	case ISO_2022_JP:
-		JOconv(c2, c1);
+		JOconv(c2, c1, flagPool);
 		break;
 	case SHIFT_JIS:
-		SOconv(c2, c1);
+		SOconv(c2, c1, flagPool);
 		break;
 	case EUC_JP:
-		EOconv(c2, c1);
+		EOconv(c2, c1, flagPool);
 		break;
 	case UTF_8:
-		WOconv(c2, c1);
+		WOconv(c2, c1, flagPool);
 		break;
 	case UTF_16:
 		break;
-		WOconv16(c2, c1);
+		WOconv16(c2, c1, flagPool);
 		break;
 	case UTF_32:
-		WOconv32(c2, c1);
+		WOconv32(c2, c1, flagPool);
 		break;
 	}
 }
 
-nkf_char NKFNativeEncoding::SIconv(nkf_char c2, nkf_char c1, nkf_char c0) {
+nkf_char NKFNativeEncoding::SIconv(nkf_char c2, nkf_char c1, nkf_char c0,
+		FlagPool* flagPool) {
 	if (c2 == JIS_X_0201_1976_K || (0xA1 <= c2 && c2 <= 0xDF)) {
-		if (FlagPool::iso2022jp_f && !FlagPool::x0201_f) {
+		if (flagPool->iso2022jp_f && !flagPool->x0201_f) {
 			c2 = GETA1;
 			c1 = GETA2;
 		} else {
@@ -100,7 +102,7 @@ nkf_char NKFNativeEncoding::SIconv(nkf_char c2, nkf_char c1, nkf_char c0) {
 		}
 	} else if ((c2 == EOF) || (c2 == 0) || c2 < SP) {
 		/* NOP */
-	} else if (!FlagPool::x0213_f && 0xF0 <= c2 && c2 <= 0xF9 && 0x40 <= c1
+	} else if (!flagPool->x0213_f && 0xF0 <= c2 && c2 <= 0xF9 && 0x40 <= c1
 			&& c1 <= 0xFC) {
 		/* CP932 UDC */
 		if (c1 == 0x7F)
@@ -109,18 +111,19 @@ nkf_char NKFNativeEncoding::SIconv(nkf_char c2, nkf_char c1, nkf_char c0) {
 				nkf_char_unicode_new((c2 - 0xF0) * 188 + (c1 - 0x40 - (0x7E < c1)) + 0xE000);
 		c2 = 0;
 	} else {
-		nkf_char ret = Util::S2eConv(c2, c1, &c2, &c1);
+		nkf_char ret = Util::S2eConv(c2, c1, &c2, &c1, flagPool);
 		if (ret)
 			return ret;
 	}
-	LibNKF::outputEncoding->baseEncoding->Oconv(c2, c1);
+	LibNKF::outputEncoding->baseEncoding->Oconv(c2, c1, flagPool);
 	return 0;
 }
 
-nkf_char NKFNativeEncoding::EIconv(nkf_char c2, nkf_char c1, nkf_char c0) {
+nkf_char NKFNativeEncoding::EIconv(nkf_char c2, nkf_char c1, nkf_char c0,
+		FlagPool* flagPool) {
 
 	if (c2 == JIS_X_0201_1976_K || c2 == SS2) {
-		if (FlagPool::iso2022jp_f && !FlagPool::x0201_f) {
+		if (flagPool->iso2022jp_f && !flagPool->x0201_f) {
 			c2 = GETA1;
 			c1 = GETA2;
 		} else {
@@ -131,7 +134,7 @@ nkf_char NKFNativeEncoding::EIconv(nkf_char c2, nkf_char c1, nkf_char c0) {
 		if (c0 == 0) {
 			return -1;
 		}
-		if (!FlagPool::cp51932_f && !FlagPool::x0213_f && 0xF5 <= c1
+		if (!flagPool->cp51932_f && !flagPool->x0213_f && 0xF5 <= c1
 				&& c1 <= 0xFE && 0xA1 <= c0 && c0 <= 0xFE) {
 			/* encoding is eucJP-ms, so invert to Unicode Private User Area */
 			c1 = nkf_char_unicode_new((c1 - 0xF5) * 94 + c0 - 0xA1 + 0xE3AC);
@@ -139,10 +142,10 @@ nkf_char NKFNativeEncoding::EIconv(nkf_char c2, nkf_char c1, nkf_char c0) {
 		} else {
 			c2 = (c2 << 8) | (c1 & 0x7f);
 			c1 = c0 & 0x7f;
-			if (FlagPool::cp51932_f) {
+			if (flagPool->cp51932_f) {
 				nkf_char s2, s1;
-				if (Util::E2sConv(c2, c1, &s2, &s1) == 0) {
-					Util::S2eConv(s2, s1, &c2, &c1);
+				if (Util::E2sConv(c2, c1, &s2, &s1, flagPool) == 0) {
+					Util::S2eConv(s2, s1, &c2, &c1, flagPool);
 					if (c2 < 0x100) {
 						c1 &= 0x7f;
 						c2 &= 0x7f;
@@ -153,7 +156,7 @@ nkf_char NKFNativeEncoding::EIconv(nkf_char c2, nkf_char c1, nkf_char c0) {
 	} else if ((c2 == EOF) || (c2 == 0) || c2 < SP || c2 == ISO_8859_1) {
 		/* NOP */
 	} else {
-		if (!FlagPool::cp51932_f && FlagPool::ms_ucs_map_f && 0xF5 <= c2
+		if (!flagPool->cp51932_f && flagPool->ms_ucs_map_f && 0xF5 <= c2
 				&& c2 <= 0xFE && 0xA1 <= c1 && c1 <= 0xFE) {
 			/* encoding is eucJP-ms, so invert to Unicode Private User Area */
 			c1 = nkf_char_unicode_new((c2 - 0xF5) * 94 + c1 - 0xA1 + 0xE000);
@@ -161,10 +164,10 @@ nkf_char NKFNativeEncoding::EIconv(nkf_char c2, nkf_char c1, nkf_char c0) {
 		} else {
 			c1 &= 0x7f;
 			c2 &= 0x7f;
-			if (FlagPool::cp51932_f && 0x79 <= c2 && c2 <= 0x7c) {
+			if (flagPool->cp51932_f && 0x79 <= c2 && c2 <= 0x7c) {
 				nkf_char s2, s1;
-				if (Util::E2sConv(c2, c1, &s2, &s1) == 0) {
-					Util::S2eConv(s2, s1, &c2, &c1);
+				if (Util::E2sConv(c2, c1, &s2, &s1, flagPool) == 0) {
+					Util::S2eConv(s2, s1, &c2, &c1, flagPool);
 					if (c2 < 0x100) {
 						c1 &= 0x7f;
 						c2 &= 0x7f;
@@ -173,11 +176,12 @@ nkf_char NKFNativeEncoding::EIconv(nkf_char c2, nkf_char c1, nkf_char c0) {
 			}
 		}
 	}
-	LibNKF::outputEncoding->baseEncoding->Oconv(c2, c1);
+	LibNKF::outputEncoding->baseEncoding->Oconv(c2, c1, flagPool);
 	return 0;
 }
 
-nkf_char NKFNativeEncoding::WIconv(nkf_char c1, nkf_char c2, nkf_char c3) {
+nkf_char NKFNativeEncoding::WIconv(nkf_char c1, nkf_char c2, nkf_char c3,
+		FlagPool* flagPool) {
 
 	nkf_char ret = 0, c4 = 0;
 	static const char w_iconv_utf8_1st_byte[] = { /* 0xC0 - 0xFF */
@@ -252,33 +256,35 @@ nkf_char NKFNativeEncoding::WIconv(nkf_char c1, nkf_char c2, nkf_char c3) {
 		c2 = nkf_char_unicode_new(Util::NKFUTF8ToUnicode(c1, c2, c3, c4));
 		c1 = 0;
 	} else {
-		ret = Util::W2eConv(c1, c2, c3, &c1, &c2);
+		ret = Util::W2eConv(c1, c2, c3, &c1, &c2, flagPool);
 	}
 	if (ret == 0) {
-		LibNKF::outputEncoding->baseEncoding->Oconv(c1, c2);
+		LibNKF::outputEncoding->baseEncoding->Oconv(c1, c2, flagPool);
 	}
 	return ret;
 }
 
-nkf_char NKFNativeEncoding::WIconv16(nkf_char c2, nkf_char c1, nkf_char c0) {
+nkf_char NKFNativeEncoding::WIconv16(nkf_char c2, nkf_char c1, nkf_char c0,
+		FlagPool* flagPool) {
 
-	LibNKF::outputEncoding->baseEncoding->Oconv(c2, c1);
+	LibNKF::outputEncoding->baseEncoding->Oconv(c2, c1, flagPool);
 	return 16; /* different from w_iconv32 */
 }
 
-nkf_char NKFNativeEncoding::WIconv32(nkf_char c2, nkf_char c1, nkf_char c0) {
+nkf_char NKFNativeEncoding::WIconv32(nkf_char c2, nkf_char c1, nkf_char c0,
+		FlagPool* flagPool) {
 
-	LibNKF::outputEncoding->baseEncoding->Oconv(c2, c1);
+	LibNKF::outputEncoding->baseEncoding->Oconv(c2, c1, flagPool);
 	return 32; /* different from w_iconv16 */
 }
 
-void NKFNativeEncoding::JOconv(nkf_char c2, nkf_char c1) {
+void NKFNativeEncoding::JOconv(nkf_char c2, nkf_char c1, FlagPool* flagPool) {
 
 	if (c2 == 0 && nkf_char_unicode_p(c1)) {
-		Util::W16eConv(c1, &c2, &c1);
+		Util::W16eConv(c1, &c2, &c1, flagPool);
 		if (c2 == 0 && nkf_char_unicode_p(c1)) {
 			c2 = c1 & VALUE_MASK;
-			if (FlagPool::ms_ucs_map_f && 0xE000 <= c2 && c2 <= 0xE757) {
+			if (flagPool->ms_ucs_map_f && 0xE000 <= c2 && c2 <= 0xE757) {
 				/* CP5022x UDC */
 				c1 &= 0xFFF;
 				c2 = 0x7F + c1 / 94;
@@ -304,31 +310,31 @@ void NKFNativeEncoding::JOconv(nkf_char c2, nkf_char c1) {
 		LibNKF::OPutC(c1);
 	} else if (is_eucg3(c2)) {
 		LibNKF::OutputAsciiEscapeSequence(
-				FlagPool::x0213_f ? JIS_X_0213_2 : JIS_X_0212);
+				flagPool->x0213_f ? JIS_X_0213_2 : JIS_X_0212);
 		LibNKF::OPutC(c2 & 0x7f);
 		LibNKF::OPutC(c1);
 	} else {
-		if (FlagPool::ms_ucs_map_f ?
+		if (flagPool->ms_ucs_map_f ?
 				c2 < 0x20 || 0x92 < c2 || c1 < 0x20 || 0x7e < c1 :
 				c2 < 0x20 || 0x7e < c2 || c1 < 0x20 || 0x7e < c1)
 			return;
 		LibNKF::OutputAsciiEscapeSequence(
-				FlagPool::x0213_f ? JIS_X_0213_1 : JIS_X_0208);
+				flagPool->x0213_f ? JIS_X_0213_1 : JIS_X_0208);
 		LibNKF::OPutC(c2);
 		LibNKF::OPutC(c1);
 	}
 }
 
-void NKFNativeEncoding::SOconv(nkf_char c2, nkf_char c1) {
+void NKFNativeEncoding::SOconv(nkf_char c2, nkf_char c1, FlagPool* flagPool) {
 
 	if (c2 == 0 && nkf_char_unicode_p(c1)) {
-		Util::W16eConv(c1, &c2, &c1);
+		Util::W16eConv(c1, &c2, &c1, flagPool);
 		if (c2 == 0 && nkf_char_unicode_p(c1)) {
 			c2 = c1 & VALUE_MASK;
-			if (!FlagPool::x0213_f && 0xE000 <= c2 && c2 <= 0xE757) {
+			if (!flagPool->x0213_f && 0xE000 <= c2 && c2 <= 0xE757) {
 				/* CP932 UDC */
 				c1 &= 0xFFF;
-				c2 = c1 / 188 + (FlagPool::cp932inv_f ? 0xF0 : 0xEB);
+				c2 = c1 / 188 + (flagPool->cp932inv_f ? 0xF0 : 0xEB);
 				c1 = c1 % 188;
 				c1 += 0x40 + (c1 > 0x3e);
 				LibNKF::OPutC(c2);
@@ -355,19 +361,20 @@ void NKFNativeEncoding::SOconv(nkf_char c2, nkf_char c1) {
 		LibNKF::OPutC(c1 | 0x080);
 	} else if (is_eucg3(c2)) {
 		LibNKF::outputMode = SHIFT_JIS;
-		if (Util::E2sConv(c2, c1, &c2, &c1) == 0) {
+		if (Util::E2sConv(c2, c1, &c2, &c1, flagPool) == 0) {
 			LibNKF::OPutC(c2);
 			LibNKF::OPutC(c1);
 		}
 	} else {
 		if (!nkf_isprint(c1) || !nkf_isprint(c2)) {
-			LibNKF::SetIconv(FALSE, 0);
+			// fix me !
+			//LibNKF::SetIconv(FALSE, 0, flagPool);
 			return; /* too late to rescue this char */
 		}
 		LibNKF::outputMode = SHIFT_JIS;
-		Util::E2sConv(c2, c1, &c2, &c1);
+		Util::E2sConv(c2, c1, &c2, &c1, flagPool);
 
-		if (FlagPool::cp932inv_f
+		if (flagPool->cp932inv_f
 				&& CP932INV_TABLE_BEGIN <= c2&& c2 <= CP932INV_TABLE_END) {
 			nkf_char c = UTF8Table::cp932inv[c2 - CP932INV_TABLE_BEGIN][c1
 					- 0x40];
@@ -385,13 +392,13 @@ void NKFNativeEncoding::SOconv(nkf_char c2, nkf_char c1) {
 	}
 }
 
-void NKFNativeEncoding::EOconv(nkf_char c2, nkf_char c1) {
+void NKFNativeEncoding::EOconv(nkf_char c2, nkf_char c1, FlagPool* flagPool) {
 
 	if (c2 == 0 && nkf_char_unicode_p(c1)) {
-		Util::W16eConv(c1, &c2, &c1);
+		Util::W16eConv(c1, &c2, &c1, flagPool);
 		if (c2 == 0 && nkf_char_unicode_p(c1)) {
 			c2 = c1 & VALUE_MASK;
-			if (FlagPool::x0212_f && 0xE000 <= c2 && c2 <= 0xE757) {
+			if (flagPool->x0212_f && 0xE000 <= c2 && c2 <= 0xE757) {
 				/* eucJP-ms UDC */
 				c1 &= 0xFFF;
 				c2 = c1 / 94;
@@ -428,17 +435,17 @@ void NKFNativeEncoding::EOconv(nkf_char c2, nkf_char c1) {
 		LibNKF::OPutC(c1 | 0x080);
 	} else if (is_eucg3(c2)) {
 		LibNKF::outputMode = EUC_JP;
-		if (!FlagPool::cp932inv_f) {
+		if (!flagPool->cp932inv_f) {
 			nkf_char s2, s1;
-			if (Util::E2sConv(c2, c1, &s2, &s1) == 0) {
-				Util::S2eConv(s2, s1, &c2, &c1);
+			if (Util::E2sConv(c2, c1, &s2, &s1, flagPool) == 0) {
+				Util::S2eConv(s2, s1, &c2, &c1, flagPool);
 			}
 		}
 		if (c2 == 0) {
 			LibNKF::outputMode = ASCII;
 			LibNKF::OPutC(c1);
 		} else if (is_eucg3(c2)) {
-			if (FlagPool::x0212_f) {
+			if (flagPool->x0212_f) {
 				LibNKF::OPutC(0x8f);
 				LibNKF::OPutC((c2 & 0x7f) | 0x080);
 				LibNKF::OPutC(c1 | 0x080);
@@ -449,7 +456,8 @@ void NKFNativeEncoding::EOconv(nkf_char c2, nkf_char c1) {
 		}
 	} else {
 		if (!nkf_isgraph(c1) || !nkf_isgraph(c2)) {
-			LibNKF::SetIconv(FALSE, 0);
+			// fix me !
+			//LibNKF::SetIconv(FALSE, 0, flagPool);
 			return; /* too late to rescue this char */
 		}
 		LibNKF::outputMode = EUC_JP;
@@ -458,13 +466,13 @@ void NKFNativeEncoding::EOconv(nkf_char c2, nkf_char c1) {
 	}
 }
 
-void NKFNativeEncoding::WOconv(nkf_char c2, nkf_char c1) {
+void NKFNativeEncoding::WOconv(nkf_char c2, nkf_char c1, FlagPool* flagPool) {
 
 	nkf_char c3, c4;
 	nkf_char val;
 
-	if (FlagPool::output_bom_f) {
-		FlagPool::output_bom_f = FALSE;
+	if (flagPool->output_bom_f) {
+		flagPool->output_bom_f = FALSE;
 		LibNKF::OPutC('\357');
 		LibNKF::OPutC('\273');
 		LibNKF::OPutC('\277');
@@ -491,7 +499,7 @@ void NKFNativeEncoding::WOconv(nkf_char c2, nkf_char c1) {
 	if (c2 == 0) {
 		LibNKF::OPutC(c1);
 	} else {
-		val = Util::E2wConv(c2, c1);
+		val = Util::E2wConv(c2, c1, flagPool);
 		if (val) {
 			Util::NKFUnicodeToUTF8(val, &c1, &c2, &c3, &c4);
 			LibNKF::OPutC(c1);
@@ -505,10 +513,10 @@ void NKFNativeEncoding::WOconv(nkf_char c2, nkf_char c1) {
 	}
 }
 
-void NKFNativeEncoding::WOconv16(nkf_char c2, nkf_char c1) {
+void NKFNativeEncoding::WOconv16(nkf_char c2, nkf_char c1, FlagPool* flagPool) {
 
-	if (FlagPool::output_bom_f) {
-		FlagPool::output_bom_f = FALSE;
+	if (flagPool->output_bom_f) {
+		flagPool->output_bom_f = FALSE;
 		if (LibNKF::outputEndian == ENDIAN_LITTLE) {
 			LibNKF::OPutC(0xFF);
 			LibNKF::OPutC(0xFE);
@@ -547,7 +555,7 @@ void NKFNativeEncoding::WOconv16(nkf_char c2, nkf_char c1) {
 			return;
 		}
 	} else if (c2) {
-		nkf_char val = Util::E2wConv(c2, c1);
+		nkf_char val = Util::E2wConv(c2, c1, flagPool);
 		c2 = (val >> 8) & 0xff;
 		c1 = val & 0xff;
 		if (!val)
@@ -563,10 +571,10 @@ void NKFNativeEncoding::WOconv16(nkf_char c2, nkf_char c1) {
 	}
 }
 
-void NKFNativeEncoding::WOconv32(nkf_char c2, nkf_char c1) {
+void NKFNativeEncoding::WOconv32(nkf_char c2, nkf_char c1, FlagPool* flagPool) {
 
-	if (FlagPool::output_bom_f) {
-		FlagPool::output_bom_f = FALSE;
+	if (flagPool->output_bom_f) {
+		flagPool->output_bom_f = FALSE;
 		if (LibNKF::outputEndian == ENDIAN_LITTLE) {
 			LibNKF::OPutC(0xFF);
 			LibNKF::OPutC(0xFE);
@@ -590,7 +598,7 @@ void NKFNativeEncoding::WOconv32(nkf_char c2, nkf_char c1) {
 	} else if (c2 == 0 && nkf_char_unicode_p(c1)) {
 		c1 &= VALUE_MASK;
 	} else if (c2) {
-		c1 = Util::E2wConv(c2, c1);
+		c1 = Util::E2wConv(c2, c1, flagPool);
 		if (!c1)
 			return;
 	}

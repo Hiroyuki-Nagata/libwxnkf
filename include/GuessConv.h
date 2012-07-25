@@ -22,15 +22,15 @@ public:
 	/**
 	 * nkf内のh_conv()にあたるメソッド
 	 */
-	static int GuessIConv(FILE *f, nkf_char c1, nkf_char c2);
+	static int GuessIConv(FILE *f, nkf_char c1, nkf_char c2, FlagPool* flagPool);
 	/**
 	 * 文字コードの状態を判定するしてクラスに設定する
 	 */
-	static void CodeStatus(nkf_char c);
+	static void CodeStatus(nkf_char c, FlagPool* flagPool);
 	/**
 	 * 入力する文字コードとその処理を決定する
 	 */
-	static void SetIconv(nkf_char f, std::string name);
+	static void SetIconv(nkf_char f, std::string name, FlagPool* flagPool);
 private:
 
 	static nkf_char hold_buf[HOLD_SIZE * 2];

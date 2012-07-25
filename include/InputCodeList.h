@@ -59,8 +59,8 @@ public:
 	nkf_char score;
 	nkf_char index;
 	nkf_char buf[3];
-	void StatusFunc(InputCode* inputCode, nkf_char c);
-	nkf_char IconvFunc(nkf_char c2, nkf_char c1, nkf_char c0);
+	void StatusFunc(InputCode* inputCode, nkf_char c, FlagPool* flagPool);
+	nkf_char IconvFunc(nkf_char c2, nkf_char c1, nkf_char c0, FlagPool* flagPool);
 	int _file_stat;
 
 	/**
@@ -76,9 +76,9 @@ private:
 	/**
 	 * StatusFunc内部のstatus関数
 	 */
-	void EStatus(InputCode* inputCode, nkf_char c);
-	void SStatus(InputCode* inputCode, nkf_char c);
-	void WStatus(InputCode* inputCode, nkf_char c);
+	void EStatus(InputCode* inputCode, nkf_char c, FlagPool* flagPool);
+	void SStatus(InputCode* inputCode, nkf_char c, FlagPool* flagPool);
+	void WStatus(InputCode* inputCode, nkf_char c, FlagPool* flagPool);
 	/**
 	 * IConv関数
 	 */
@@ -90,12 +90,12 @@ private:
 	/**
 	 * その他のコールバック関数
 	 */
-	static void StatusCheck(InputCode* ptr, nkf_char c);
+	static void StatusCheck(InputCode* ptr, nkf_char c, FlagPool* flagPool);
 	static void StatusReset(InputCode* ptr);
 	static void StatusClear(InputCode* ptr);
 	static void StatusPushCh(InputCode* ptr, nkf_char c);
-	static void StatusDisable(InputCode* ptr);
-	static void CodeScore(InputCode* ptr);
+	static void StatusDisable(InputCode* ptr, FlagPool* flagPool);
+	static void CodeScore(InputCode* ptr, FlagPool* flagPool);
 	static void SetCodeScore(InputCode* ptr, nkf_char score);
 };
 

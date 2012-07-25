@@ -7,13 +7,13 @@
 # target and sources
 TARGET  = libnkfcpp.a
 SOURCES = FlagPool.cpp			 \
+		  LibNKF.cpp			 \
+		  Util.cpp				 \
 		  GuessConv.cpp			 \
 		  InputCodeList.cpp 	 \
-		  LibNKF.cpp			 \
 		  NKFNativeEncodings.cpp \
 		  UTF16Util.cpp			 \
-		  UTF8Table.cpp			 \
-		  Util.cpp
+		  UTF8Table.cpp			 
 OBJECTS = $(SOURCES:.cpp=.o)
 # sources for dependency
 DEPSRCS = $(SOURCES)

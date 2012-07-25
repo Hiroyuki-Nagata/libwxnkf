@@ -284,11 +284,12 @@ NKFEncoding* Util::NKFLocaleEncoding() {
 	return enc;
 }
 
-nkf_char Util::E2sConv(nkf_char c2, nkf_char c1, nkf_char* p2, nkf_char* p1) {
+nkf_char Util::E2sConv(nkf_char c2, nkf_char c1, nkf_char* p2, nkf_char* p1,
+		FlagPool* flagPool) {
 	nkf_char ndx;
 	if (is_eucg3(c2)) {
 		ndx = c2 & 0x7f;
-		if (FlagPool::x0213_f) {
+		if (flagPool->x0213_f) {
 			if ((0x21 <= ndx && ndx <= 0x2F)) {
 				if (p2)
 					*p2 = ((ndx - 1) >> 1) + 0xec - ndx / 8 * 3;
@@ -333,7 +334,8 @@ nkf_char Util::E2sConv(nkf_char c2, nkf_char c1, nkf_char* p2, nkf_char* p1) {
 	return 0;
 }
 
-nkf_char Util::S2eConv(nkf_char c2, nkf_char c1, nkf_char* p2, nkf_char* p1) {
+nkf_char Util::S2eConv(nkf_char c2, nkf_char c1, nkf_char* p2, nkf_char* p1,
+		FlagPool* flagPool) {
 
 	nkf_char val;
 	static const char shift_jisx0213_s1a3_table[5][2] = { { 1, 8 }, { 3, 4 }, {
@@ -341,14 +343,14 @@ nkf_char Util::S2eConv(nkf_char c2, nkf_char c1, nkf_char* p2, nkf_char* p1) {
 	if (0xFC < c1)
 		return 1;
 
-	if (!FlagPool::cp932inv_f && is_ibmext_in_sjis(c2)) {
+	if (!flagPool->cp932inv_f && is_ibmext_in_sjis(c2)) {
 		val = UTF8Table::shiftjis_cp932[c2 - CP932_TABLE_BEGIN][c1 - 0x40];
 		if (val) {
 			c2 = val >> 8;
 			c1 = val & 0xff;
 		}
 	}
-	if (FlagPool::cp932inv_f
+	if (flagPool->cp932inv_f
 			&& CP932INV_TABLE_BEGIN <= c2&& c2 <= CP932INV_TABLE_END) {
 		val = UTF8Table::cp932inv[c2 - CP932INV_TABLE_BEGIN][c1 - 0x40];
 		if (val) {
@@ -356,7 +358,7 @@ nkf_char Util::S2eConv(nkf_char c2, nkf_char c1, nkf_char* p2, nkf_char* p1) {
 			c1 = val & 0xff;
 		}
 	}
-	if (!FlagPool::x0213_f && is_ibmext_in_sjis(c2)) {
+	if (!flagPool->x0213_f && is_ibmext_in_sjis(c2)) {
 		val = UTF8Table::shiftjis_x0212[c2 - 0xfa][c1 - 0x40];
 		if (val) {
 			if (val > 0x7FFF) {
@@ -374,7 +376,7 @@ nkf_char Util::S2eConv(nkf_char c2, nkf_char c1, nkf_char* p2, nkf_char* p1) {
 		}
 	}
 	if (c2 >= 0x80) {
-		if (FlagPool::x0213_f && c2 >= 0xF0) {
+		if (flagPool->x0213_f && c2 >= 0xF0) {
 			if (c2 <= 0xF3 || (c2 == 0xF4 && c1 < 0x9F)) { /* k=1, 3<=k<=5, k=8, 12<=k<=15 */
 				c2 = PREFIX_EUCG3 | 0x20
 						| shift_jisx0213_s1a3_table[c2 - 0xF0][0x9E < c1];
@@ -429,7 +431,8 @@ nkf_char Util::X0212Unshift(nkf_char c) {
 	return ret;
 }
 
-nkf_char Util::W16eConv(nkf_char val, nkf_char* p2, nkf_char* p1) {
+nkf_char Util::W16eConv(nkf_char val, nkf_char* p2, nkf_char* p1,
+		FlagPool* flagPool) {
 	nkf_char c1, c2, c3, c4;
 	nkf_char ret = 0;
 	val &= VALUE_MASK;
@@ -438,7 +441,7 @@ nkf_char Util::W16eConv(nkf_char val, nkf_char* p2, nkf_char* p1) {
 		*p1 = val;
 	} else if (nkf_char_unicode_bmp_p(val)) {
 		Util::NKFUnicodeToUTF8(val, &c1, &c2, &c3, &c4);
-		ret = Util::UnicodeToJISCommon(c1, c2, c3, p2, p1);
+		ret = UnicodeToJISCommon(c1, c2, c3, p2, p1, flagPool);
 		if (ret > 0) {
 			*p2 = 0;
 			*p1 = nkf_char_unicode_new(val);
@@ -483,7 +486,7 @@ void Util::NKFUnicodeToUTF8(nkf_char val, nkf_char* p1, nkf_char* p2,
 }
 
 int Util::UnicodeToJISCommon(nkf_char c2, nkf_char c1, nkf_char c0,
-		nkf_char* p2, nkf_char* p1) {
+		nkf_char* p2, nkf_char* p1, FlagPool* flagPool) {
 	const unsigned short * const *pp;
 	const unsigned short * const * const *ppp;
 	static const char no_best_fit_chars_table_C2[] = { 1, 1, 1, 1, 1, 1, 1, 1,
@@ -508,8 +511,8 @@ int Util::UnicodeToJISCommon(nkf_char c2, nkf_char c1, nkf_char c0,
 		*p2 = 0;
 		*p1 = c2;
 	} else if (c2 < 0xe0) {
-		if (FlagPool::no_best_fit_chars_f) {
-			if (FlagPool::ms_ucs_map_f == UCS_MAP_CP932) {
+		if (flagPool->no_best_fit_chars_f) {
+			if (flagPool->ms_ucs_map_f == UCS_MAP_CP932) {
 				switch (c2) {
 				case 0xC2:
 					if (no_best_fit_chars_table_932_C2[c1 & 0x3F])
@@ -520,7 +523,7 @@ int Util::UnicodeToJISCommon(nkf_char c2, nkf_char c1, nkf_char c0,
 						return 1;
 					break;
 				}
-			} else if (!FlagPool::cp932inv_f) {
+			} else if (!flagPool->cp932inv_f) {
 				switch (c2) {
 				case 0xC2:
 					if (no_best_fit_chars_table_C2[c1 & 0x3F])
@@ -531,10 +534,10 @@ int Util::UnicodeToJISCommon(nkf_char c2, nkf_char c1, nkf_char c0,
 						return 1;
 					break;
 				}
-			} else if (FlagPool::ms_ucs_map_f == UCS_MAP_MS) {
+			} else if (flagPool->ms_ucs_map_f == UCS_MAP_MS) {
 				if (c2 == 0xC2 && no_best_fit_chars_table_C2_ms[c1 & 0x3F])
 					return 1;
-			} else if (FlagPool::ms_ucs_map_f == UCS_MAP_CP10001) {
+			} else if (flagPool->ms_ucs_map_f == UCS_MAP_CP10001) {
 				switch (c2) {
 				case 0xC2:
 					switch (c1) {
@@ -551,22 +554,22 @@ int Util::UnicodeToJISCommon(nkf_char c2, nkf_char c1, nkf_char c0,
 				}
 			}
 		}
-		pp = FlagPool::ms_ucs_map_f == UCS_MAP_CP932 ?
+		pp = flagPool->ms_ucs_map_f == UCS_MAP_CP932 ?
 				UTF8Table::utf8_to_euc_2bytes_932 :
-				FlagPool::ms_ucs_map_f == UCS_MAP_MS ?
+				flagPool->ms_ucs_map_f == UCS_MAP_MS ?
 						UTF8Table::utf8_to_euc_2bytes_ms :
-				FlagPool::ms_ucs_map_f == UCS_MAP_CP10001 ?
+				flagPool->ms_ucs_map_f == UCS_MAP_CP10001 ?
 						UTF8Table::utf8_to_euc_2bytes_mac :
 						UTF8Table::utf8_to_euc_2bytes;
-		ret = Util::UnicodeToJISCommon2(c2, c1, pp, sizeof_utf8_to_euc_2bytes,
-				p2, p1);
+		ret = UnicodeToJISCommon2(c2, c1, pp, sizeof_utf8_to_euc_2bytes, p2, p1,
+				flagPool);
 
 	} else if (c0 < 0xF0) {
-		if (FlagPool::no_best_fit_chars_f) {
-			if (FlagPool::ms_ucs_map_f == UCS_MAP_CP932) {
+		if (flagPool->no_best_fit_chars_f) {
+			if (flagPool->ms_ucs_map_f == UCS_MAP_CP932) {
 				if (c2 == 0xE3 && c1 == 0x82 && c0 == 0x94)
 					return 1;
-			} else if (FlagPool::ms_ucs_map_f == UCS_MAP_MS) {
+			} else if (flagPool->ms_ucs_map_f == UCS_MAP_MS) {
 				switch (c2) {
 				case 0xE2:
 					switch (c1) {
@@ -585,7 +588,7 @@ int Util::UnicodeToJISCommon(nkf_char c2, nkf_char c1, nkf_char c0,
 						return 1;
 					break;
 				}
-			} else if (FlagPool::ms_ucs_map_f == UCS_MAP_CP10001) {
+			} else if (flagPool->ms_ucs_map_f == UCS_MAP_CP10001) {
 				switch (c2) {
 				case 0xE3:
 					switch (c1) {
@@ -621,7 +624,7 @@ int Util::UnicodeToJISCommon(nkf_char c2, nkf_char c1, nkf_char c0,
 							return 1;
 						break;
 					case 0xBD:
-						if (c0 == 0x9E && !FlagPool::cp932inv_f)
+						if (c0 == 0x9E && !flagPool->cp932inv_f)
 							return 1;
 						break;
 					case 0xBF:
@@ -633,21 +636,21 @@ int Util::UnicodeToJISCommon(nkf_char c2, nkf_char c1, nkf_char c0,
 				}
 			}
 		}
-		ppp = FlagPool::ms_ucs_map_f == UCS_MAP_CP932 ?
+		ppp = flagPool->ms_ucs_map_f == UCS_MAP_CP932 ?
 				UTF8Table::utf8_to_euc_3bytes_932 :
-				FlagPool::ms_ucs_map_f == UCS_MAP_MS ?
+				flagPool->ms_ucs_map_f == UCS_MAP_MS ?
 						UTF8Table::utf8_to_euc_3bytes_ms :
-				FlagPool::ms_ucs_map_f == UCS_MAP_CP10001 ?
+				flagPool->ms_ucs_map_f == UCS_MAP_CP10001 ?
 						UTF8Table::utf8_to_euc_3bytes_mac :
 						UTF8Table::utf8_to_euc_3bytes;
 		ret = Util::UnicodeToJISCommon2(c1, c0, ppp[c2 - 0xE0],
-				sizeof_utf8_to_euc_C2, p2, p1);
+				sizeof_utf8_to_euc_C2, p2, p1, flagPool);
 	} else
 		return -1;
-	if (!ret && !FlagPool::cp932inv_f && is_eucg3(*p2)) {
+	if (!ret && !flagPool->cp932inv_f && is_eucg3(*p2)) {
 		nkf_char s2, s1;
-		if (Util::E2sConv(*p2, *p1, &s2, &s1) == 0) {
-			Util::S2eConv(s2, s1, p2, p1);
+		if (Util::E2sConv(*p2, *p1, &s2, &s1, flagPool) == 0) {
+			Util::S2eConv(s2, s1, p2, p1, flagPool);
 		} else {
 			ret = 1;
 		}
@@ -657,7 +660,7 @@ int Util::UnicodeToJISCommon(nkf_char c2, nkf_char c1, nkf_char c0,
 
 int Util::UnicodeToJISCommon2(nkf_char c1, nkf_char c0,
 		const unsigned short * const * pp, nkf_char psize, nkf_char* p2,
-		nkf_char* p1) {
+		nkf_char* p1, FlagPool* flagPool) {
 
 	nkf_char c2;
 	const unsigned short *p;
@@ -679,7 +682,7 @@ int Util::UnicodeToJISCommon2(nkf_char c1, nkf_char c0,
 	val = p[c0];
 	if (val == 0)
 		return 1;
-	if (FlagPool::no_cp932ext_f && ((val >> 8) == 0x2D || /* NEC special characters */
+	if (flagPool->no_cp932ext_f && ((val >> 8) == 0x2D || /* NEC special characters */
 	val > NKF_INT32_C(0xF300) /* IBM extended characters */
 	))
 		return 1;
@@ -699,11 +702,11 @@ int Util::UnicodeToJISCommon2(nkf_char c1, nkf_char c0,
 	return 0;
 }
 
-nkf_char Util::E2wConv(nkf_char c2, nkf_char c1) {
+nkf_char Util::E2wConv(nkf_char c2, nkf_char c1, FlagPool* flagPool) {
 	const unsigned short *p;
 
 	if (c2 == JIS_X_0201_1976_K) {
-		if (FlagPool::ms_ucs_map_f == UCS_MAP_CP10001) {
+		if (flagPool->ms_ucs_map_f == UCS_MAP_CP10001) {
 			switch (c1) {
 			case 0x20:
 				return 0xA0;
@@ -713,7 +716,7 @@ nkf_char Util::E2wConv(nkf_char c2, nkf_char c1) {
 		}
 		p = UTF8Table::euc_to_utf8_1byte;
 	} else if (is_eucg3(c2)) {
-		if (FlagPool::ms_ucs_map_f == UCS_MAP_ASCII && c2 == NKF_INT32_C(0x8F22)
+		if (flagPool->ms_ucs_map_f == UCS_MAP_ASCII && c2 == NKF_INT32_C(0x8F22)
 				&& c1 == 0x43) {
 			return 0xA6;
 		}
@@ -726,9 +729,9 @@ nkf_char Util::E2wConv(nkf_char c2, nkf_char c1) {
 		c2 &= 0x7f;
 		c2 = (c2 & 0x7f) - 0x21;
 		if (0 <= c2 && c2 < sizeof_euc_to_utf8_2bytes)
-			p = FlagPool::ms_ucs_map_f == UCS_MAP_ASCII ?
+			p = flagPool->ms_ucs_map_f == UCS_MAP_ASCII ?
 					UTF8Table::euc_to_utf8_2bytes[c2] :
-				FlagPool::ms_ucs_map_f == UCS_MAP_CP10001 ?
+				flagPool->ms_ucs_map_f == UCS_MAP_CP10001 ?
 						UTF8Table::euc_to_utf8_2bytes_mac[c2] :
 						UTF8Table::euc_to_utf8_2bytes_ms[c2];
 		else
@@ -743,14 +746,14 @@ nkf_char Util::E2wConv(nkf_char c2, nkf_char c1) {
 }
 
 nkf_char Util::W2eConv(nkf_char c2, nkf_char c1, nkf_char c0, nkf_char* p2,
-		nkf_char* p1) {
+		nkf_char* p1, FlagPool* flagPool) {
 	nkf_char ret = 0;
 
 	if (!c1) {
 		*p2 = 0;
 		*p1 = c2;
 	} else if (0xc0 <= c2 && c2 <= 0xef) {
-		ret = Util::UnicodeToJISCommon(c2, c1, c0, p2, p1);
+		ret = Util::UnicodeToJISCommon(c2, c1, c0, p2, p1, flagPool);
 		if (ret > 0) {
 			if (p2)
 				*p2 = 0;

@@ -7,7 +7,7 @@
 
 #include "GuessConv.h"
 
-int GuessConv::GuessIConv(FILE* f, nkf_char c1, nkf_char c2) {
+int GuessConv::GuessIConv(FILE* f, nkf_char c1, nkf_char c2, FlagPool* flagPool) {
 
 	int ret;
 	int hold_index;
@@ -33,9 +33,9 @@ int GuessConv::GuessIConv(FILE* f, nkf_char c1, nkf_char c2) {
 			break;
 		}
 		// 入力された文字コードを判定する
-		CodeStatus(c2);
+		CodeStatus(c2, flagPool);
 
-		if (PushHoldBuf(c2) == EOF || FlagPool::estab_f) {
+		if (PushHoldBuf(c2) == EOF || flagPool->estab_f) {
 			// 1024*2byteを超えたらブレークする
 			break;
 		}
@@ -44,11 +44,11 @@ int GuessConv::GuessIConv(FILE* f, nkf_char c1, nkf_char c2) {
 	/**
 	 * 文字コードが確定していない場合もう一度判別を行う
 	 */
-	if (!FlagPool::estab_f) {
+	if (!flagPool->estab_f) {
 		InputCode* p;
 		InputCode* result = p;
 		if (c2 == EOF) {
-			CodeStatus(c2);
+			CodeStatus(c2, flagPool);
 		}
 
 		for (int i = 0; i < 5; i++) {
@@ -58,7 +58,7 @@ int GuessConv::GuessIConv(FILE* f, nkf_char c1, nkf_char c2) {
 				result = p;
 			}
 		}
-		SetIconv(TRUE, result->name);
+		SetIconv(TRUE, result->name, flagPool);
 	}
 
 	/** now,
@@ -96,7 +96,7 @@ int GuessConv::GuessIConv(FILE* f, nkf_char c1, nkf_char c2) {
 				c4 = EOF;
 				break;
 			}
-			CodeStatus(c2);
+			CodeStatus(c2, flagPool);
 		}
 		c3 = 0;
 		switch (LibNKF::inputEncoding->baseEncoding->Iconv(c1, c2, 0)) { /* can be EUC/SJIS/UTF-8 */
@@ -108,14 +108,14 @@ int GuessConv::GuessIConv(FILE* f, nkf_char c1, nkf_char c2) {
 				ret = EOF;
 				break;
 			}
-			CodeStatus(c3);
+			CodeStatus(c3, flagPool);
 			if (hold_index < hold_count) {
 				c4 = hold_buf[hold_index++];
 			} else if ((c4 = LibNKF::StdGetC(f)) == EOF) {
 				c3 = ret = EOF;
 				break;
 			}
-			CodeStatus(c4);
+			CodeStatus(c4, flagPool);
 			LibNKF::inputEncoding->baseEncoding->Iconv(c1, c2, (c3 << 8) | c4);
 			break;
 		case -1:
@@ -126,7 +126,7 @@ int GuessConv::GuessIConv(FILE* f, nkf_char c1, nkf_char c2) {
 				ret = EOF;
 				break;
 			} else {
-				CodeStatus(c3);
+				CodeStatus(c3, flagPool);
 			}
 			LibNKF::inputEncoding->baseEncoding->Iconv(c1, c2, c3);
 			break;
@@ -137,7 +137,7 @@ int GuessConv::GuessIConv(FILE* f, nkf_char c1, nkf_char c2) {
 	return ret;
 }
 
-void GuessConv::CodeStatus(nkf_char c) {
+void GuessConv::CodeStatus(nkf_char c, FlagPool* flagPool) {
 	/**
 	 * 最初に入力コードが何であるか総当りで調べる
 	 * "EUC-JP","Shift_JIS","UTF-8","UTF-16","UTF-32"の順
@@ -168,8 +168,8 @@ void GuessConv::CodeStatus(nkf_char c) {
 
 	if (action_flag) {
 		// resultが確定している場合
-		if (result && !FlagPool::estab_f) {
-			SetIconv(TRUE, result->name);
+		if (result && !flagPool->estab_f) {
+			SetIconv(TRUE, result->name, flagPool);
 		}
 	}
 }
@@ -177,14 +177,14 @@ void GuessConv::CodeStatus(nkf_char c) {
  * 入力する文字コードとその処理を決定する
  * inputEncoding, inputCodeNameの決定を行う
  */
-void GuessConv::SetIconv(nkf_char f, std::string name) {
+void GuessConv::SetIconv(nkf_char f, std::string name, FlagPool* flagPool) {
 
 	/**
 	 * inputEncodingが確定していない場合確定フラグを立てる
 	 */
 	if (f || !LibNKF::inputEncoding) {
-		if (FlagPool::estab_f != f) {
-			FlagPool::estab_f = f;
+		if (flagPool->estab_f != f) {
+			flagPool->estab_f = f;
 		}
 	}
 	/**
@@ -194,7 +194,7 @@ void GuessConv::SetIconv(nkf_char f, std::string name) {
 	if (name.empty() && (f == -TRUE || !LibNKF::inputEncoding->name.empty())) {
 		LibNKF::inputEncoding->name = name;
 	}
-	if (FlagPool::estab_f && iconvForCheck != name) {
+	if (flagPool->estab_f && iconvForCheck != name) {
 		// 入力文字コードが確定している場合
 		LibNKF::inputCodeName = name;
 		iconvForCheck = name;

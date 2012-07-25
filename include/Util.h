@@ -59,17 +59,17 @@ public:
 	/**
 	 * EUC-JPからUTF-8への変換
 	 */
-	static nkf_char E2wConv(nkf_char c2, nkf_char c1);
+	static nkf_char E2wConv(nkf_char c2, nkf_char c1, FlagPool* flagPool);
 	/**
 	 * Shift_JISからEUC-JPへの変換
 	 */
 	static nkf_char S2eConv(nkf_char c2, nkf_char c1, nkf_char *p2,
-			nkf_char *p1);
+			nkf_char *p1, FlagPool* flagPool);
 	/**
 	 * UTF-8からEUC-JPへの変換
 	 */
 	static nkf_char W2eConv(nkf_char c2, nkf_char c1, nkf_char c0, nkf_char *p2,
-			nkf_char *p1);
+			nkf_char *p1, FlagPool* flagPool);
 	/**
 	 * 文字コード名から文字コードに対応するIDを取得する
 	 */
@@ -84,10 +84,10 @@ public:
 	static NKFEncoding* NKFLocaleEncoding();
 
 	static nkf_char E2sConv(nkf_char c2, nkf_char c1, nkf_char *p2,
-			nkf_char *p1);
+			nkf_char *p1, FlagPool* flagPool);
 	static nkf_char X0212Shift(nkf_char c);
 	static nkf_char X0212Unshift(nkf_char c);
-	static nkf_char W16eConv(nkf_char val, nkf_char *p2, nkf_char *p1);
+	static nkf_char W16eConv(nkf_char val, nkf_char *p2, nkf_char *p1, FlagPool* flagPool);
 
 	/**
 	 * UnicodeからUTF-8への変換
@@ -99,12 +99,17 @@ public:
 	 */
 	static nkf_char NKFUTF8ToUnicode(nkf_char c1, nkf_char c2, nkf_char c3,
 			nkf_char c4);
-
+	/**
+	 * UnicodeからSJISへの変換
+	 */
 	static int UnicodeToJISCommon(nkf_char c2, nkf_char c1, nkf_char c0,
-			nkf_char *p2, nkf_char *p1);
+			nkf_char *p2, nkf_char *p1, FlagPool* flagPool);
+	/**
+	 * UnicodeからSJISへの変換
+	 */
 	static int UnicodeToJISCommon2(nkf_char c1, nkf_char c0,
 			const unsigned short * const *pp, nkf_char psize, nkf_char *p2,
-			nkf_char *p1);
+			nkf_char *p1, FlagPool* flagPool);
 	/**
 	 * テーブルから
 	 */
