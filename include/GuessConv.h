@@ -22,7 +22,8 @@ public:
 	/**
 	 * nkf内のh_conv()にあたるメソッド
 	 */
-	static int GuessIConv(FILE *f, nkf_char c1, nkf_char c2, FlagPool* flagPool);
+	int GuessIConv(FILE *f, nkf_char c1, nkf_char c2, FlagPool* flagPool,
+			NKFEncoding* inputEncoding, NKFEncoding* outputEncoding);
 	/**
 	 * 文字コードの状態を判定するしてクラスに設定する
 	 */
@@ -42,13 +43,15 @@ private:
 	 */
 	static nkf_char StdGetC(FILE *f) {
 		return getc(f);
-	};
+	}
+	;
 	/**
 	 * ファイルポインタではなく引数に指定したnkf_charを返す
 	 */
 	static nkf_char StdUnGetC(nkf_char c, FILE *f) {
 		return c;
-	};
+	}
+	;
 	/**
 	 *
 	 */

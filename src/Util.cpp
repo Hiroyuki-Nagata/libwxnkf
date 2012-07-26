@@ -31,7 +31,6 @@ NKFEncoding* Util::NKFEncFromIndex(int idx) {
 NKFEncoding* Util::NKFDefaultEncoding() {
 
 	NKFEncoding* enc;
-	NKFNativeEncoding* bEnc;
 	enc->id = 0;
 
 #ifdef DEFAULT_CODE_LOCALE
@@ -39,8 +38,6 @@ NKFEncoding* Util::NKFDefaultEncoding() {
 #elif defined(DEFAULT_ENCIDX)
 	enc = Util::NKFEncFromIndex(DEFAULT_ENCIDX);
 #endif
-	if (!enc)
-		NKFEncoding* enc;
 
 	return enc;
 }
@@ -52,6 +49,9 @@ int Util::NKFEncFindIndex(const char* name) {
 	int i;
 	if (name[0] == 'X' && *(name + 1) == '-')
 		name += 2;
+
+
+
 	for (i = 0; encoding_name_to_id_table[i].id >= 0; i++) {
 		if (NKFStrCaseEql(encoding_name_to_id_table[i].name, name)) {
 			return encoding_name_to_id_table[i].id;
@@ -276,7 +276,14 @@ NKFEncoding* Util::NKFEncodingTable(int idx) {
  */
 NKFEncoding* Util::NKFLocaleEncoding() {
 	NKFEncoding* enc;
-	const char *encname = Util::NKFLocaleCharmap();
+	const char* encname;
+#ifdef HAVE_LANGINFO_H
+		encname = nl_langinfo(CODESET);
+#elif defined(__WIN32__)
+		static char buf[16];
+		sprintf(buf, "CP%d", GetACP());
+		encname = buf;
+#endif
 	if (encname)
 		// encnameに何らかの文字列が設定されていた場合
 		enc = Util::NKFEncFind(encname);

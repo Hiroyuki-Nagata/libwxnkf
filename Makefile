@@ -16,7 +16,7 @@ SOURCES = FlagPool.cpp			 \
 		  UTF8Table.cpp			 
 OBJECTS = $(SOURCES:.cpp=.o)
 # sources for dependency
-DEPSRCS = $(SOURCES)
+DEPSRCS = $(shell find src/ -name '*.cpp')
 # test sources and objects
 TESTS	= test
 TESTSBIN= test1
@@ -45,7 +45,7 @@ all:	$(TARGET) $(OBJECTS) $(TESTS)
 		$(CXX) $(CXXFLAGS) -c $<
 # make dependency
 dep:
-	$(CXX) -MM -MG $(DEPSRCS) >makefile.depend
+	$(CXX) -MM -MG $(DEPSRCS) >makefile.dep
 # build library
 $(TARGET): $(OBJECTS) $(SOURCES)
 		$(AR) $(ARFLAG) $(TARGET) $(OBJECTS)
@@ -55,6 +55,6 @@ $(TESTSBIN):$(TESTOBJ)
 		$(CXX) $^ -o $@ $(LDFLAGS) -L. -lnkfcpp
 # clean
 clean:
-		$(RM) -f *.o $(TARGET) $(TESTS)1.exe 
+		$(RM) -f *.o $(TARGET) $(TESTS)1.exe makefile.dep
 # dependency
 -include makefile.dep

@@ -700,9 +700,12 @@ int LibNKF::KanjiConvert(FILE* f) {
 					/**
 					 * まだ文字コードが確定しておらず曖昧な状態
 					 */
-					if (GuessConv::GuessIConv(f, c2, c1, flagPool) == EOF) {
+					GuessConv* gIConv = new GuessConv();
+					if (gIConv->GuessIConv(f, c2, c1, flagPool, inputEncoding, outputEncoding) == EOF) {
+						delete gIConv;
 						LAST;
 					} else {
+						delete gIConv;
 						SKIP
 						;
 					}

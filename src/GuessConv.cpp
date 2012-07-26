@@ -7,7 +7,8 @@
 
 #include "GuessConv.h"
 
-int GuessConv::GuessIConv(FILE* f, nkf_char c1, nkf_char c2, FlagPool* flagPool) {
+int GuessConv::GuessIConv(FILE* f, nkf_char c1, nkf_char c2, FlagPool* flagPool,
+		NKFEncoding* inputEncoding, NKFEncoding* outputEncoding) {
 
 	int ret;
 	int hold_index;
@@ -77,15 +78,15 @@ int GuessConv::GuessIConv(FILE* f, nkf_char c1, nkf_char c2, FlagPool* flagPool)
 	while (hold_index < hold_count) {
 		c1 = hold_buf[hold_index++];
 		if (nkf_char_unicode_p(c1)) {
-			LibNKF::outputEncoding->baseEncoding->Oconv(0, c1);
+			outputEncoding->baseEncoding->Oconv(0, c1, flagPool);
 			continue;
 		} else if (c1 <= DEL) {
-			LibNKF::inputEncoding->baseEncoding->Iconv(0, c1, 0);
+			inputEncoding->baseEncoding->Iconv(0, c1, 0, flagPool);
 			continue;
-		} else if (LibNKF::inputEncoding->baseEncoding->iconvName == "s_iconv"
+		} else if (inputEncoding->baseEncoding->iconvName == "s_iconv"
 				&& 0xa1 <= c1 && c1 <= 0xdf) {
-			LibNKF::inputEncoding->baseEncoding->Iconv(JIS_X_0201_1976_K, c1,
-					0);
+			inputEncoding->baseEncoding->Iconv(JIS_X_0201_1976_K, c1,
+					0, flagPool);
 			continue;
 		}
 		if (hold_index < hold_count) {
@@ -99,7 +100,7 @@ int GuessConv::GuessIConv(FILE* f, nkf_char c1, nkf_char c2, FlagPool* flagPool)
 			CodeStatus(c2, flagPool);
 		}
 		c3 = 0;
-		switch (LibNKF::inputEncoding->baseEncoding->Iconv(c1, c2, 0)) { /* can be EUC/SJIS/UTF-8 */
+		switch (inputEncoding->baseEncoding->Iconv(c1, c2, 0, flagPool)) { /* can be EUC/SJIS/UTF-8 */
 		case -2:
 			/* 4 bytes UTF-8 */
 			if (hold_index < hold_count) {
@@ -116,7 +117,7 @@ int GuessConv::GuessIConv(FILE* f, nkf_char c1, nkf_char c2, FlagPool* flagPool)
 				break;
 			}
 			CodeStatus(c4, flagPool);
-			LibNKF::inputEncoding->baseEncoding->Iconv(c1, c2, (c3 << 8) | c4);
+			inputEncoding->baseEncoding->Iconv(c1, c2, (c3 << 8) | c4, flagPool);
 			break;
 		case -1:
 			/* 3 bytes EUC or UTF-8 */
@@ -128,7 +129,7 @@ int GuessConv::GuessIConv(FILE* f, nkf_char c1, nkf_char c2, FlagPool* flagPool)
 			} else {
 				CodeStatus(c3, flagPool);
 			}
-			LibNKF::inputEncoding->baseEncoding->Iconv(c1, c2, c3);
+			inputEncoding->baseEncoding->Iconv(c1, c2, c3, flagPool);
 			break;
 		}
 		if (c3 == EOF)
@@ -153,7 +154,7 @@ void GuessConv::CodeStatus(nkf_char c, FlagPool* flagPool) {
 	for (int i = 0; i < 5; i++) {
 		InputCode* p;
 		p->name = inputCodeList[i];
-		p->StatusFunc(p, c);
+		p->StatusFunc(p, c, flagPool);
 		if (p->stat > 0) {
 			action_flag = 0;
 		} else if (p->stat == 0) {
