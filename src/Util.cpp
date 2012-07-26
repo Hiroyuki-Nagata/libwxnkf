@@ -239,7 +239,7 @@ int Util::NKFEncFindIndex(const char* name) {
 NKFEncoding* Util::NKFEncodingTable(int idx) {
 
 	// 返却用のクラスのインスタンス
-	NKFEncoding* enc;
+	NKFEncoding* enc = NULL;
 	enc->id = idx;
 
 	/*
@@ -262,6 +262,7 @@ NKFEncoding* Util::NKFEncodingTable(int idx) {
 			break;
 		case BINARY:
 			enc->name = "BINARY";
+			break;
 		}
 
 	} else if (idx == ISO_2022_JP || idx == CP50220 || idx == CP50221
@@ -490,7 +491,8 @@ nkf_char Util::E2sConv(nkf_char c2, nkf_char c1, nkf_char* p2, nkf_char* p1,
 		else if (nkf_isgraph(ndx)) {
 			nkf_char val = 0;
 			const unsigned short *ptr;
-			ptr = UTF8Table::x0212_shiftjis[ndx - 0x21];
+			UTF8Table* table;
+			ptr = table->x0212_shiftjis[ndx - 0x21];
 			if (ptr) {
 				val = ptr[(c1 & 0x7f) - 0x21];
 			}
@@ -525,7 +527,8 @@ nkf_char Util::S2eConv(nkf_char c2, nkf_char c1, nkf_char* p2, nkf_char* p1,
 		return 1;
 
 	if (!flagPool->cp932inv_f && is_ibmext_in_sjis(c2)) {
-		val = UTF8Table::shiftjis_cp932[c2 - CP932_TABLE_BEGIN][c1 - 0x40];
+		UTF8Table* table;
+		val = table->shiftjis_cp932[c2 - CP932_TABLE_BEGIN][c1 - 0x40];
 		if (val) {
 			c2 = val >> 8;
 			c1 = val & 0xff;
@@ -533,14 +536,16 @@ nkf_char Util::S2eConv(nkf_char c2, nkf_char c1, nkf_char* p2, nkf_char* p1,
 	}
 	if (flagPool->cp932inv_f
 			&& CP932INV_TABLE_BEGIN <= c2&& c2 <= CP932INV_TABLE_END) {
-		val = UTF8Table::cp932inv[c2 - CP932INV_TABLE_BEGIN][c1 - 0x40];
+		UTF8Table* table;
+		val = table->cp932inv[c2 - CP932INV_TABLE_BEGIN][c1 - 0x40];
 		if (val) {
 			c2 = val >> 8;
 			c1 = val & 0xff;
 		}
 	}
 	if (!flagPool->x0213_f && is_ibmext_in_sjis(c2)) {
-		val = UTF8Table::shiftjis_x0212[c2 - 0xfa][c1 - 0x40];
+		UTF8Table* table;
+		val = table->shiftjis_x0212[c2 - 0xfa][c1 - 0x40];
 		if (val) {
 			if (val > 0x7FFF) {
 				c2 = PREFIX_EUCG3 | ((val >> 8) & 0x7f);
@@ -735,13 +740,15 @@ int Util::UnicodeToJISCommon(nkf_char c2, nkf_char c1, nkf_char c0,
 				}
 			}
 		}
+
+		UTF8Table* table;
 		pp = flagPool->ms_ucs_map_f == UCS_MAP_CP932 ?
-				UTF8Table::utf8_to_euc_2bytes_932 :
+				table->utf8_to_euc_2bytes_932 :
 				flagPool->ms_ucs_map_f == UCS_MAP_MS ?
-						UTF8Table::utf8_to_euc_2bytes_ms :
+						table->utf8_to_euc_2bytes_ms :
 				flagPool->ms_ucs_map_f == UCS_MAP_CP10001 ?
-						UTF8Table::utf8_to_euc_2bytes_mac :
-						UTF8Table::utf8_to_euc_2bytes;
+						table->utf8_to_euc_2bytes_mac :
+						table->utf8_to_euc_2bytes;
 		ret = UnicodeToJISCommon2(c2, c1, pp, sizeof_utf8_to_euc_2bytes, p2, p1,
 				flagPool);
 
@@ -817,13 +824,14 @@ int Util::UnicodeToJISCommon(nkf_char c2, nkf_char c1, nkf_char c0,
 				}
 			}
 		}
+		UTF8Table* table;
 		ppp = flagPool->ms_ucs_map_f == UCS_MAP_CP932 ?
-				UTF8Table::utf8_to_euc_3bytes_932 :
+				table->utf8_to_euc_3bytes_932 :
 				flagPool->ms_ucs_map_f == UCS_MAP_MS ?
-						UTF8Table::utf8_to_euc_3bytes_ms :
+						table->utf8_to_euc_3bytes_ms :
 				flagPool->ms_ucs_map_f == UCS_MAP_CP10001 ?
-						UTF8Table::utf8_to_euc_3bytes_mac :
-						UTF8Table::utf8_to_euc_3bytes;
+						table->utf8_to_euc_3bytes_mac :
+						table->utf8_to_euc_3bytes;
 		ret = Util::UnicodeToJISCommon2(c1, c0, ppp[c2 - 0xE0],
 				sizeof_utf8_to_euc_C2, p2, p1, flagPool);
 	} else
@@ -884,7 +892,8 @@ int Util::UnicodeToJISCommon2(nkf_char c1, nkf_char c0,
 }
 
 nkf_char Util::E2wConv(nkf_char c2, nkf_char c1, FlagPool* flagPool) {
-	const unsigned short *p;
+	UTF8Table* p;
+	const unsigned short* temp;
 
 	if (c2 == JIS_X_0201_1976_K) {
 		if (flagPool->ms_ucs_map_f == UCS_MAP_CP10001) {
@@ -895,7 +904,7 @@ nkf_char Util::E2wConv(nkf_char c2, nkf_char c1, FlagPool* flagPool) {
 				return 0xA9;
 			}
 		}
-		p = UTF8Table::euc_to_utf8_1byte;
+		temp = p->euc_to_utf8_1byte;
 	} else if (is_eucg3(c2)) {
 		if (flagPool->ms_ucs_map_f == UCS_MAP_ASCII && c2 == NKF_INT32_C(0x8F22)
 				&& c1 == 0x43) {
@@ -903,26 +912,26 @@ nkf_char Util::E2wConv(nkf_char c2, nkf_char c1, FlagPool* flagPool) {
 		}
 		c2 = (c2 & 0x7f) - 0x21;
 		if (0 <= c2 && c2 < sizeof_euc_to_utf8_2bytes)
-			p = UTF8Table::x0212_to_utf8_2bytes[c2];
+			temp = p->x0212_to_utf8_2bytes[c2];
 		else
 			return 0;
 	} else {
 		c2 &= 0x7f;
 		c2 = (c2 & 0x7f) - 0x21;
 		if (0 <= c2 && c2 < sizeof_euc_to_utf8_2bytes)
-			p = flagPool->ms_ucs_map_f == UCS_MAP_ASCII ?
-					UTF8Table::euc_to_utf8_2bytes[c2] :
+			flagPool->ms_ucs_map_f == UCS_MAP_ASCII ?
+					temp = p->euc_to_utf8_2bytes[c2] :
 				flagPool->ms_ucs_map_f == UCS_MAP_CP10001 ?
-						UTF8Table::euc_to_utf8_2bytes_mac[c2] :
-						UTF8Table::euc_to_utf8_2bytes_ms[c2];
+						temp = p->euc_to_utf8_2bytes_mac[c2] :
+						temp = p->euc_to_utf8_2bytes_ms[c2];
 		else
 			return 0;
 	}
-	if (!p)
+	if (!temp)
 		return 0;
 	c1 = (c1 & 0x7f) - 0x21;
 	if (0 <= c1 && c1 < sizeof_euc_to_utf8_1byte)
-		return p[c1];
+		return temp[c1];
 	return 0;
 }
 
