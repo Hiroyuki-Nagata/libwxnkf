@@ -46,18 +46,192 @@ NKFEncoding* Util::NKFDefaultEncoding() {
  * 文字コード名から文字コードに対応するIDを取得する
  */
 int Util::NKFEncFindIndex(const char* name) {
-	int i;
+
 	if (name[0] == 'X' && *(name + 1) == '-')
 		name += 2;
 
+	// NULLであれば問答無用でエラー
+	if (name == NULL)
+		return -1;
 
+	int id = 0;
+	/**
+	 * 文字コード名の最初の1文字をリテラルとして取り出してidを判定する
+	 */
+	switch (name[0]) {
 
-	for (i = 0; encoding_name_to_id_table[i].id >= 0; i++) {
-		if (NKFStrCaseEql(encoding_name_to_id_table[i].name, name)) {
-			return encoding_name_to_id_table[i].id;
+	case '6':
+		id = ASCII;
+		break;
+
+	case 'A':
+		id = ASCII;
+		break;
+
+	case 'B':
+		id = BINARY;
+		break;
+
+	case 'C': // 最初の文字が「C」の場合
+		switch (name[1]) {
+
+		case 'P': // 「CP**」の場合
+			if (strcmp("CP50220", name)) {
+				id = CP50220;
+			} else if (strcmp("CP50221", name)) {
+				id = CP50221;
+			} else if (strcmp("CP50222", name)) {
+				id = CP50222;
+			} else if (strcmp("CP932", name)) {
+				id = WINDOWS_31J;
+			} else if (strcmp("CP10001", name)) {
+				id = CP10001;
+			} else if (strcmp("CP51932", name)) {
+				id = CP51932;
+			}
+			break;
+
+		case 'S': // 「CS**」の場合
+			if (strcmp("CSISO2022JP", name)) {
+				id = CP50221;
+			} else if (strcmp("CSWINDOWS31J", name)) {
+				id = WINDOWS_31J;
+			}
+			break;
 		}
+		break;
+
+	case 'E': // 最初の文字が「E」の場合, EUC**
+		switch (name[3]) {
+
+		case 'J': // 「EUCJ**」の場合
+			if (strcmp("EUCJP", name)) {
+				id = EUC_JP;
+			} else if (strcmp("EUCJP-NKF", name)) {
+				id = EUCJP_NKF;
+			} else if (strcmp("EUCJP-MS", name)) {
+				id = EUCJP_MS;
+			} else if (strcmp("EUCJPMS", name)) {
+				id = EUCJP_MS;
+			} else if (strcmp("EUCJP-ASCII", name)) {
+				id = EUCJP_ASCII;
+			}
+			break;
+
+		case '-': // 「EUC-**」の場合
+			if (strcmp("EUC-JP", name)) {
+				id = EUC_JP;
+			} else if (strcmp("EUC-JP-MS", name)) {
+				id = EUCJP_MS;
+			} else if (strcmp("EUC-JP-ASCII", name)) {
+				id = EUCJP_ASCII;
+			} else if (strcmp("EUC-JISX0213", name)) {
+				id = EUC_JISX0213;
+			} else if (strcmp("EUC-JIS-2004", name)) {
+				id = EUC_JIS_2004;
+			}
+			break;
+		}
+		break;
+
+	case 'I': // 最初の文字が「I」の場合, ISO**
+		if (strcmp("ISO-2022-JP", name)) {
+			id = ISO_2022_JP;
+		} else if (strcmp("ISO2022JP-CP932", name)) {
+			id = CP50220;
+		} else if (strcmp("ISO-2022-JP-1", name)) {
+			id = ISO_2022_JP_1;
+		} else if (strcmp("ISO-2022-JP-3", name)) {
+			id = ISO_2022_JP_3;
+		} else if (strcmp("ISO-2022-JP-2004", name)) {
+			id = ISO_2022_JP_2004;
+		}
+		break;
+
+	case 'M': // 最初の文字が「M」の場合
+		if (strcmp("MS_Kanji", name)) {
+			id = SHIFT_JIS;
+		} else if (strcmp("MS932", name)) {
+			id = WINDOWS_31J;
+		}
+		break;
+
+	case 'P':
+		id = SHIFT_JIS;
+		break;
+
+	case 'R':
+		id = ASCII;
+		break;
+
+	case 'S': // 最初の文字が「S」の場合
+		if (strcmp("SHIFT_JIS", name)) {
+			id = SHIFT_JIS;
+		} else if (strcmp("SJIS", name)) {
+			id = SHIFT_JIS;
+		} else if (strcmp("SHIFT_JISX0213", name)) {
+			id = SHIFT_JISX0213;
+		} else if (strcmp("SHIFT_JIS-2004", name)) {
+			id = SHIFT_JIS_2004;
+		}
+		break;
+
+	case 'U': // 最初の文字が「U」の場合
+
+		switch (name[4]) { // 「UTF-*」の場合
+
+		case '8':
+			if (strcmp("UTF-8", name)) {
+				id = UTF_8;
+			} else if (strcmp("UTF-8N", name)) {
+				id = UTF_8N;
+			} else if (strcmp("UTF-8-BOM", name)) {
+				id = UTF_8_BOM;
+			} else if (strcmp("UTF-8-MAC", name)) {
+				id = UTF8_MAC;
+			}
+			break;
+
+		case '-':
+			id = UTF8_MAC;
+			break;
+
+		case '1':
+			if (strcmp("UTF-16", name)) {
+				id = UTF_16;
+			} else if (strcmp("UTF-16BE", name)) {
+				id = UTF_16BE;
+			} else if (strcmp("UTF-16BE-BOM", name)) {
+				id = UTF_16BE_BOM;
+			} else if (strcmp("UTF-16LE", name)) {
+				id = UTF_16LE;
+			} else if (strcmp("UTF-16LE-BOM", name)) {
+				id = UTF_16LE_BOM;
+			}
+			break;
+
+		case '3':
+			if (strcmp("UTF-32", name)) {
+				id = UTF_32;
+			} else if (strcmp("UTF-32BE", name)) {
+				id = UTF_32BE;
+			} else if (strcmp("UTF-32BE-BOM", name)) {
+				id = UTF_32BE_BOM;
+			} else if (strcmp("UTF-32LE", name)) {
+				id = UTF_32LE;
+			} else if (strcmp("UTF-32LE-BOM", name)) {
+				id = UTF_32LE_BOM;
+			}
+			break;
+		}
+		break;
+
+	case 'W':
+		id = WINDOWS_31J;
+		break;
 	}
-	return -1;
+
+	return id;
 }
 /**
  * 文字コードを表すIDを元にNKFEncodingクラスを設定して返す
@@ -278,11 +452,11 @@ NKFEncoding* Util::NKFLocaleEncoding() {
 	NKFEncoding* enc;
 	const char* encname;
 #ifdef HAVE_LANGINFO_H
-		encname = nl_langinfo(CODESET);
+	encname = nl_langinfo(CODESET);
 #elif defined(__WIN32__)
-		static char buf[16];
-		sprintf(buf, "CP%d", GetACP());
-		encname = buf;
+	static char buf[16];
+	sprintf(buf, "CP%d", GetACP());
+	encname = buf;
 #endif
 	if (encname)
 		// encnameに何らかの文字列が設定されていた場合
@@ -801,17 +975,5 @@ nkf_char Util::NKFUTF8ToUnicode(nkf_char c1, nkf_char c2, nkf_char c3,
 		return -1;
 	}
 	return wc;
-}
-
-int Util::NKFStrCaseEql(const char* src, const char* target) {
-	int i;
-	for (i = 0; src[i] && target[i]; i++) {
-		if (nkf_toupper(src[i]) != nkf_toupper(target[i]))
-			return FALSE;
-	}
-	if (src[i] || target[i])
-		return FALSE;
-	else
-		return TRUE;
 }
 

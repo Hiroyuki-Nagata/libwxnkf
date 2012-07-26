@@ -8,6 +8,7 @@
 #ifndef UTIL_H_
 #define UTIL_H_
 
+#include <cstdio>
 #include "FlagPool.h"
 #include "UTF8Table.h"
 #include "NKFEncoding.h"
@@ -80,10 +81,6 @@ public:
 	static int UnicodeToJISCommon2(nkf_char c1, nkf_char c0,
 			const unsigned short * const *pp, nkf_char psize, nkf_char *p2,
 			nkf_char *p1, FlagPool* flagPool);
-	/**
-	 * テーブルから
-	 */
-	static int NKFStrCaseEql(const char *src, const char *target);
 
 };
 #endif /* UTIL_H_ */
