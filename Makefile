@@ -6,14 +6,14 @@
 
 # target and sources
 TARGET  = libnkfcpp.a
-SOURCES = FlagPool.cpp			 \
-		  LibNKF.cpp			 \
-		  Util.cpp				 \
-		  GuessConv.cpp			 \
-		  InputCodeList.cpp 	 \
-		  NKFNativeEncodings.cpp \
+SOURCES = LibNKF.cpp			 \
+		  FlagSet.cpp			 \
+		  UTF8Table.cpp			 \
+		  NKFNativeEncoding.cpp  \
+		  Util.cpp               \
 		  UTF16Util.cpp			 \
-		  UTF8Table.cpp			 
+		  InputCodeList.cpp
+		  #GuessConv.cpp			 \		 
 OBJECTS = $(SOURCES:.cpp=.o)
 # sources for dependency
 DEPSRCS = $(shell find src/ -name '*.cpp')

@@ -8764,4 +8764,3 @@ UTF8Table::UTF8Table() {
 	};
 
 }
-

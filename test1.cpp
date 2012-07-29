@@ -11,10 +11,15 @@
 #include "LibNKF.h"
 
 int main() {
-	std::cout << "libnkfcppの動作確認テスト" << std::endl;
+	std::cout << "libnkfcppの動作確認テスト\n" << std::endl;
 
 	LibNKF* nkf;
 	nkf->ShowUsage();
+
+	std::cout << "メソッドを呼んでみます\n" << std::endl;
+	nkf->Test();
+
+	std::cout << "終わりです\n" << std::endl;
 }
 
 

@@ -2,7 +2,7 @@
  * InputCodeList.cpp
  *
  *  Created on: 2012/07/17
- *      Author: learning
+ * Contributor: Hiroyuki Nagata
  */
 
 #include "InputCodeList.h"
@@ -11,20 +11,20 @@
  * 指定された文字コードごとのメソッドを提供する
  */
 void InputCode::StatusFunc(InputCode* inputCode, nkf_char c,
-		FlagPool* flagPool) {
+		std::bitset<nkf_flag_num> nkfFlags) {
 	if (this->name == "EUC-JP") {
-		EStatus(inputCode, c, flagPool);
+		EStatus(inputCode, c, nkfFlags);
 	} else if (this->name == "Shift_JIS") {
-		SStatus(inputCode, c, flagPool);
+		SStatus(inputCode, c, nkfFlags);
 	} else if (this->name == "UTF-8") {
-		WStatus(inputCode, c, flagPool);
+		WStatus(inputCode, c, nkfFlags);
 	} else {
 		// do nothing
 	}
 }
 
 nkf_char InputCode::IconvFunc(nkf_char c2, nkf_char c1, nkf_char c0,
-		FlagPool* flagPool) {
+		std::bitset<nkf_flag_num> nkfFlags) {
 	if (this->name == "EUC-JP") {
 		return EIconv(c2, c1, c0);
 	} else if (this->name == "Shift_JIS") {
@@ -40,10 +40,11 @@ nkf_char InputCode::IconvFunc(nkf_char c2, nkf_char c1, nkf_char c0,
 	}
 }
 
-void InputCode::EStatus(InputCode* inputCode, nkf_char c, FlagPool* flagPool) {
+void InputCode::EStatus(InputCode* inputCode, nkf_char c,
+		std::bitset<nkf_flag_num> nkfFlags) {
 	switch (inputCode->stat) {
 	case -1:
-		InputCode::StatusCheck(inputCode, c, flagPool);
+		InputCode::StatusCheck(inputCode, c, nkfFlags);
 		break;
 	case 0:
 		if (c <= DEL) {
@@ -57,16 +58,16 @@ void InputCode::EStatus(InputCode* inputCode, nkf_char c, FlagPool* flagPool) {
 			inputCode->stat = 2;
 			StatusPushCh(inputCode, c);
 		} else {
-			StatusDisable(inputCode, flagPool);
+			StatusDisable(inputCode, nkfFlags);
 		}
 		break;
 	case 1:
 		if (0xa1 <= c && c <= 0xfe) {
 			StatusPushCh(inputCode, c);
-			CodeScore(inputCode, flagPool);
+			CodeScore(inputCode, nkfFlags);
 			StatusClear(inputCode);
 		} else {
-			StatusDisable(inputCode, flagPool);
+			StatusDisable(inputCode, nkfFlags);
 		}
 		break;
 	case 2:
@@ -74,15 +75,16 @@ void InputCode::EStatus(InputCode* inputCode, nkf_char c, FlagPool* flagPool) {
 			inputCode->stat = 1;
 			StatusPushCh(inputCode, c);
 		} else {
-			StatusDisable(inputCode, flagPool);
+			StatusDisable(inputCode, nkfFlags);
 		}
 	}
 }
 
-void InputCode::SStatus(InputCode* inputCode, nkf_char c, FlagPool* flagPool) {
+void InputCode::SStatus(InputCode* inputCode, nkf_char c,
+		std::bitset<nkf_flag_num> nkfFlags) {
 	switch (inputCode->stat) {
 	case -1:
-		InputCode::StatusCheck(inputCode, c, flagPool);
+		InputCode::StatusCheck(inputCode, c, nkfFlags);
 		break;
 	case 0:
 		if (c <= DEL) {
@@ -92,7 +94,7 @@ void InputCode::SStatus(InputCode* inputCode, nkf_char c, FlagPool* flagPool) {
 		} else if (0xa1 <= c && c <= 0xdf) {
 			StatusPushCh(inputCode, SS2);
 			StatusPushCh(inputCode, c);
-			CodeScore(inputCode, flagPool);
+			CodeScore(inputCode, nkfFlags);
 			InputCode::StatusClear(inputCode);
 		} else if ((0x81 <= c && c < 0xa0) || (0xe0 <= c && c <= 0xea)) {
 			inputCode->stat = 1;
@@ -107,51 +109,52 @@ void InputCode::SStatus(InputCode* inputCode, nkf_char c, FlagPool* flagPool) {
 			inputCode->stat = 1;
 			StatusPushCh(inputCode, c);
 		} else {
-			StatusDisable(inputCode, flagPool);
+			StatusDisable(inputCode, nkfFlags);
 		}
 		break;
 	case 1:
 		if ((0x40 <= c && c <= 0x7e) || (0x80 <= c && c <= 0xfc)) {
 			StatusPushCh(inputCode, c);
 			Util::S2eConv(inputCode->buf[0], inputCode->buf[1],
-					&inputCode->buf[0], &inputCode->buf[1], flagPool);
-			CodeScore(inputCode, flagPool);
+					&inputCode->buf[0], &inputCode->buf[1], nkfFlags);
+			CodeScore(inputCode, nkfFlags);
 			InputCode::StatusClear(inputCode);
 		} else {
-			StatusDisable(inputCode, flagPool);
+			StatusDisable(inputCode, nkfFlags);
 		}
 		break;
 	case 2:
 		if ((0x40 <= c && c <= 0x7e) || (0x80 <= c && c <= 0xfc)) {
 			StatusPushCh(inputCode, c);
 			if (Util::S2eConv(inputCode->buf[0], inputCode->buf[1],
-					&inputCode->buf[0], &inputCode->buf[1], flagPool) == 0) {
+					&inputCode->buf[0], &inputCode->buf[1], nkfFlags) == 0) {
 				SetCodeScore(inputCode, SCORE_CP932);
 				InputCode::StatusClear(inputCode);
 				break;
 			}
 		}
-		StatusDisable(inputCode, flagPool);
+		StatusDisable(inputCode, nkfFlags);
 		break;
 	case 3:
 		if ((0x40 <= c && c <= 0x7e) || (0x80 <= c && c <= 0xfc)) {
 			StatusPushCh(inputCode, c);
 			Util::S2eConv(inputCode->buf[0], inputCode->buf[1],
-					&inputCode->buf[0], &inputCode->buf[1], flagPool);
+					&inputCode->buf[0], &inputCode->buf[1], nkfFlags);
 			SetCodeScore(inputCode, SCORE_CP932);
 			InputCode::StatusClear(inputCode);
 		} else {
-			StatusDisable(inputCode, flagPool);
+			StatusDisable(inputCode, nkfFlags);
 		}
 		break;
 	}
 }
 
-void InputCode::WStatus(InputCode* inputCode, nkf_char c, FlagPool* flagPool) {
+void InputCode::WStatus(InputCode* inputCode, nkf_char c,
+		std::bitset<nkf_flag_num> nkfFlags) {
 
 	switch (inputCode->stat) {
 	case -1:
-		StatusCheck(inputCode, c, flagPool);
+		StatusCheck(inputCode, c, nkfFlags);
 		break;
 	case 0:
 		if (c <= DEL) {
@@ -168,7 +171,7 @@ void InputCode::WStatus(InputCode* inputCode, nkf_char c, FlagPool* flagPool) {
 			inputCode->stat = 3;
 			StatusPushCh(inputCode, c);
 		} else {
-			StatusDisable(inputCode, flagPool);
+			StatusDisable(inputCode, nkfFlags);
 		}
 		break;
 	case 1:
@@ -181,14 +184,14 @@ void InputCode::WStatus(InputCode* inputCode, nkf_char c, FlagPool* flagPool) {
 						&& inputCode->buf[2] == 0xbf);
 				Util::W2eConv(inputCode->buf[0], inputCode->buf[1],
 						inputCode->buf[2], &inputCode->buf[0],
-						&inputCode->buf[1], flagPool);
+						&inputCode->buf[1], nkfFlags);
 				if (!bom) {
-					CodeScore(inputCode, flagPool);
+					CodeScore(inputCode, nkfFlags);
 				}
 				StatusClear(inputCode);
 			}
 		} else {
-			StatusDisable(inputCode, flagPool);
+			StatusDisable(inputCode, nkfFlags);
 		}
 		break;
 	case 3:
@@ -199,7 +202,7 @@ void InputCode::WStatus(InputCode* inputCode, nkf_char c, FlagPool* flagPool) {
 				StatusClear(inputCode);
 			}
 		} else {
-			StatusDisable(inputCode, flagPool);
+			StatusDisable(inputCode, nkfFlags);
 		}
 		break;
 	}
@@ -220,8 +223,9 @@ nkf_char InputCode::WIconv16(nkf_char c2, nkf_char c1, nkf_char c0) {
 nkf_char InputCode::WIconv32(nkf_char c2, nkf_char c1, nkf_char c0) {
 }
 
-void InputCode::StatusCheck(InputCode* ptr, nkf_char c, FlagPool* flagPool) {
-	if (c <= DEL && flagPool->estab_f) {
+void InputCode::StatusCheck(InputCode* ptr, nkf_char c,
+		std::bitset<nkf_flag_num> nkfFlags) {
+	if (c <= DEL && nkfFlags[estab_f]) {
 		InputCode::StatusReset(ptr);
 	}
 }
@@ -240,16 +244,17 @@ void InputCode::StatusPushCh(InputCode* ptr, nkf_char c) {
 	ptr->buf[ptr->index++] = c;
 }
 
-void InputCode::StatusDisable(InputCode* ptr, FlagPool* flagPool) {
+void InputCode::StatusDisable(InputCode* ptr,
+		std::bitset<nkf_flag_num> nkfFlags) {
 	ptr->stat = -1;
 	ptr->buf[0] = -1;
-	CodeScore(ptr, flagPool);
-	if (LibNKF::inputEncoding->baseEncoding->name == ptr->name) {
-		GuessConv::SetIconv(FALSE, 0, flagPool);
-	}
+	CodeScore(ptr, nkfFlags);
+//	if (LibNKF::inputEncoding->baseEncoding->name == ptr->name) {
+//		GuessConv::SetIconv(FALSE, 0, nkfFlags);
+//	}
 }
 
-void InputCode::CodeScore(InputCode* ptr, FlagPool* flagPool) {
+void InputCode::CodeScore(InputCode* ptr, std::bitset<nkf_flag_num> nkfFlags) {
 	nkf_char c2 = ptr->buf[0];
 	nkf_char c1 = ptr->buf[1];
 
@@ -259,7 +264,7 @@ void InputCode::CodeScore(InputCode* ptr, FlagPool* flagPool) {
 		SetCodeScore(ptr, SCORE_KANA);
 	} else if (c2 == 0x8f) {
 		SetCodeScore(ptr, SCORE_X0212);
-	} else if (!Util::E2wConv(c2, c1, flagPool)) {
+	} else if (!Util::E2wConv(c2, c1, nkfFlags)) {
 		SetCodeScore(ptr, SCORE_NO_EXIST);
 	} else if ((c2 & 0x70) == 0x20) {
 		SetCodeScore(ptr, score_table_A0[c2 & 0x0f]);
@@ -302,4 +307,3 @@ void InputCode::SetCodeScore(InputCode* ptr, nkf_char score) {
 		ptr->score |= score;
 	}
 }
-

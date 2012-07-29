@@ -8,58 +8,45 @@
 #ifndef UTIL_H_
 #define UTIL_H_
 
-#include <cstdio>
-#include "FlagPool.h"
-#include "UTF8Table.h"
-#include "NKFEncoding.h"
+#include "NKFNativeEncoding.h"
 
 class Util {
 public:
 	/**
 	 * 文字コード名からNKFEncodingクラスを判別し、インスタンスを返す
 	 */
-	static NKFEncoding* NKFEncFind(const char *name);
+	static NKFNativeEncoding* NKFEncFind(const char *name);
 	/**
 	 * IDに対応するNKFEncodingクラスを返却する
 	 */
-	static NKFEncoding* NKFEncFromIndex(int idx);
-	/**
-	 * 文字コードを初期化する
-	 */
-	static NKFEncoding* NKFDefaultEncoding();
-	/**
-	 * EUC-JPからUTF-8への変換
-	 */
-	static nkf_char E2wConv(nkf_char c2, nkf_char c1, FlagPool* flagPool);
-	/**
-	 * Shift_JISからEUC-JPへの変換
-	 */
-	static nkf_char S2eConv(nkf_char c2, nkf_char c1, nkf_char *p2,
-			nkf_char *p1, FlagPool* flagPool);
-	/**
-	 * UTF-8からEUC-JPへの変換
-	 */
-	static nkf_char W2eConv(nkf_char c2, nkf_char c1, nkf_char c0, nkf_char *p2,
-			nkf_char *p1, FlagPool* flagPool);
+	static NKFNativeEncoding* NKFEncFromIndex(int idx);
 	/**
 	 * 文字コード名から文字コードに対応するIDを取得する
 	 */
 	static int NKFEncFindIndex(const char *name);
 	/**
-	 * 文字コードを表すIDを元にNKFEncodingクラスを設定して返す
+	 * 文字コードを初期化する
 	 */
-	static NKFEncoding* NKFEncodingTable(int idx);
+	static NKFNativeEncoding* NKFDefaultEncoding();
 	/**
-	 * OSのロケールからデフォルトのNKFEncodingを取得し返す
+	 * EUC-JPからUTF-8への変換
 	 */
-	static NKFEncoding* NKFLocaleEncoding();
-
-	static nkf_char E2sConv(nkf_char c2, nkf_char c1, nkf_char *p2,
-			nkf_char *p1, FlagPool* flagPool);
-	static nkf_char X0212Shift(nkf_char c);
-	static nkf_char X0212Unshift(nkf_char c);
-	static nkf_char W16eConv(nkf_char val, nkf_char *p2, nkf_char *p1, FlagPool* flagPool);
-
+	static nkf_char E2wConv(nkf_char c2, nkf_char c1, std::bitset<nkf_flag_num> nkfFlags);
+	/**
+	 * Shift_JISからEUC-JPへの変換
+	 */
+	static nkf_char S2eConv(nkf_char c2, nkf_char c1, nkf_char *p2,
+			nkf_char *p1, std::bitset<nkf_flag_num> nkfFlags);
+	/**
+	 * UTF-8からEUC-JPへの変換
+	 */
+	static nkf_char W2eConv(nkf_char c2, nkf_char c1, nkf_char c0, nkf_char *p2,
+			nkf_char *p1, std::bitset<nkf_flag_num> nkfFlags);
+private:
+	/**
+	 * OSのロケールカらデフォルトのNKFEncodingを取得し返す
+	 */
+	NKFNativeEncoding* NKFLocaleEncoding();
 	/**
 	 * UnicodeからUTF-8への変換
 	 */
@@ -74,13 +61,19 @@ public:
 	 * UnicodeからSJISへの変換
 	 */
 	static int UnicodeToJISCommon(nkf_char c2, nkf_char c1, nkf_char c0,
-			nkf_char *p2, nkf_char *p1, FlagPool* flagPool);
+			nkf_char *p2, nkf_char *p1, std::bitset<nkf_flag_num> nkfFlags);
 	/**
 	 * UnicodeからSJISへの変換
 	 */
 	static int UnicodeToJISCommon2(nkf_char c1, nkf_char c0,
 			const unsigned short * const *pp, nkf_char psize, nkf_char *p2,
-			nkf_char *p1, FlagPool* flagPool);
+			nkf_char *p1, std::bitset<nkf_flag_num> nkfFlags);
 
+	static nkf_char E2sConv(nkf_char c2, nkf_char c1, nkf_char *p2,
+			nkf_char *p1, std::bitset<nkf_flag_num> nkfFlags);
+	static nkf_char X0212Shift(nkf_char c);
+	static nkf_char X0212Unshift(nkf_char c);
+	static nkf_char W16eConv(nkf_char val, nkf_char *p2, nkf_char *p1, std::bitset<nkf_flag_num> nkfFlags);
 };
+
 #endif /* UTIL_H_ */

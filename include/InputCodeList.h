@@ -1,6 +1,6 @@
 /*
  * InputCodeList.h
- * GuessConvクラスで使用する文字コードごとのメソッドと変数を設定するクラス
+ * 使用する文字コードごとのメソッドと変数を設定するクラス
  *  Created on: 2012/07/17
  * Contributor: Hiroyuki Nagata
  */
@@ -9,11 +9,8 @@
 #define INPUTCODELIST_H_
 
 #include <string>
-#include "FlagPool.h"
+#include "FlagSet.h"
 #include "Util.h"
-#include "NKFNativeEncodings.h"
-#include "NKFEncoding.h"
-#include "LibNKF.h"
 
 #define PREFIX_EUCG3    NKF_INT32_C(0x8F00)
 #define CLASS_MASK      NKF_INT32_C(0xFF000000)
@@ -59,8 +56,8 @@ public:
 	nkf_char score;
 	nkf_char index;
 	nkf_char buf[3];
-	void StatusFunc(InputCode* inputCode, nkf_char c, FlagPool* flagPool);
-	nkf_char IconvFunc(nkf_char c2, nkf_char c1, nkf_char c0, FlagPool* flagPool);
+	void StatusFunc(InputCode* inputCode, nkf_char c, std::bitset<nkf_flag_num> nkfFlags);
+	nkf_char IconvFunc(nkf_char c2, nkf_char c1, nkf_char c0, std::bitset<nkf_flag_num> nkfFlags);
 	int _file_stat;
 
 	/**
@@ -76,9 +73,9 @@ private:
 	/**
 	 * StatusFunc内部のstatus関数
 	 */
-	void EStatus(InputCode* inputCode, nkf_char c, FlagPool* flagPool);
-	void SStatus(InputCode* inputCode, nkf_char c, FlagPool* flagPool);
-	void WStatus(InputCode* inputCode, nkf_char c, FlagPool* flagPool);
+	void EStatus(InputCode* inputCode, nkf_char c, std::bitset<nkf_flag_num> nkfFlags);
+	void SStatus(InputCode* inputCode, nkf_char c, std::bitset<nkf_flag_num> nkfFlags);
+	void WStatus(InputCode* inputCode, nkf_char c, std::bitset<nkf_flag_num> nkfFlags);
 	/**
 	 * IConv関数
 	 */
@@ -90,12 +87,12 @@ private:
 	/**
 	 * その他のコールバック関数
 	 */
-	static void StatusCheck(InputCode* ptr, nkf_char c, FlagPool* flagPool);
+	static void StatusCheck(InputCode* ptr, nkf_char c, std::bitset<nkf_flag_num> nkfFlags);
 	static void StatusReset(InputCode* ptr);
 	static void StatusClear(InputCode* ptr);
 	static void StatusPushCh(InputCode* ptr, nkf_char c);
-	static void StatusDisable(InputCode* ptr, FlagPool* flagPool);
-	static void CodeScore(InputCode* ptr, FlagPool* flagPool);
+	static void StatusDisable(InputCode* ptr, std::bitset<nkf_flag_num> nkfFlags);
+	static void CodeScore(InputCode* ptr, std::bitset<nkf_flag_num> nkfFlags);
 	static void SetCodeScore(InputCode* ptr, nkf_char score);
 };
 

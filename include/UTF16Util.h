@@ -8,7 +8,7 @@
 #ifndef UTF16UTIL_H_
 #define UTF16UTIL_H_
 
-#include "FlagPool.h"
+#include "FlagSet.h"
 #include "NKFBaseConfig.h"
 
 /**
@@ -20,7 +20,10 @@
 
 class UTF16Util {
 public:
-	static nkf_char NKFIconvUTF16(nkf_char c1, nkf_char c2, nkf_char c3, nkf_char c4);
+	nkf_char NKFIconvUTF16(nkf_char c1, nkf_char c2, nkf_char c3, nkf_char c4);
+	void SetInputEndian(int endian);
+private:
+	int inputEndian;
 };
 
 #endif /* UTF16UTIL_H_ */
