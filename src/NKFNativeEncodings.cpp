@@ -376,8 +376,8 @@ void NKFNativeEncoding::SOconv(nkf_char c2, nkf_char c1, FlagPool* flagPool) {
 
 		if (flagPool->cp932inv_f
 				&& CP932INV_TABLE_BEGIN <= c2&& c2 <= CP932INV_TABLE_END) {
-			nkf_char c = UTF8Table::cp932inv[c2 - CP932INV_TABLE_BEGIN][c1
-					- 0x40];
+			UTF8Table* table;
+			nkf_char c = table->cp932inv[c2 - CP932INV_TABLE_BEGIN][c1 - 0x40];
 			if (c) {
 				c2 = c >> 8;
 				c1 = c & 0xff;
