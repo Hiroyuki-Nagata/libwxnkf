@@ -43,59 +43,65 @@ public:
 	int endian;
 	/**
 	 * 入出力のモード
+	 * input_mode, output_modeにあたる
 	 */
 	int ioMode;
 
 	std::string iconvName;
 	std::string oconvName;
-	nkf_char Iconv(nkf_char c2, nkf_char c1, nkf_char c0, std::bitset<nkf_flag_num> nkfFlags);
-	void Oconv(nkf_char c2, nkf_char c1, std::bitset<nkf_flag_num> nkfFlags, std::wstring oConvStr);
+
+	nkf_char Iconv(nkf_char c2, nkf_char c1, nkf_char c0, std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr);
+	void Oconv(nkf_char c2, nkf_char c1, std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr);
 
 private:
 	/**
 	 * s_iconv
 	 */
-	nkf_char SIconv(nkf_char c2, nkf_char c1, nkf_char c0, std::bitset<nkf_flag_num> nkfFlags);
+	nkf_char SIconv(nkf_char c2, nkf_char c1, nkf_char c0, std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr);
 	/**
 	 * e_iconv
 	 */
-	nkf_char EIconv(nkf_char c2, nkf_char c1, nkf_char c0, std::bitset<nkf_flag_num> nkfFlags);
+	nkf_char EIconv(nkf_char c2, nkf_char c1, nkf_char c0, std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr);
 	/**
 	 * w_iconv
 	 */
-	nkf_char WIconv(nkf_char c2, nkf_char c1, nkf_char c0, std::bitset<nkf_flag_num> nkfFlags);
+	nkf_char WIconv(nkf_char c1, nkf_char c2, nkf_char c3, std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr);
 	/**
 	 * w_iconv16
 	 */
-	nkf_char WIconv16(nkf_char c2, nkf_char c1, nkf_char c0, std::bitset<nkf_flag_num> nkfFlags);
+	nkf_char WIconv16(nkf_char c2, nkf_char c1, nkf_char c0, std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr);
 	/**
 	 * w_iconv32
 	 */
-	nkf_char WIconv32(nkf_char c2, nkf_char c1, nkf_char c0, std::bitset<nkf_flag_num> nkfFlags);
+	nkf_char WIconv32(nkf_char c2, nkf_char c1, nkf_char c0, std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr);
 	/**
 	 * j_oconv
 	 */
-	void JOconv(nkf_char c2, nkf_char c1, std::bitset<nkf_flag_num> nkfFlags, std::wstring oConvStr);
+	void JOconv(nkf_char c2, nkf_char c1, std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr);
 	/**
 	 * s_oconv
 	 */
-	void SOconv(nkf_char c2, nkf_char c1, std::bitset<nkf_flag_num> nkfFlags, std::wstring oConvStr);
+	void SOconv(nkf_char c2, nkf_char c1, std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr);
 	/**
 	 * e_oconv
 	 */
-	void EOconv(nkf_char c2, nkf_char c1, std::bitset<nkf_flag_num> nkfFlags, std::wstring oConvStr);
+	void EOconv(nkf_char c2, nkf_char c1, std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr);
 	/**
 	 * w_oconv
 	 */
-	void WOconv(nkf_char c2, nkf_char c1, std::bitset<nkf_flag_num> nkfFlags, std::wstring oConvStr);
+	void WOconv(nkf_char c2, nkf_char c1, std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr);
 	/**
 	 * w_oconv16
 	 */
-	void WOconv16(nkf_char c2, nkf_char c1, std::bitset<nkf_flag_num> nkfFlags, std::wstring oConvStr);
+	void WOconv16(nkf_char c2, nkf_char c1, std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr);
 	/**
 	 * w_oconv32
 	 */
-	void WOconv32(nkf_char c2, nkf_char c1, std::bitset<nkf_flag_num> nkfFlags, std::wstring oConvStr);
+	void WOconv32(nkf_char c2, nkf_char c1, std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr);
+	/**
+	 * Asciiコードが混じった場合のエスケープシーケンス
+	 */
+	void OutputAsciiEscapeSequence(int mode, std::wstring* oConvStr);
 };
 
 #endif /* NKFNATIVEENCODING_H_ */

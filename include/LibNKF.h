@@ -147,6 +147,7 @@ private:
 	 * LibNKFクラス内で持つしかない変数
 	 */
 	unsigned char prefix_table[256];
+
 	char* backup_suffix;
 	int fold_len;
 	int fold_margin;
