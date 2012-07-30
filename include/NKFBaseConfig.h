@@ -134,6 +134,17 @@ enum nkf_encodings {
 #define UNICODE_BMP_MAX NKF_INT32_C(0x0000FFFF)
 #define UNICODE_MAX     NKF_INT32_C(0x0010FFFF)
 
+/* UCS Mapping
+ * 0: Shift_JIS, eucJP-ascii
+ * 1: eucJP-ms
+ * 2: CP932, CP51932
+ * 3: CP10001
+ */
+#define UCS_MAP_ASCII   0
+#define UCS_MAP_MS      1
+#define UCS_MAP_CP932   2
+#define UCS_MAP_CP10001 3
+
 /* I don't trust portablity of toupper */
 #define nkf_toupper(c)  (('a'<=c && c<='z')?(c-('a'-'A')):c)
 #define nkf_isoctal(c)  ('0'<=c && c<='7')

@@ -1157,7 +1157,7 @@ int LibNKF::ModuleConnection() {
 	// 出力する文字コードが設定されていなければ設定する
 	if (!outputEncoding->id)
 		outputEncoding = Util::NKFDefaultEncoding();
-	// デフォルトのエンコードが設定できなければ出力しないか推測モード
+	// デフォルトのエンコードが設定できなければ出力しないか推測するモード
 	if (!outputEncoding->id) {
 		if (nkfFlags[noout_f] || nkfFlags[guess_f]) {
 			outputEncoding = Util::NKFEncFromIndex(ISO_2022_JP);

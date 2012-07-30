@@ -6,11 +6,11 @@
 
 # target and sources
 TARGET  = libnkfcpp.a
-SOURCES = LibNKF.cpp			 \
+SOURCES = Util.cpp               \
+		  LibNKF.cpp			 \
 		  FlagSet.cpp			 \
 		  UTF8Table.cpp			 \
 		  NKFNativeEncoding.cpp  \
-		  Util.cpp               \
 		  UTF16Util.cpp			 \
 		  InputCodeList.cpp
 		  #GuessConv.cpp			 \		 

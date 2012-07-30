@@ -42,7 +42,6 @@ public:
 	 */
 	static nkf_char W2eConv(nkf_char c2, nkf_char c1, nkf_char c0, nkf_char *p2,
 			nkf_char *p1, std::bitset<nkf_flag_num> nkfFlags);
-private:
 	/**
 	 * OSのロケールカらデフォルトのNKFEncodingを取得し返す
 	 */
@@ -68,9 +67,12 @@ private:
 	static int UnicodeToJISCommon2(nkf_char c1, nkf_char c0,
 			const unsigned short * const *pp, nkf_char psize, nkf_char *p2,
 			nkf_char *p1, std::bitset<nkf_flag_num> nkfFlags);
-
+	/**
+	 *
+	 */
 	static nkf_char E2sConv(nkf_char c2, nkf_char c1, nkf_char *p2,
 			nkf_char *p1, std::bitset<nkf_flag_num> nkfFlags);
+
 	static nkf_char X0212Shift(nkf_char c);
 	static nkf_char X0212Unshift(nkf_char c);
 	static nkf_char W16eConv(nkf_char val, nkf_char *p2, nkf_char *p1, std::bitset<nkf_flag_num> nkfFlags);
