@@ -8,24 +8,21 @@
 #include "Util.h"
 
 /**
- * 文字コード名からNKFEncodingクラスを判別し、インスタンスを返す
+ * 文字コード名からNKFEncodingクラスを判別し、引数のオブジェクトに設定する
  */
-NKFNativeEncoding* Util::NKFEncFind(const char* name) {
+void Util::NKFEncFind(const char *name, NKFNativeEncoding* enc) {
+
+	// indexを設定する
 	int idx = -1;
 	idx = NKFEncFindIndex(name);
-
-	if (idx < 0)
-		return 0;
-
-	return NKFEncFromIndex(idx);
+	NKFEncFromIndex(idx, enc);
 }
 /**
  * IDに対応するNKFEncodingクラスを返却する
  */
-NKFNativeEncoding* Util::NKFEncFromIndex(int idx) {
+void Util::NKFEncFromIndex(int idx, NKFNativeEncoding* enc) {
 
 	// 返却用のクラスのインスタンス
-	NKFNativeEncoding* enc = 0;
 	enc->id = idx;
 
 	/*
@@ -229,8 +226,6 @@ NKFNativeEncoding* Util::NKFEncFromIndex(int idx) {
 		enc->baseName = "";
 		enc = 0;
 	}
-
-	return enc;
 }
 /**
  * 文字コード名から文字コードに対応するIDを取得する
@@ -266,25 +261,25 @@ int Util::NKFEncFindIndex(const char* name) {
 		switch (name[1]) {
 
 		case 'P': // 「CP**」の場合
-			if (strcmp("CP50220", name)) {
+			if (StrncmpFromHead("CP50220", name)) {
 				id = CP50220;
-			} else if (strcmp("CP50221", name)) {
+			} else if (StrncmpFromHead("CP50221", name)) {
 				id = CP50221;
-			} else if (strcmp("CP50222", name)) {
+			} else if (StrncmpFromHead("CP50222", name)) {
 				id = CP50222;
-			} else if (strcmp("CP932", name)) {
+			} else if (StrncmpFromHead("CP932", name)) {
 				id = WINDOWS_31J;
-			} else if (strcmp("CP10001", name)) {
+			} else if (StrncmpFromHead("CP10001", name)) {
 				id = CP10001;
-			} else if (strcmp("CP51932", name)) {
+			} else if (StrncmpFromHead("CP51932", name)) {
 				id = CP51932;
 			}
 			break;
 
 		case 'S': // 「CS**」の場合
-			if (strcmp("CSISO2022JP", name)) {
+			if (StrncmpFromHead("CSISO2022JP", name)) {
 				id = CP50221;
-			} else if (strcmp("CSWINDOWS31J", name)) {
+			} else if (StrncmpFromHead("CSWINDOWS31J", name)) {
 				id = WINDOWS_31J;
 			}
 			break;
@@ -295,29 +290,29 @@ int Util::NKFEncFindIndex(const char* name) {
 		switch (name[3]) {
 
 		case 'J': // 「EUCJ**」の場合
-			if (strcmp("EUCJP", name)) {
+			if (StrncmpFromHead("EUCJP", name)) {
 				id = EUC_JP;
-			} else if (strcmp("EUCJP-NKF", name)) {
+			} else if (StrncmpFromHead("EUCJP-NKF", name)) {
 				id = EUCJP_NKF;
-			} else if (strcmp("EUCJP-MS", name)) {
+			} else if (StrncmpFromHead("EUCJP-MS", name)) {
 				id = EUCJP_MS;
-			} else if (strcmp("EUCJPMS", name)) {
+			} else if (StrncmpFromHead("EUCJPMS", name)) {
 				id = EUCJP_MS;
-			} else if (strcmp("EUCJP-ASCII", name)) {
+			} else if (StrncmpFromHead("EUCJP-ASCII", name)) {
 				id = EUCJP_ASCII;
 			}
 			break;
 
 		case '-': // 「EUC-**」の場合
-			if (strcmp("EUC-JP", name)) {
+			if (StrncmpFromHead("EUC-JP", name)) {
 				id = EUC_JP;
-			} else if (strcmp("EUC-JP-MS", name)) {
+			} else if (StrncmpFromHead("EUC-JP-MS", name)) {
 				id = EUCJP_MS;
-			} else if (strcmp("EUC-JP-ASCII", name)) {
+			} else if (StrncmpFromHead("EUC-JP-ASCII", name)) {
 				id = EUCJP_ASCII;
-			} else if (strcmp("EUC-JISX0213", name)) {
+			} else if (StrncmpFromHead("EUC-JISX0213", name)) {
 				id = EUC_JISX0213;
-			} else if (strcmp("EUC-JIS-2004", name)) {
+			} else if (StrncmpFromHead("EUC-JIS-2004", name)) {
 				id = EUC_JIS_2004;
 			}
 			break;
@@ -325,23 +320,23 @@ int Util::NKFEncFindIndex(const char* name) {
 		break;
 
 	case 'I': // 最初の文字が「I」の場合, ISO**
-		if (strcmp("ISO-2022-JP", name)) {
+		if (StrncmpFromHead("ISO-2022-JP", name)) {
 			id = ISO_2022_JP;
-		} else if (strcmp("ISO2022JP-CP932", name)) {
+		} else if (StrncmpFromHead("ISO2022JP-CP932", name)) {
 			id = CP50220;
-		} else if (strcmp("ISO-2022-JP-1", name)) {
+		} else if (StrncmpFromHead("ISO-2022-JP-1", name)) {
 			id = ISO_2022_JP_1;
-		} else if (strcmp("ISO-2022-JP-3", name)) {
+		} else if (StrncmpFromHead("ISO-2022-JP-3", name)) {
 			id = ISO_2022_JP_3;
-		} else if (strcmp("ISO-2022-JP-2004", name)) {
+		} else if (StrncmpFromHead("ISO-2022-JP-2004", name)) {
 			id = ISO_2022_JP_2004;
 		}
 		break;
 
 	case 'M': // 最初の文字が「M」の場合
-		if (strcmp("MS_Kanji", name)) {
+		if (StrncmpFromHead("MS_Kanji", name)) {
 			id = SHIFT_JIS;
-		} else if (strcmp("MS932", name)) {
+		} else if (StrncmpFromHead("MS932", name)) {
 			id = WINDOWS_31J;
 		}
 		break;
@@ -355,13 +350,13 @@ int Util::NKFEncFindIndex(const char* name) {
 		break;
 
 	case 'S': // 最初の文字が「S」の場合
-		if (strcmp("SHIFT_JIS", name)) {
+		if (StrncmpFromHead("SHIFT_JIS", name)) {
 			id = SHIFT_JIS;
-		} else if (strcmp("SJIS", name)) {
+		} else if (StrncmpFromHead("SJIS", name)) {
 			id = SHIFT_JIS;
-		} else if (strcmp("SHIFT_JISX0213", name)) {
+		} else if (StrncmpFromHead("SHIFT_JISX0213", name)) {
 			id = SHIFT_JISX0213;
-		} else if (strcmp("SHIFT_JIS-2004", name)) {
+		} else if (StrncmpFromHead("SHIFT_JIS-2004", name)) {
 			id = SHIFT_JIS_2004;
 		}
 		break;
@@ -371,13 +366,13 @@ int Util::NKFEncFindIndex(const char* name) {
 		switch (name[4]) { // 「UTF-*」の場合
 
 		case '8':
-			if (strcmp("UTF-8", name)) {
+			if (StrncmpFromHead("UTF-8", name)) {
 				id = UTF_8;
-			} else if (strcmp("UTF-8N", name)) {
+			} else if (StrncmpFromHead("UTF-8N", name)) {
 				id = UTF_8N;
-			} else if (strcmp("UTF-8-BOM", name)) {
+			} else if (StrncmpFromHead("UTF-8-BOM", name)) {
 				id = UTF_8_BOM;
-			} else if (strcmp("UTF-8-MAC", name)) {
+			} else if (StrncmpFromHead("UTF-8-MAC", name)) {
 				id = UTF8_MAC;
 			}
 			break;
@@ -387,29 +382,29 @@ int Util::NKFEncFindIndex(const char* name) {
 			break;
 
 		case '1':
-			if (strcmp("UTF-16", name)) {
+			if (StrncmpFromHead("UTF-16", name)) {
 				id = UTF_16;
-			} else if (strcmp("UTF-16BE", name)) {
+			} else if (StrncmpFromHead("UTF-16BE", name)) {
 				id = UTF_16BE;
-			} else if (strcmp("UTF-16BE-BOM", name)) {
+			} else if (StrncmpFromHead("UTF-16BE-BOM", name)) {
 				id = UTF_16BE_BOM;
-			} else if (strcmp("UTF-16LE", name)) {
+			} else if (StrncmpFromHead("UTF-16LE", name)) {
 				id = UTF_16LE;
-			} else if (strcmp("UTF-16LE-BOM", name)) {
+			} else if (StrncmpFromHead("UTF-16LE-BOM", name)) {
 				id = UTF_16LE_BOM;
 			}
 			break;
 
 		case '3':
-			if (strcmp("UTF-32", name)) {
+			if (StrncmpFromHead("UTF-32", name)) {
 				id = UTF_32;
-			} else if (strcmp("UTF-32BE", name)) {
+			} else if (StrncmpFromHead("UTF-32BE", name)) {
 				id = UTF_32BE;
-			} else if (strcmp("UTF-32BE-BOM", name)) {
+			} else if (StrncmpFromHead("UTF-32BE-BOM", name)) {
 				id = UTF_32BE_BOM;
-			} else if (strcmp("UTF-32LE", name)) {
+			} else if (StrncmpFromHead("UTF-32LE", name)) {
 				id = UTF_32LE;
-			} else if (strcmp("UTF-32LE-BOM", name)) {
+			} else if (StrncmpFromHead("UTF-32LE-BOM", name)) {
 				id = UTF_32LE_BOM;
 			}
 			break;
@@ -442,8 +437,7 @@ NKFNativeEncoding* Util::NKFDefaultEncoding() {
 /**
  * OSのロケールカらデフォルトのNKFEncodingを取得し返す
  */
-NKFNativeEncoding* Util::NKFLocaleEncoding() {
-	NKFNativeEncoding* enc;
+void Util::NKFLocaleEncoding(NKFNativeEncoding* enc) {
 	const char* encname;
 #ifdef HAVE_LANGINFO_H
 	encname = nl_langinfo(CODESET);
@@ -454,9 +448,7 @@ NKFNativeEncoding* Util::NKFLocaleEncoding() {
 #endif
 	if (encname)
 		// encnameに何らかの文字列が設定されていた場合
-		enc = Util::NKFEncFind(encname);
-
-	return enc;
+		Util::NKFEncFind(encname, enc);
 }
 /**
  *
@@ -965,4 +957,14 @@ void Util::NKFUnicodeToUTF8(nkf_char val, nkf_char* p1, nkf_char* p2,
 		*p4 = 0;
 	}
 }
+/**
+ * ２つの引数を先頭から比較してboolを返す、比較する長さは１つ目の引数の長さ
+ * 完全一致した場合のみtrueを返す
+ */
+bool Util::StrncmpFromHead(const char* charCode, const char* name) {
+	size_t cmpLen = strlen(charCode);
+	int ret = strncmp(charCode, name, cmpLen);
+	return ret == 0 ? true : false;
+}
+
 

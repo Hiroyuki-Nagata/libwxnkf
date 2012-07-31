@@ -117,11 +117,11 @@ int LibNKF::SetOption(const std::string option) {
 					exit(EXIT_SUCCESS);
 				}
 				if (strcmp(long_option[i].name, "ic=") == 0) {
-					inputEncoding = Util::NKFEncFind((char *) p);
+					Util::NKFEncFind((char *) p, inputEncoding);
 					continue;
 				}
 				if (strcmp(long_option[i].name, "oc=") == 0) {
-					outputEncoding = Util::NKFEncFind((char *) p);
+					Util::NKFEncFind((char *) p, outputEncoding);
 					/* if (enc <= 0) continue; */
 					if (!outputEncoding)
 						continue;
@@ -323,17 +323,17 @@ int LibNKF::SetOption(const std::string option) {
 			continue;
 		case 'j': /* JIS output */
 		case 'n':
-			outputEncoding = Util::NKFEncFromIndex(ISO_2022_JP);
+			Util::NKFEncFromIndex(ISO_2022_JP, outputEncoding);
 			continue;
 		case 'e': /* AT&T EUC output */
-			outputEncoding = Util::NKFEncFromIndex(EUCJP_NKF);
+			Util::NKFEncFromIndex(EUCJP_NKF, outputEncoding);
 			continue;
 		case 's': /* SJIS output */
-			outputEncoding = Util::NKFEncFromIndex(SHIFT_JIS);
+			Util::NKFEncFromIndex(SHIFT_JIS, outputEncoding);
 			continue;
 		case 'l': /* ISO8859 Latin-1 support, no conversion */
 			nkfFlags[iso8859_f] = TRUE; /* Only compatible with ISO-2022-JP */
-			inputEncoding = Util::NKFEncFromIndex(ISO_8859_1);
+			Util::NKFEncFromIndex(ISO_8859_1, inputEncoding);
 			continue;
 		case 'i': /* Kanji IN ESC-$-@/B */
 			if (*cp == '@' || *cp == 'B')
@@ -377,10 +377,10 @@ int LibNKF::SetOption(const std::string option) {
 				cp++;
 				if (cp[0] == '0') {
 					cp++;
-					outputEncoding = Util::NKFEncFromIndex(UTF_8N);
+					Util::NKFEncFromIndex(UTF_8N, outputEncoding);
 				} else {
 					nkfFlags[output_bom_f] = TRUE;
-					outputEncoding = Util::NKFEncFromIndex(UTF_8_BOM);
+					Util::NKFEncFromIndex(UTF_8_BOM, outputEncoding);
 				}
 			} else {
 				int enc_idx;
@@ -391,7 +391,7 @@ int LibNKF::SetOption(const std::string option) {
 					cp += 2;
 					enc_idx = UTF_32;
 				} else {
-					outputEncoding = Util::NKFEncFromIndex(UTF_8);
+					Util::NKFEncFromIndex(UTF_8, outputEncoding);
 					continue;
 				}
 				if (cp[0] == 'L') {
@@ -419,14 +419,14 @@ int LibNKF::SetOption(const std::string option) {
 									(outputEncoding->endian == ENDIAN_LITTLE ?
 											UTF_32LE_BOM : UTF_32BE_BOM);
 				}
-				outputEncoding = Util::NKFEncFromIndex(enc_idx);
+				Util::NKFEncFromIndex(enc_idx, outputEncoding);
 			}
 			continue;
 
 		case 'W': /* UTF input */
 			if (cp[0] == '8') {
 				cp++;
-				inputEncoding = Util::NKFEncFromIndex(UTF_8);
+				Util::NKFEncFromIndex(UTF_8, inputEncoding);
 			} else {
 				int enc_idx;
 				if ('1' == cp[0] && '6' == cp[1]) {
@@ -438,7 +438,7 @@ int LibNKF::SetOption(const std::string option) {
 					inputEncoding->endian = ENDIAN_BIG;
 					enc_idx = UTF_32;
 				} else {
-					inputEncoding = Util::NKFEncFromIndex(UTF_8);
+					Util::NKFEncFromIndex(UTF_8, inputEncoding);
 					continue;
 				}
 				if (cp[0] == 'L') {
@@ -454,19 +454,19 @@ int LibNKF::SetOption(const std::string option) {
 										UTF_16LE : UTF_16BE) :
 								(inputEncoding->endian == ENDIAN_LITTLE ?
 										UTF_32LE : UTF_32BE));
-				inputEncoding = Util::NKFEncFromIndex(enc_idx);
+				Util::NKFEncFromIndex(enc_idx, inputEncoding);
 			}
 			continue;
 
 			/* Input code assumption */
 		case 'J': /* ISO-2022-JP input */
-			inputEncoding = Util::NKFEncFromIndex(ISO_2022_JP);
+			Util::NKFEncFromIndex(ISO_2022_JP, inputEncoding);
 			continue;
 		case 'E': /* EUC-JP input */
-			inputEncoding = Util::NKFEncFromIndex(EUCJP_NKF);
+			Util::NKFEncFromIndex(EUCJP_NKF, inputEncoding);
 			continue;
 		case 'S': /* Shift_JIS input */
-			inputEncoding = Util::NKFEncFromIndex(SHIFT_JIS);
+			Util::NKFEncFromIndex(SHIFT_JIS, inputEncoding);
 			continue;
 		case 'Z': /* Convert X0208 alphabet to asii */
 			/* alpha_f
@@ -679,6 +679,13 @@ int LibNKF::Convert(const std::wstring src, std::wstring dst) {
 	return 0;
 }
 /**
+ * 文字コードを変換する処理のラッパーで、外部に見せるメソッド
+ */
+std::wstring LibNKF::Convert(FILE* f) {
+	KanjiConvert(f);
+	return *oConvStr;
+}
+/**
  * このクラスの主要メソッド：
  * ファイルポインタを引数に文字コードを変換する
  */
@@ -692,8 +699,8 @@ int LibNKF::KanjiConvert(FILE* f) {
 	//	is_8bit = TRUE;
 	//}
 
-	inputEncoding->id = ASCII;
-	outputEncoding->id = ASCII;
+	//inputEncoding->id = ASCII;
+	//outputEncoding->id = ASCII;
 
 	// 設定されたフラグから使用するクラスとメソッドを決定する
 	if (ModuleConnection() < 0) {
@@ -1151,6 +1158,9 @@ int LibNKF::KanjiConvert(FILE* f) {
 //			debug(result->name);
 		}
 	}
+
+	printf("%d\n", oConvStr->length()); //<< oConvStr->length() << "x2バイト";
+
 	return 0;
 }
 
@@ -1166,7 +1176,7 @@ int LibNKF::ModuleConnection() {
 	// デフォルトのエンコードが設定できなければ出力しないか推測するモード
 	if (!outputEncoding->id) {
 		if (nkfFlags[noout_f] || nkfFlags[guess_f]) {
-			outputEncoding = Util::NKFEncFromIndex(ISO_2022_JP);
+			Util::NKFEncFromIndex(ISO_2022_JP, outputEncoding);
 		} else {
 			return -1;
 		}
@@ -1562,4 +1572,5 @@ void LibNKF::SetInputMode(int mode) {
 	inputEncoding->ioMode = mode;
 	inputEncoding->baseName = "ISO-2022-JP";
 }
+
 

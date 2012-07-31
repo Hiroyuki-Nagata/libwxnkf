@@ -15,11 +15,11 @@ public:
 	/**
 	 * 文字コード名からNKFEncodingクラスを判別し、インスタンスを返す
 	 */
-	static NKFNativeEncoding* NKFEncFind(const char *name);
+	static void NKFEncFind(const char *name, NKFNativeEncoding* enc);
 	/**
 	 * IDに対応するNKFEncodingクラスを返却する
 	 */
-	static NKFNativeEncoding* NKFEncFromIndex(int idx);
+	static void NKFEncFromIndex(int idx, NKFNativeEncoding* enc);
 	/**
 	 * 文字コード名から文字コードに対応するIDを取得する
 	 */
@@ -45,7 +45,7 @@ public:
 	/**
 	 * OSのロケールカらデフォルトのNKFEncodingを取得し返す
 	 */
-	NKFNativeEncoding* NKFLocaleEncoding();
+	static void NKFLocaleEncoding(NKFNativeEncoding* enc);
 	/**
 	 * UnicodeからUTF-8への変換
 	 */
@@ -76,6 +76,12 @@ public:
 	static nkf_char X0212Shift(nkf_char c);
 	static nkf_char X0212Unshift(nkf_char c);
 	static nkf_char W16eConv(nkf_char val, nkf_char *p2, nkf_char *p1, std::bitset<nkf_flag_num> nkfFlags);
+
+private:
+	/**
+	 * ２つの引数を先頭から比較してboolを返す、比較する長さは１つ目の引数の長さ
+	 */
+	static bool StrncmpFromHead(const char* charCode, const char* name);
 };
 
 #endif /* UTIL_H_ */

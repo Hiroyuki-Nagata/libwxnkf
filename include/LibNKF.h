@@ -84,6 +84,10 @@ public:
 	 */
 	int Convert(const std::wstring src, std::wstring dst);
 	/**
+	 * 文字コードを変換する処理のラッパーで、外部に見せるメソッド
+	 */
+	std::wstring Convert(FILE* f);
+	/**
 	 * NKFのフラグのセット
 	 */
 	std::bitset<nkf_flag_num> nkfFlags;
