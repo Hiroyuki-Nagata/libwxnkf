@@ -49,6 +49,7 @@ static const struct {
 				"cp932inv", "" }, { "prefix=", "" }, };
 
 class LibNKF {
+
 public:
 	/**
 	 * コンストラクタ
@@ -122,6 +123,10 @@ private:
 	 */
 	void SetOutputEncoding(NKFNativeEncoding *enc);
 	/**
+	 * 入力文字コードを設定する
+	 */
+	void SetInputMode(int mode);
+	/**
 	 * BOMが存在するかチェックし、存在すれば無視する
 	 */
 	void CheckBom(FILE *f);
@@ -152,6 +157,7 @@ private:
 	int fold_len;
 	int fold_margin;
 	int mimeout_mode; /* 0, -1, 'Q', 'B', 1, 2 */
+	int shift_mode;/* 0 or 1 */
 };
 
 #endif /* LIBNKF_H_ */

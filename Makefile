@@ -13,10 +13,11 @@ SOURCES = Util.cpp               \
 		  NKFNativeEncoding.cpp  \
 		  UTF16Util.cpp			 \
 		  InputCodeList.cpp
-		  #GuessConv.cpp			 \		 
+		  #GuessConv.cpp 
 OBJECTS = $(SOURCES:.cpp=.o)
 # sources for dependency
 DEPSRCS = $(shell find src/ -name '*.cpp')
+DEP		= dep
 # test sources and objects
 TESTS	= test
 TESTSBIN= test1
@@ -39,7 +40,7 @@ ARFLAG	:= crsv
 # dummy target
 .PHONY: dep clean test
 # make all
-all:	$(TARGET) $(OBJECTS) $(TESTS)
+all:	$(DEP) $(TARGET) $(OBJECTS) $(TESTS)
 # suffix rule
 .cpp.o:
 		$(CXX) $(CXXFLAGS) -c $<

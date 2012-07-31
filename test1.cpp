@@ -13,13 +13,14 @@
 int main() {
 	std::cout << "libnkfcppの動作確認テスト\n" << std::endl;
 
-	LibNKF* nkf;
+	LibNKF* nkf = new LibNKF();
 	nkf->ShowUsage();
 
 	std::cout << "メソッドを呼んでみます\n" << std::endl;
-	nkf->Test();
+	nkf->SetOption("--ic=CP932 --oc=UTF-8");
 
 	std::cout << "終わりです\n" << std::endl;
+	delete nkf;
 }
 
 

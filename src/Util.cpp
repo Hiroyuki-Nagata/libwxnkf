@@ -533,7 +533,7 @@ nkf_char Util::S2eConv(nkf_char c2, nkf_char c1, nkf_char* p2, nkf_char* p1,
 		}
 	}
 	if (nkfFlags[cp932inv_f]
-			&& CP932INV_TABLE_BEGIN <= c2 && c2 <= CP932INV_TABLE_END) {
+			&& CP932INV_TABLE_BEGIN <= c2&& c2 <= CP932INV_TABLE_END) {
 		UTF8Table* table;
 		//val = table->cp932inv[c2 - CP932INV_TABLE_BEGIN][c1 - 0x40];
 		if (val) {
@@ -908,5 +908,61 @@ nkf_char Util::NKFUTF8ToUnicode(nkf_char c1, nkf_char c2, nkf_char c3,
 		return -1;
 	}
 	return wc;
+}
+
+nkf_char Util::W16eConv(nkf_char val, nkf_char* p2, nkf_char* p1,
+		std::bitset<nkf_flag_num> nkfFlags) {
+
+	nkf_char c1, c2, c3, c4;
+	nkf_char ret = 0;
+	val &= VALUE_MASK;
+	if (val < 0x80) {
+		*p2 = 0;
+		*p1 = val;
+	} else if (nkf_char_unicode_bmp_p(val)) {
+		Util::NKFUnicodeToUTF8(val, &c1, &c2, &c3, &c4);
+		ret = Util::UnicodeToJISCommon(c1, c2, c3, p2, p1, nkfFlags);
+		if (ret > 0) {
+			*p2 = 0;
+			*p1 = nkf_char_unicode_new(val);
+			ret = 0;
+		}
+	} else {
+		*p2 = 0;
+		*p1 = nkf_char_unicode_new(val);
+	}
+	return ret;
+}
+
+void Util::NKFUnicodeToUTF8(nkf_char val, nkf_char* p1, nkf_char* p2,
+		nkf_char* p3, nkf_char* p4) {
+
+	val &= VALUE_MASK;
+	if (val < 0x80) {
+		*p1 = val;
+		*p2 = 0;
+		*p3 = 0;
+		*p4 = 0;
+	} else if (val < 0x800) {
+		*p1 = 0xc0 | (val >> 6);
+		*p2 = 0x80 | (val & 0x3f);
+		*p3 = 0;
+		*p4 = 0;
+	} else if (nkf_char_unicode_bmp_p(val)) {
+		*p1 = 0xe0 | (val >> 12);
+		*p2 = 0x80 | ((val >> 6) & 0x3f);
+		*p3 = 0x80 | (val & 0x3f);
+		*p4 = 0;
+	} else if (nkf_char_unicode_value_p(val)) {
+		*p1 = 0xf0 | (val >> 18);
+		*p2 = 0x80 | ((val >> 12) & 0x3f);
+		*p3 = 0x80 | ((val >> 6) & 0x3f);
+		*p4 = 0x80 | (val & 0x3f);
+	} else {
+		*p1 = 0;
+		*p2 = 0;
+		*p3 = 0;
+		*p4 = 0;
+	}
 }
 

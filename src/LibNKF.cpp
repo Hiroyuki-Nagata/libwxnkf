@@ -922,27 +922,23 @@ int LibNKF::KanjiConvert(FILE* f) {
 							;
 						} else {
 							/* could be some special code */
-							outputEncoding->baseEncoding->Oconv(0, ESC,
-									nkfFlags);
-							outputEncoding->baseEncoding->Oconv(0, '$',
-									nkfFlags);
-							outputEncoding->baseEncoding->Oconv(0, '(',
-									nkfFlags);
-							outputEncoding->baseEncoding->Oconv(0, c1,
-									nkfFlags);
+							outputEncoding->Oconv(0, ESC, nkfFlags, oConvStr);
+							outputEncoding->Oconv(0, '$', nkfFlags, oConvStr);
+							outputEncoding->Oconv(0, '(', nkfFlags, oConvStr);
+							outputEncoding->Oconv(0, c1, nkfFlags, oConvStr);
 							SKIP
 							;
 						}
 					} else if (nkfFlags[broken_f] & 0x2) {
 						/* accept any ESC-(-x as broken code ... */
-						inputMode = JIS_X_0208;
+						inputEncoding->ioMode = JIS_X_0208;
 						shift_mode = 0;
 						SKIP
 						;
 					} else {
-						outputEncoding->baseEncoding->Oconv(0, ESC, nkfFlags);
-						outputEncoding->baseEncoding->Oconv(0, '$', nkfFlags);
-						outputEncoding->baseEncoding->Oconv(0, c1, nkfFlags);
+						outputEncoding->Oconv(0, ESC, nkfFlags, oConvStr);
+						outputEncoding->Oconv(0, '$', nkfFlags, oConvStr);
+						outputEncoding->Oconv(0, c1, nkfFlags, oConvStr);
 						SKIP
 						;
 					}
@@ -968,8 +964,8 @@ int LibNKF::KanjiConvert(FILE* f) {
 						SKIP
 						;
 					} else {
-						outputEncoding->baseEncoding->Oconv(0, ESC, nkfFlags);
-						outputEncoding->baseEncoding->Oconv(0, '(', nkfFlags);
+						outputEncoding->Oconv(0, ESC, nkfFlags, oConvStr);
+						outputEncoding->Oconv(0, '(', nkfFlags, oConvStr);
 						SEND;
 					}
 				} else if (c1 == '.') {
@@ -982,8 +978,8 @@ int LibNKF::KanjiConvert(FILE* f) {
 						SKIP
 						;
 					} else {
-						outputEncoding->baseEncoding->Oconv(0, ESC, nkfFlags);
-						outputEncoding->baseEncoding->Oconv(0, '.', nkfFlags);
+						outputEncoding->Oconv(0, ESC, nkfFlags, oConvStr);
+						outputEncoding->Oconv(0, '.', nkfFlags, oConvStr);
 						SEND;
 					}
 				} else if (c1 == 'N') {
@@ -995,19 +991,18 @@ int LibNKF::KanjiConvert(FILE* f) {
 					} else {
 						LibNKF::StdUnGetC(c1, f);
 						/* lonely ESC  */
-						outputEncoding->baseEncoding->Oconv(0, ESC, nkfFlags);
+						outputEncoding->Oconv(0, ESC, nkfFlags, oConvStr);
 						SEND;
 					}
 				} else {
 					/* lonely ESC  */
-					outputEncoding->baseEncoding->Oconv(0, ESC, nkfFlags);
+					outputEncoding->Oconv(0, ESC, nkfFlags, oConvStr);
 					SEND;
 				}
-			} else if (c1 == ESC
-					&& inputEncoding->baseEncoding->iconvName == "s_iconv") {
+			} else if (c1 == ESC && inputEncoding->iconvName == "s_iconv") {
 				/* ESC in Shift_JIS */
 				if ((c1 = LibNKF::StdGetC(f)) == EOF) {
-					outputEncoding->baseEncoding->Oconv(0, ESC, nkfFlags);
+					outputEncoding->Oconv(0, ESC, nkfFlags, oConvStr);
 					LAST;
 				} else if (c1 == '$') {
 					/* J-PHONE emoji */
@@ -1030,27 +1025,27 @@ int LibNKF::KanjiConvert(FILE* f) {
 						if ((c1 = LibNKF::StdGetC(f)) == EOF)
 							LAST;
 						while (SP <= c1 && c1 <= 'z') {
-							outputEncoding->baseEncoding->Oconv(0, c1 + c3,
-									nkfFlags);
+							outputEncoding->Oconv(0, c1 + c3, nkfFlags,
+									oConvStr);
 							if ((c1 = LibNKF::StdGetC(f)) == EOF)
 								LAST;
 						}
 						SKIP
 						;
 					} else {
-						outputEncoding->baseEncoding->Oconv(0, ESC, nkfFlags);
-						outputEncoding->baseEncoding->Oconv(0, '$', nkfFlags);
+						outputEncoding->Oconv(0, ESC, nkfFlags, oConvStr);
+						outputEncoding->Oconv(0, '$', nkfFlags, oConvStr);
 						SEND;
 					}
 				} else {
 					/* lonely ESC  */
-					outputEncoding->baseEncoding->Oconv(0, ESC, nkfFlags);
+					outputEncoding->Oconv(0, ESC, nkfFlags, oConvStr);
 					SEND;
 				}
 			} else if (c1 == LF || c1 == CR) {
 				if (nkfFlags[broken_f] & 4) {
-					inputMode = ASCII;
-					SetIconv(FALSE, 0, nkfFlags);
+					inputEncoding->ioMode = ASCII;
+					//SetIconv(FALSE, 0, nkfFlags, oConvStr);
 					SEND;
 				} else if (nkfFlags[mime_decode_f] && !mime_decode_mode) {
 					if (c1 == LF) {
@@ -1086,61 +1081,65 @@ int LibNKF::KanjiConvert(FILE* f) {
 			} else
 				SEND;
 		}
-//		/* send: */
-//		switch (inputMode) {
-//		case ASCII:
-//			switch (inputEncoding->baseEncoding->Iconv(c2, c1, 0, flagPool)) { /* can be EUC / SJIS / UTF-8 */
-//			case -2:
-//				/* 4 bytes UTF-8 */
-//				if ((c3 = LibNKF::StdGetC(f)) != EOF) {
-//					GuessConv::CodeStatus(c3, flagPool);
-//					c3 <<= 8;
-//					if ((c4 = LibNKF::StdGetC(f)) != EOF) {
-//						GuessConv::CodeStatus(c4, flagPool);
-//						inputEncoding->baseEncoding->Iconv(c2, c1, c3 | c4, flagPool);
-//					}
-//				}
-//				break;
-//			case -1:
-//				/* 3 bytes EUC or UTF-8 */
-//				if ((c3 = LibNKF::StdGetC(f)) != EOF) {
-//					GuessConv::CodeStatus(c3, flagPool);
-//					inputEncoding->baseEncoding->Iconv(c2, c1, c3, flagPool);
-//				}
-//				break;
-//			}
-//			break;
-//		case JIS_X_0208:
-//		case JIS_X_0213_1:
-//			if (flagPool->ms_ucs_map_f && 0x7F <= c2 && c2 <= 0x92 && 0x21 <= c1
-//					&& c1 <= 0x7E) {
-//				/* CP932 UDC */
-//				c1 = nkf_char_unicode_new((c2 - 0x7F) * 94 + c1 - 0x21 + 0xE000);
-//				c2 = 0;
-//			}
-//			outputEncoding->baseEncoding->Oconv(c2, c1, flagPool); /* this is JIS, not SJIS/EUC case */
-//			break;
-//		case JIS_X_0212:
-//			outputEncoding->baseEncoding->Oconv(PREFIX_EUCG3 | c2, c1, flagPool);
-//			break;
-//		case JIS_X_0213_2:
-//			outputEncoding->baseEncoding->Oconv(PREFIX_EUCG3 | c2, c1, flagPool);
-//			break;
-//		default:
-//			outputEncoding->baseEncoding->Oconv(inputMode, c1, flagPool); /* other special case */
-//		}
-//
-//		c2 = 0;
-//		c3 = 0;
-//		continue;
-//		/* goto next_word */
-//	}
+		/* send: */
+		switch (inputEncoding->ioMode) {
 
-		finished:
-		/* epilogue */
-//	inputEncoding->baseEncoding->Iconv(EOF, 0, 0, flagPool);
-//	if (!input_codename) {
-//		if (is_8bit) {
+		case ASCII:
+			switch (inputEncoding->Iconv(c2, c1, 0, nkfFlags, oConvStr)) { /* can be EUC / SJIS / UTF-8 */
+			case -2:
+				/* 4 bytes UTF-8 */
+				if ((c3 = LibNKF::StdGetC(f)) != EOF) {
+					//GuessConv::CodeStatus(c3, flagPool);
+					c3 <<= 8;
+					if ((c4 = LibNKF::StdGetC(f)) != EOF) {
+						//GuessConv::CodeStatus(c4, flagPool);
+						inputEncoding->Iconv(c2, c1, c3 | c4, nkfFlags,
+								oConvStr);
+					}
+				}
+				break;
+			case -1:
+				/* 3 bytes EUC or UTF-8 */
+				if ((c3 = LibNKF::StdGetC(f)) != EOF) {
+					//GuessConv::CodeStatus(c3, flagPool);
+					inputEncoding->Iconv(c2, c1, c3, nkfFlags, oConvStr);
+				}
+				break;
+			}
+			break;
+		case JIS_X_0208:
+		case JIS_X_0213_1:
+			if (nkfFlags[ms_ucs_map_f] && 0x7F <= c2 && c2 <= 0x92 && 0x21 <= c1
+					&& c1 <= 0x7E) {
+				/* CP932 UDC */
+				c1 = nkf_char_unicode_new((c2 - 0x7F) * 94 + c1 - 0x21 + 0xE000);
+				c2 = 0;
+			}
+			outputEncoding->Oconv(c2, c1, nkfFlags, oConvStr); /* this is JIS, not SJIS/EUC case */
+			break;
+		case JIS_X_0212:
+			outputEncoding->Oconv(PREFIX_EUCG3 | c2, c1, nkfFlags, oConvStr);
+			break;
+		case JIS_X_0213_2:
+			outputEncoding->Oconv(PREFIX_EUCG3 | c2, c1, nkfFlags, oConvStr);
+			break;
+		default:
+			outputEncoding->Oconv(inputEncoding->ioMode, c1, nkfFlags,
+					oConvStr); /* other special case */
+		}
+
+		c2 = 0;
+		c3 = 0;
+		continue;
+		/* goto next_word */
+	}
+
+	finished:
+	/* epilogue */
+	inputEncoding->Iconv(EOF, 0, 0, nkfFlags, oConvStr);
+
+	if (inputEncoding->name.empty()) {
+		if (is_8bit) {
 //			struct input_code *p = input_code_list;
 //			struct input_code *result = p;
 //			while (p->name) {
@@ -1150,409 +1149,417 @@ int LibNKF::KanjiConvert(FILE* f) {
 //			}
 //			set_input_codename(result->name);
 //			debug(result->name);
-//		}
-//	}
-		return 0;
-	}
-
-	/**
-	 * 設定されたフラグから文字コード変換に使うメソッドを決める
-	 */
-	int LibNKF::ModuleConnection() {
-		// 入力された文字コードからフラグを設定する
-		SetInputEncoding(inputEncoding);
-		// 出力する文字コードが設定されていなければ設定する
-		if (!outputEncoding->id)
-			outputEncoding = Util::NKFDefaultEncoding();
-		// デフォルトのエンコードが設定できなければ出力しないか推測するモード
-		if (!outputEncoding->id) {
-			if (nkfFlags[noout_f] || nkfFlags[guess_f]) {
-				outputEncoding = Util::NKFEncFromIndex(ISO_2022_JP);
-			} else {
-				return -1;
-			}
-		}
-		// 出力する文字コードのクラスを設定する
-		SetOutputEncoding(outputEncoding);
-
-		if (outputEncoding->id == UTF_8) {
-			// エンコーディングがUTF-8だった場合出力モードはUTF-8
-			outputEncoding->ioMode = UTF_8;
-		}
-
-		if (nkfFlags[x0201_f] == NKF_UNSPECIFIED) {
-			nkfFlags[x0201_f] = X0201_DEFAULT;
-		}
-
-		return 0;
-	}
-
-	/**
-	 * 入力された文字コードからフラグを設定する
-	 */
-	void LibNKF::SetInputEncoding(NKFNativeEncoding *enc) {
-		switch (enc->id) {
-
-		case ISO_8859_1:
-			nkfFlags[iso8859_f] = TRUE;
-			break;
-		case CP50221:
-		case CP50222:
-			if (nkfFlags[x0201_f] == NKF_UNSPECIFIED)
-				nkfFlags[x0201_f] = FALSE; /* -x specified implicitly */
-		case CP50220:
-			nkfFlags[cp51932_f] = TRUE;
-			nkfFlags[ms_ucs_map_f] = UCS_MAP_CP932;
-			break;
-		case ISO_2022_JP_1:
-			nkfFlags[x0212_f] = TRUE;
-			break;
-		case ISO_2022_JP_3:
-			nkfFlags[x0212_f] = TRUE;
-			nkfFlags[x0213_f] = TRUE;
-			break;
-		case ISO_2022_JP_2004:
-			nkfFlags[x0212_f] = TRUE;
-			nkfFlags[x0213_f] = TRUE;
-			break;
-		case SHIFT_JIS:
-			break;
-		case WINDOWS_31J:
-			if (nkfFlags[x0201_f] == NKF_UNSPECIFIED)
-				nkfFlags[x0201_f] = FALSE; /* -x specified implicitly */
-			nkfFlags[cp51932_f] = TRUE;
-			nkfFlags[ms_ucs_map_f] = UCS_MAP_CP932;
-			break;
-			break;
-		case CP10001:
-			nkfFlags[cp51932_f] = TRUE;
-			nkfFlags[ms_ucs_map_f] = UCS_MAP_CP10001;
-			break;
-		case EUC_JP:
-			break;
-		case EUCJP_NKF:
-			break;
-		case CP51932:
-			if (nkfFlags[x0201_f] == NKF_UNSPECIFIED)
-				nkfFlags[x0201_f] = FALSE; /* -x specified implicitly */
-			nkfFlags[cp51932_f] = TRUE;
-			nkfFlags[ms_ucs_map_f] = UCS_MAP_CP932;
-			break;
-		case EUCJP_MS:
-			if (nkfFlags[x0201_f] == NKF_UNSPECIFIED)
-				nkfFlags[x0201_f] = FALSE; /* -x specified implicitly */
-			nkfFlags[cp51932_f] = FALSE;
-			nkfFlags[ms_ucs_map_f] = UCS_MAP_MS;
-			break;
-		case EUCJP_ASCII:
-			if (nkfFlags[x0201_f] == NKF_UNSPECIFIED)
-				nkfFlags[x0201_f] = FALSE; /* -x specified implicitly */
-			nkfFlags[cp51932_f] = FALSE;
-			nkfFlags[ms_ucs_map_f] = UCS_MAP_ASCII;
-			break;
-		case SHIFT_JISX0213:
-		case SHIFT_JIS_2004:
-			nkfFlags[x0213_f] = TRUE;
-			nkfFlags[cp51932_f] = FALSE;
-			break;
-		case EUC_JISX0213:
-		case EUC_JIS_2004:
-			nkfFlags[x0213_f] = TRUE;
-			nkfFlags[cp51932_f] = FALSE;
-			break;
-		case UTF8_MAC:
-			nkfFlags[nfc_f] = TRUE;
-			break;
-		case UTF_16:
-		case UTF_16BE:
-		case UTF_16BE_BOM:
-			inputEncoding->endian = ENDIAN_BIG;
-			break;
-		case UTF_16LE:
-		case UTF_16LE_BOM:
-			inputEncoding->endian = ENDIAN_LITTLE;
-			break;
-		case UTF_32:
-		case UTF_32BE:
-		case UTF_32BE_BOM:
-			inputEncoding->endian = ENDIAN_BIG;
-			break;
-		case UTF_32LE:
-		case UTF_32LE_BOM:
-			inputEncoding->endian = ENDIAN_LITTLE;
-			break;
 		}
 	}
-	/**
-	 * 出力する文字コード用にフラグを設定する
-	 */
-	void LibNKF::SetOutputEncoding(NKFNativeEncoding* enc) {
-		switch (enc->id) {
-		case CP50220:
-			if (nkfFlags[cp932inv_f] == TRUE)
-				nkfFlags[cp932inv_f] = FALSE;
-			nkfFlags[ms_ucs_map_f] = UCS_MAP_CP932;
-			break;
-		case CP50221:
-			if (nkfFlags[x0201_f] == NKF_UNSPECIFIED)
-				nkfFlags[x0201_f] = FALSE; /* -x specified implicitly */
-			if (nkfFlags[cp932inv_f] == TRUE)
-				nkfFlags[cp932inv_f] = FALSE;
-			nkfFlags[ms_ucs_map_f] = UCS_MAP_CP932;
-			break;
-		case ISO_2022_JP:
-			if (nkfFlags[cp932inv_f] == TRUE)
-				nkfFlags[cp932inv_f] = FALSE;
-			break;
-		case ISO_2022_JP_1:
-			nkfFlags[x0212_f] = TRUE;
-			if (nkfFlags[cp932inv_f] == TRUE)
-				nkfFlags[cp932inv_f] = FALSE;
-			break;
-		case ISO_2022_JP_3:
-			nkfFlags[x0212_f] = TRUE;
-			nkfFlags[x0213_f] = TRUE;
-			if (nkfFlags[cp932inv_f] == TRUE)
-				nkfFlags[cp932inv_f] = FALSE;
-			break;
-		case SHIFT_JIS:
-			break;
-		case WINDOWS_31J:
-			if (nkfFlags[x0201_f] == NKF_UNSPECIFIED)
-				nkfFlags[x0201_f] = FALSE; /* -x specified implicitly */
-			nkfFlags[ms_ucs_map_f] = UCS_MAP_CP932;
-			break;
-		case CP10001:
-			nkfFlags[ms_ucs_map_f] = UCS_MAP_CP10001;
-			break;
-		case EUC_JP:
-			nkfFlags[x0212_f] = TRUE;
-			if (nkfFlags[cp932inv_f] == TRUE)
-				nkfFlags[cp932inv_f] = FALSE;
-			nkfFlags[ms_ucs_map_f] = UCS_MAP_ASCII;
-			break;
-		case EUCJP_NKF:
-			nkfFlags[x0212_f] = FALSE;
-			if (nkfFlags[cp932inv_f] == TRUE)
-				nkfFlags[cp932inv_f] = FALSE;
-			nkfFlags[ms_ucs_map_f] = UCS_MAP_ASCII;
-			break;
-		case CP51932:
-			if (nkfFlags[x0201_f] == NKF_UNSPECIFIED)
-				nkfFlags[x0201_f] = FALSE; /* -x specified implicitly */
-			if (nkfFlags[cp932inv_f] == TRUE)
-				nkfFlags[cp932inv_f] = FALSE;
-			nkfFlags[ms_ucs_map_f] = UCS_MAP_CP932;
-			break;
-		case EUCJP_MS:
-			if (nkfFlags[x0201_f] == NKF_UNSPECIFIED)
-				nkfFlags[x0201_f] = FALSE; /* -x specified implicitly */
-			nkfFlags[x0212_f] = TRUE;
-			nkfFlags[ms_ucs_map_f] = UCS_MAP_MS;
-			break;
-		case EUCJP_ASCII:
-			if (nkfFlags[x0201_f] == NKF_UNSPECIFIED)
-				nkfFlags[x0201_f] = FALSE; /* -x specified implicitly */
-			nkfFlags[x0212_f] = TRUE;
-			nkfFlags[ms_ucs_map_f] = UCS_MAP_ASCII;
-			break;
-		case SHIFT_JISX0213:
-		case SHIFT_JIS_2004:
-			nkfFlags[x0213_f] = TRUE;
-			if (nkfFlags[cp932inv_f] == TRUE)
-				nkfFlags[cp932inv_f] = FALSE;
-			break;
-		case EUC_JISX0213:
-		case EUC_JIS_2004:
-			nkfFlags[x0212_f] = TRUE;
-			nkfFlags[x0213_f] = TRUE;
-			if (nkfFlags[cp932inv_f] == TRUE)
-				nkfFlags[cp932inv_f] = FALSE;
-			break;
-		case UTF_8_BOM:
-			nkfFlags[output_bom_f] = TRUE;
-			break;
-		case UTF_16:
-		case UTF_16BE_BOM:
-			nkfFlags[output_bom_f] = TRUE;
-			break;
-		case UTF_16LE:
-			outputEncoding->endian = ENDIAN_LITTLE;
-			nkfFlags[output_bom_f] = FALSE;
-			break;
-		case UTF_16LE_BOM:
-			outputEncoding->endian = ENDIAN_LITTLE;
-			nkfFlags[output_bom_f] = TRUE;
-			break;
-		case UTF_32:
-		case UTF_32BE_BOM:
-			nkfFlags[output_bom_f] = TRUE;
-			break;
-		case UTF_32LE:
-			outputEncoding->endian = ENDIAN_LITTLE;
-			nkfFlags[output_bom_f] = FALSE;
-			break;
-		case UTF_32LE_BOM:
-			outputEncoding->endian = ENDIAN_LITTLE;
-			nkfFlags[output_bom_f] = TRUE;
-			break;
+	return 0;
+}
+
+/**
+ * 設定されたフラグから文字コード変換に使うメソッドを決める
+ */
+int LibNKF::ModuleConnection() {
+	// 入力された文字コードからフラグを設定する
+	SetInputEncoding(inputEncoding);
+	// 出力する文字コードが設定されていなければ設定する
+	if (!outputEncoding->id)
+		outputEncoding = Util::NKFDefaultEncoding();
+	// デフォルトのエンコードが設定できなければ出力しないか推測するモード
+	if (!outputEncoding->id) {
+		if (nkfFlags[noout_f] || nkfFlags[guess_f]) {
+			outputEncoding = Util::NKFEncFromIndex(ISO_2022_JP);
+		} else {
+			return -1;
 		}
 	}
+	// 出力する文字コードのクラスを設定する
+	SetOutputEncoding(outputEncoding);
 
-	/**
-	 * BOMが存在するかチェックし、存在すれば無視する
-	 */
-	void LibNKF::CheckBom(FILE* f) {
+	if (outputEncoding->id == UTF_8) {
+		// エンコーディングがUTF-8だった場合出力モードはUTF-8
+		outputEncoding->ioMode = UTF_8;
+	}
 
-		int c2;
-		switch (c2 = StdGetC(f)) {
-		case 0x00:
-			if ((c2 = StdGetC(f)) == 0x00) {
-				if ((c2 = StdGetC(f)) == 0xFE) {
-					if ((c2 = StdGetC(f)) == 0xFF) {
-						if (!inputEncoding->id) {
-							// もし文字コードに何も設定されていなければiconvメソッドを決めてリターン
-							inputEncoding->iconvName = "w_iconv32";
-							inputEncoding->endian = ENDIAN_BIG;
-							return;
-						}
-						StdUnGetC(0xFF, f);
-					} else {
-						StdUnGetC(c2, f);
-					}
-					StdUnGetC(0xFE, f);
-				} else if (c2 == 0xFF) {
-					if ((c2 = StdGetC(f)) == 0xFE) {
-						if (!inputEncoding->id) {
-							// もし文字コードに何も設定されていなければiconvメソッドを決めてリターン
-							inputEncoding->iconvName = "w_iconv32";
-							inputEncoding->endian = ENDIAN_2143;
-							return;
-						}
-						StdUnGetC(0xFF, f);
-					} else {
-						StdUnGetC(c2, f);
+	if (nkfFlags[x0201_f] == NKF_UNSPECIFIED) {
+		nkfFlags[x0201_f] = X0201_DEFAULT;
+	}
+
+	return 0;
+}
+
+/**
+ * 入力された文字コードからフラグを設定する
+ */
+void LibNKF::SetInputEncoding(NKFNativeEncoding *enc) {
+	switch (enc->id) {
+
+	case ISO_8859_1:
+		nkfFlags[iso8859_f] = TRUE;
+		break;
+	case CP50221:
+	case CP50222:
+		if (nkfFlags[x0201_f] == NKF_UNSPECIFIED)
+			nkfFlags[x0201_f] = FALSE; /* -x specified implicitly */
+	case CP50220:
+		nkfFlags[cp51932_f] = TRUE;
+		nkfFlags[ms_ucs_map_f] = UCS_MAP_CP932;
+		break;
+	case ISO_2022_JP_1:
+		nkfFlags[x0212_f] = TRUE;
+		break;
+	case ISO_2022_JP_3:
+		nkfFlags[x0212_f] = TRUE;
+		nkfFlags[x0213_f] = TRUE;
+		break;
+	case ISO_2022_JP_2004:
+		nkfFlags[x0212_f] = TRUE;
+		nkfFlags[x0213_f] = TRUE;
+		break;
+	case SHIFT_JIS:
+		break;
+	case WINDOWS_31J:
+		if (nkfFlags[x0201_f] == NKF_UNSPECIFIED)
+			nkfFlags[x0201_f] = FALSE; /* -x specified implicitly */
+		nkfFlags[cp51932_f] = TRUE;
+		nkfFlags[ms_ucs_map_f] = UCS_MAP_CP932;
+		break;
+		break;
+	case CP10001:
+		nkfFlags[cp51932_f] = TRUE;
+		nkfFlags[ms_ucs_map_f] = UCS_MAP_CP10001;
+		break;
+	case EUC_JP:
+		break;
+	case EUCJP_NKF:
+		break;
+	case CP51932:
+		if (nkfFlags[x0201_f] == NKF_UNSPECIFIED)
+			nkfFlags[x0201_f] = FALSE; /* -x specified implicitly */
+		nkfFlags[cp51932_f] = TRUE;
+		nkfFlags[ms_ucs_map_f] = UCS_MAP_CP932;
+		break;
+	case EUCJP_MS:
+		if (nkfFlags[x0201_f] == NKF_UNSPECIFIED)
+			nkfFlags[x0201_f] = FALSE; /* -x specified implicitly */
+		nkfFlags[cp51932_f] = FALSE;
+		nkfFlags[ms_ucs_map_f] = UCS_MAP_MS;
+		break;
+	case EUCJP_ASCII:
+		if (nkfFlags[x0201_f] == NKF_UNSPECIFIED)
+			nkfFlags[x0201_f] = FALSE; /* -x specified implicitly */
+		nkfFlags[cp51932_f] = FALSE;
+		nkfFlags[ms_ucs_map_f] = UCS_MAP_ASCII;
+		break;
+	case SHIFT_JISX0213:
+	case SHIFT_JIS_2004:
+		nkfFlags[x0213_f] = TRUE;
+		nkfFlags[cp51932_f] = FALSE;
+		break;
+	case EUC_JISX0213:
+	case EUC_JIS_2004:
+		nkfFlags[x0213_f] = TRUE;
+		nkfFlags[cp51932_f] = FALSE;
+		break;
+	case UTF8_MAC:
+		nkfFlags[nfc_f] = TRUE;
+		break;
+	case UTF_16:
+	case UTF_16BE:
+	case UTF_16BE_BOM:
+		inputEncoding->endian = ENDIAN_BIG;
+		break;
+	case UTF_16LE:
+	case UTF_16LE_BOM:
+		inputEncoding->endian = ENDIAN_LITTLE;
+		break;
+	case UTF_32:
+	case UTF_32BE:
+	case UTF_32BE_BOM:
+		inputEncoding->endian = ENDIAN_BIG;
+		break;
+	case UTF_32LE:
+	case UTF_32LE_BOM:
+		inputEncoding->endian = ENDIAN_LITTLE;
+		break;
+	}
+}
+/**
+ * 出力する文字コード用にフラグを設定する
+ */
+void LibNKF::SetOutputEncoding(NKFNativeEncoding* enc) {
+	switch (enc->id) {
+	case CP50220:
+		if (nkfFlags[cp932inv_f] == TRUE)
+			nkfFlags[cp932inv_f] = FALSE;
+		nkfFlags[ms_ucs_map_f] = UCS_MAP_CP932;
+		break;
+	case CP50221:
+		if (nkfFlags[x0201_f] == NKF_UNSPECIFIED)
+			nkfFlags[x0201_f] = FALSE; /* -x specified implicitly */
+		if (nkfFlags[cp932inv_f] == TRUE)
+			nkfFlags[cp932inv_f] = FALSE;
+		nkfFlags[ms_ucs_map_f] = UCS_MAP_CP932;
+		break;
+	case ISO_2022_JP:
+		if (nkfFlags[cp932inv_f] == TRUE)
+			nkfFlags[cp932inv_f] = FALSE;
+		break;
+	case ISO_2022_JP_1:
+		nkfFlags[x0212_f] = TRUE;
+		if (nkfFlags[cp932inv_f] == TRUE)
+			nkfFlags[cp932inv_f] = FALSE;
+		break;
+	case ISO_2022_JP_3:
+		nkfFlags[x0212_f] = TRUE;
+		nkfFlags[x0213_f] = TRUE;
+		if (nkfFlags[cp932inv_f] == TRUE)
+			nkfFlags[cp932inv_f] = FALSE;
+		break;
+	case SHIFT_JIS:
+		break;
+	case WINDOWS_31J:
+		if (nkfFlags[x0201_f] == NKF_UNSPECIFIED)
+			nkfFlags[x0201_f] = FALSE; /* -x specified implicitly */
+		nkfFlags[ms_ucs_map_f] = UCS_MAP_CP932;
+		break;
+	case CP10001:
+		nkfFlags[ms_ucs_map_f] = UCS_MAP_CP10001;
+		break;
+	case EUC_JP:
+		nkfFlags[x0212_f] = TRUE;
+		if (nkfFlags[cp932inv_f] == TRUE)
+			nkfFlags[cp932inv_f] = FALSE;
+		nkfFlags[ms_ucs_map_f] = UCS_MAP_ASCII;
+		break;
+	case EUCJP_NKF:
+		nkfFlags[x0212_f] = FALSE;
+		if (nkfFlags[cp932inv_f] == TRUE)
+			nkfFlags[cp932inv_f] = FALSE;
+		nkfFlags[ms_ucs_map_f] = UCS_MAP_ASCII;
+		break;
+	case CP51932:
+		if (nkfFlags[x0201_f] == NKF_UNSPECIFIED)
+			nkfFlags[x0201_f] = FALSE; /* -x specified implicitly */
+		if (nkfFlags[cp932inv_f] == TRUE)
+			nkfFlags[cp932inv_f] = FALSE;
+		nkfFlags[ms_ucs_map_f] = UCS_MAP_CP932;
+		break;
+	case EUCJP_MS:
+		if (nkfFlags[x0201_f] == NKF_UNSPECIFIED)
+			nkfFlags[x0201_f] = FALSE; /* -x specified implicitly */
+		nkfFlags[x0212_f] = TRUE;
+		nkfFlags[ms_ucs_map_f] = UCS_MAP_MS;
+		break;
+	case EUCJP_ASCII:
+		if (nkfFlags[x0201_f] == NKF_UNSPECIFIED)
+			nkfFlags[x0201_f] = FALSE; /* -x specified implicitly */
+		nkfFlags[x0212_f] = TRUE;
+		nkfFlags[ms_ucs_map_f] = UCS_MAP_ASCII;
+		break;
+	case SHIFT_JISX0213:
+	case SHIFT_JIS_2004:
+		nkfFlags[x0213_f] = TRUE;
+		if (nkfFlags[cp932inv_f] == TRUE)
+			nkfFlags[cp932inv_f] = FALSE;
+		break;
+	case EUC_JISX0213:
+	case EUC_JIS_2004:
+		nkfFlags[x0212_f] = TRUE;
+		nkfFlags[x0213_f] = TRUE;
+		if (nkfFlags[cp932inv_f] == TRUE)
+			nkfFlags[cp932inv_f] = FALSE;
+		break;
+	case UTF_8_BOM:
+		nkfFlags[output_bom_f] = TRUE;
+		break;
+	case UTF_16:
+	case UTF_16BE_BOM:
+		nkfFlags[output_bom_f] = TRUE;
+		break;
+	case UTF_16LE:
+		outputEncoding->endian = ENDIAN_LITTLE;
+		nkfFlags[output_bom_f] = FALSE;
+		break;
+	case UTF_16LE_BOM:
+		outputEncoding->endian = ENDIAN_LITTLE;
+		nkfFlags[output_bom_f] = TRUE;
+		break;
+	case UTF_32:
+	case UTF_32BE_BOM:
+		nkfFlags[output_bom_f] = TRUE;
+		break;
+	case UTF_32LE:
+		outputEncoding->endian = ENDIAN_LITTLE;
+		nkfFlags[output_bom_f] = FALSE;
+		break;
+	case UTF_32LE_BOM:
+		outputEncoding->endian = ENDIAN_LITTLE;
+		nkfFlags[output_bom_f] = TRUE;
+		break;
+	}
+}
+
+/**
+ * BOMが存在するかチェックし、存在すれば無視する
+ */
+void LibNKF::CheckBom(FILE* f) {
+
+	int c2;
+	switch (c2 = StdGetC(f)) {
+	case 0x00:
+		if ((c2 = StdGetC(f)) == 0x00) {
+			if ((c2 = StdGetC(f)) == 0xFE) {
+				if ((c2 = StdGetC(f)) == 0xFF) {
+					if (!inputEncoding->id) {
+						// もし文字コードに何も設定されていなければiconvメソッドを決めてリターン
+						inputEncoding->iconvName = "w_iconv32";
+						inputEncoding->endian = ENDIAN_BIG;
+						return;
 					}
 					StdUnGetC(0xFF, f);
 				} else {
 					StdUnGetC(c2, f);
 				}
-				StdUnGetC(0x00, f);
+				StdUnGetC(0xFE, f);
+			} else if (c2 == 0xFF) {
+				if ((c2 = StdGetC(f)) == 0xFE) {
+					if (!inputEncoding->id) {
+						// もし文字コードに何も設定されていなければiconvメソッドを決めてリターン
+						inputEncoding->iconvName = "w_iconv32";
+						inputEncoding->endian = ENDIAN_2143;
+						return;
+					}
+					StdUnGetC(0xFF, f);
+				} else {
+					StdUnGetC(c2, f);
+				}
+				StdUnGetC(0xFF, f);
 			} else {
 				StdUnGetC(c2, f);
 			}
 			StdUnGetC(0x00, f);
-			break;
-		case 0xEF:
-			if ((c2 = StdGetC(f)) == 0xBB) {
-				if ((c2 = StdGetC(f)) == 0xBF) {
+		} else {
+			StdUnGetC(c2, f);
+		}
+		StdUnGetC(0x00, f);
+		break;
+	case 0xEF:
+		if ((c2 = StdGetC(f)) == 0xBB) {
+			if ((c2 = StdGetC(f)) == 0xBF) {
+				if (!inputEncoding->id) {
+					// もし文字コードに何も設定されていなければiconvメソッドを決めてリターン
+					inputEncoding->iconvName = "w_iconv";
+					return;
+				}
+				StdUnGetC(0xBF, f);
+			} else
+				StdUnGetC(c2, f);
+			StdUnGetC(0xBB, f);
+		} else
+			StdUnGetC(c2, f);
+		StdUnGetC(0xEF, f);
+		break;
+	case 0xFE:
+		if ((c2 = StdGetC(f)) == 0xFF) {
+			if ((c2 = StdGetC(f)) == 0x00) {
+				if ((c2 = StdGetC(f)) == 0x00) {
 					if (!inputEncoding->id) {
 						// もし文字コードに何も設定されていなければiconvメソッドを決めてリターン
-						inputEncoding->iconvName = "w_iconv";
+						inputEncoding->iconvName = "w_iconv32";
+						inputEncoding->endian = ENDIAN_3412;
 						return;
 					}
-					StdUnGetC(0xBF, f);
-				} else
-					StdUnGetC(c2, f);
-				StdUnGetC(0xBB, f);
-			} else
-				StdUnGetC(c2, f);
-			StdUnGetC(0xEF, f);
-			break;
-		case 0xFE:
-			if ((c2 = StdGetC(f)) == 0xFF) {
-				if ((c2 = StdGetC(f)) == 0x00) {
-					if ((c2 = StdGetC(f)) == 0x00) {
-						if (!inputEncoding->id) {
-							// もし文字コードに何も設定されていなければiconvメソッドを決めてリターン
-							inputEncoding->iconvName = "w_iconv32";
-							inputEncoding->endian = ENDIAN_3412;
-							return;
-						}
-						StdUnGetC(0x00, f);
-					} else
-						StdUnGetC(c2, f);
 					StdUnGetC(0x00, f);
 				} else
 					StdUnGetC(c2, f);
-				if (!inputEncoding->id) {
-					// もし文字コードに何も設定されていなければiconvメソッドを決めてリターン
-					inputEncoding->iconvName = "w_iconv16";
-					inputEncoding->endian = ENDIAN_BIG;
-				}
-				StdUnGetC(0xFF, f);
+				StdUnGetC(0x00, f);
 			} else
 				StdUnGetC(c2, f);
-			StdUnGetC(0xFE, f);
-			break;
-		case 0xFF:
-			if ((c2 = StdGetC(f)) == 0xFE) {
-				if ((c2 = StdGetC(f)) == 0x00) {
-					if ((c2 = StdGetC(f)) == 0x00) {
-						if (!inputEncoding->id) {
-							// もし文字コードに何も設定されていなければiconvメソッドを決めてリターン
-							inputEncoding->iconvName = "w_iconv32";
-							inputEncoding->endian = ENDIAN_LITTLE;
-							return;
-						}
-						StdUnGetC(0x00, f);
-					} else
-						StdUnGetC(c2, f);
-					StdUnGetC(0x00, f);
-				} else
-					StdUnGetC(c2, f);
-				if (!inputEncoding->id) {
-					// もし文字コードに何も設定されていなければiconvメソッドを決めてリターン
-					inputEncoding->iconvName = "w_iconv16";
-					inputEncoding->endian = ENDIAN_LITTLE;
-				}
-				StdUnGetC(0xFE, f);
-			} else
-				StdUnGetC(c2, f);
+			if (!inputEncoding->id) {
+				// もし文字コードに何も設定されていなければiconvメソッドを決めてリターン
+				inputEncoding->iconvName = "w_iconv16";
+				inputEncoding->endian = ENDIAN_BIG;
+			}
 			StdUnGetC(0xFF, f);
-			break;
-		default:
+		} else
 			StdUnGetC(c2, f);
-			break;
-		}
+		StdUnGetC(0xFE, f);
+		break;
+	case 0xFF:
+		if ((c2 = StdGetC(f)) == 0xFE) {
+			if ((c2 = StdGetC(f)) == 0x00) {
+				if ((c2 = StdGetC(f)) == 0x00) {
+					if (!inputEncoding->id) {
+						// もし文字コードに何も設定されていなければiconvメソッドを決めてリターン
+						inputEncoding->iconvName = "w_iconv32";
+						inputEncoding->endian = ENDIAN_LITTLE;
+						return;
+					}
+					StdUnGetC(0x00, f);
+				} else
+					StdUnGetC(c2, f);
+				StdUnGetC(0x00, f);
+			} else
+				StdUnGetC(c2, f);
+			if (!inputEncoding->id) {
+				// もし文字コードに何も設定されていなければiconvメソッドを決めてリターン
+				inputEncoding->iconvName = "w_iconv16";
+				inputEncoding->endian = ENDIAN_LITTLE;
+			}
+			StdUnGetC(0xFE, f);
+		} else
+			StdUnGetC(c2, f);
+		StdUnGetC(0xFF, f);
+		break;
+	default:
+		StdUnGetC(c2, f);
+		break;
 	}
+}
+/**
+ * 総当りで文字コードを調べる
+ */
+void LibNKF::CodeStatus(nkf_char c) {
 	/**
-	 * 総当りで文字コードを調べる
+	 * 最初に入力コードが何であるか総当りで調べる
+	 * "EUC-JP","Shift_JIS","UTF-8","UTF-16","UTF-32"の順
 	 */
-	void LibNKF::CodeStatus(nkf_char c) {
-		/**
-		 * 最初に入力コードが何であるか総当りで調べる
-		 * "EUC-JP","Shift_JIS","UTF-8","UTF-16","UTF-32"の順
-		 */
-		int action_flag = 1;
-		InputCode* result = 0;
-		std::string inputCodeList[] = { "EUC-JP", "Shift_JIS", "UTF-8",
-				"UTF-16", "UTF-32" };
+	int action_flag = 1;
+	InputCode* result = 0;
+	std::string inputCodeList[] = { "EUC-JP", "Shift_JIS", "UTF-8", "UTF-16",
+			"UTF-32" };
 
-		/**
-		 * InputCode->statが決まるまでループする
-		 */
-		for (int i = 0; i < 5; i++) {
-			InputCode* p;
-			p->name = inputCodeList[i];
-			p->StatusFunc(p, c, nkfFlags);
-			if (p->stat > 0) {
+	/**
+	 * InputCode->statが決まるまでループする
+	 */
+	for (int i = 0; i < 5; i++) {
+		InputCode* p;
+		p->name = inputCodeList[i];
+		p->StatusFunc(p, c, nkfFlags);
+		if (p->stat > 0) {
+			action_flag = 0;
+		} else if (p->stat == 0) {
+			if (result) {
 				action_flag = 0;
-			} else if (p->stat == 0) {
-				if (result) {
-					action_flag = 0;
-				} else {
-					result = p;
-				}
+			} else {
+				result = p;
 			}
-			++i;
 		}
+		++i;
+	}
 
-		if (action_flag) {
-			// resultが確定している場合
-			if (result && !nkfFlags[estab_f]) {
-				//SetIconv(TRUE, result->name, nkfFlags);
-			}
+	if (action_flag) {
+		// resultが確定している場合
+		if (result && !nkfFlags[estab_f]) {
+			//SetIconv(TRUE, result->name, nkfFlags);
 		}
 	}
+}
+/**
+ * 入力文字コードを設定する
+ */
+void LibNKF::SetInputMode(int mode) {
+	// 入力文字コードを設定する
+	inputEncoding->ioMode = mode;
+	inputEncoding->baseName = "ISO-2022-JP";
+}
 
