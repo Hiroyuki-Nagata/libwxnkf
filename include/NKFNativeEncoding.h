@@ -43,9 +43,11 @@ public:
 	int endian;
 	/**
 	 * 入出力のモード
-	 * input_mode, output_modeにあたる
+	 * inputEncodingクラス：inputMode, outputMode情報あり
+	 * outputEncodingクラス：outputMode情報あり
 	 */
-	int ioMode;
+	int inputMode;
+	int outputMode;
 
 	std::string iconvName;
 	std::string oconvName;

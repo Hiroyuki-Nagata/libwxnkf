@@ -335,16 +335,16 @@ void NKFNativeEncoding::SOconv(nkf_char c2, nkf_char c1,
 		oConvStr->push_back(EOF);
 		return;
 	} else if (c2 == 0) {
-		this->ioMode = ASCII;
+		this->outputMode = ASCII;
 		oConvStr->push_back(c1);
 	} else if (c2 == JIS_X_0201_1976_K) {
-		this->ioMode = SHIFT_JIS;
+		this->outputMode = SHIFT_JIS;
 		oConvStr->push_back(c1 | 0x80);
 	} else if (c2 == ISO_8859_1) {
-		this->ioMode = ISO_8859_1;
+		this->outputMode = ISO_8859_1;
 		oConvStr->push_back(c1 | 0x080);
 	} else if (is_eucg3(c2)) {
-		this->ioMode = SHIFT_JIS;
+		this->outputMode = SHIFT_JIS;
 		if (Util::E2sConv(c2, c1, &c2, &c1, nkfFlags) == 0) {
 			oConvStr->push_back(c2);
 			oConvStr->push_back(c1);
@@ -355,7 +355,7 @@ void NKFNativeEncoding::SOconv(nkf_char c2, nkf_char c1,
 			//LibNKF::SetIconv(FALSE, 0, flagPool);
 			return; /* too late to rescue this char */
 		}
-		this->ioMode = SHIFT_JIS;
+		this->outputMode = SHIFT_JIS;
 		Util::E2sConv(c2, c1, &c2, &c1, nkfFlags);
 
 		if (nkfFlags[cp932inv_f]
@@ -409,17 +409,17 @@ void NKFNativeEncoding::EOconv(nkf_char c2, nkf_char c1,
 	if (c2 == EOF) {
 		oConvStr->push_back(EOF);
 	} else if (c2 == 0) {
-		this->ioMode = ASCII;
+		this->outputMode = ASCII;
 		oConvStr->push_back(c1);
 	} else if (c2 == JIS_X_0201_1976_K) {
-		this->ioMode = EUC_JP;
+		this->outputMode = EUC_JP;
 		oConvStr->push_back(SS2);
 		oConvStr->push_back(c1 | 0x80);
 	} else if (c2 == ISO_8859_1) {
-		this->ioMode = ISO_8859_1;
+		this->outputMode = ISO_8859_1;
 		oConvStr->push_back(c1 | 0x080);
 	} else if (is_eucg3(c2)) {
-		this->ioMode = EUC_JP;
+		this->outputMode = EUC_JP;
 		if (!nkfFlags[cp932inv_f]) {
 			nkf_char s2, s1;
 			if (Util::E2sConv(c2, c1, &s2, &s1, nkfFlags) == 0) {
@@ -427,7 +427,7 @@ void NKFNativeEncoding::EOconv(nkf_char c2, nkf_char c1,
 			}
 		}
 		if (c2 == 0) {
-			this->ioMode = ASCII;
+			this->outputMode = ASCII;
 			oConvStr->push_back(c1);
 		} else if (is_eucg3(c2)) {
 			if (nkfFlags[x0212_f]) {
@@ -445,7 +445,7 @@ void NKFNativeEncoding::EOconv(nkf_char c2, nkf_char c1,
 			//LibNKF::SetIconv(FALSE, 0, flagPool);
 			return; /* too late to rescue this char */
 		}
-		this->ioMode = EUC_JP;
+		this->outputMode = EUC_JP;
 		oConvStr->push_back(c2 | 0x080);
 		oConvStr->push_back(c1 | 0x080);
 	}
@@ -607,11 +607,11 @@ void NKFNativeEncoding::WOconv32(nkf_char c2, nkf_char c1,
  */
 void NKFNativeEncoding::OutputAsciiEscapeSequence(int mode,
 		std::wstring* oConvStr) {
-	if (this->ioMode != ASCII && this->ioMode != ISO_8859_1) {
+	if (this->outputMode != ASCII && this->outputMode != ISO_8859_1) {
 		oConvStr->push_back(ESC);
 		oConvStr->push_back('(');
 		oConvStr->push_back(ascii_intro);
-		this->ioMode = mode;
+		this->outputMode = mode;
 	}
 }
 

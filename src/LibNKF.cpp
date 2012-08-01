@@ -783,7 +783,7 @@ int LibNKF::KanjiConvert(FILE* f) {
 			NEXT;
 		} else {
 			/* first byte */
-			if (inputEncoding->ioMode == JIS_X_0208 && DEL <= c1 && c1 < 0x92) {
+			if (inputEncoding->inputMode == JIS_X_0208 && DEL <= c1 && c1 < 0x92) {
 				/* CP5022x */
 				MORE
 				;
@@ -835,10 +835,10 @@ int LibNKF::KanjiConvert(FILE* f) {
 						SKIP
 						;
 					}
-				} else if (inputEncoding->ioMode == JIS_X_0208
-						|| inputEncoding->ioMode == JIS_X_0212
-						|| inputEncoding->ioMode == JIS_X_0213_1
-						|| inputEncoding->ioMode == JIS_X_0213_2) {
+				} else if (inputEncoding->inputMode == JIS_X_0208
+						|| inputEncoding->inputMode == JIS_X_0212
+						|| inputEncoding->inputMode == JIS_X_0213_1
+						|| inputEncoding->inputMode == JIS_X_0213_2) {
 					/* in case of Kanji shifted */
 					MORE
 					;
@@ -938,7 +938,7 @@ int LibNKF::KanjiConvert(FILE* f) {
 						}
 					} else if (nkfFlags[broken_f] & 0x2) {
 						/* accept any ESC-(-x as broken code ... */
-						inputEncoding->ioMode = JIS_X_0208;
+						inputEncoding->inputMode = JIS_X_0208;
 						shift_mode = 0;
 						SKIP
 						;
@@ -1051,7 +1051,7 @@ int LibNKF::KanjiConvert(FILE* f) {
 				}
 			} else if (c1 == LF || c1 == CR) {
 				if (nkfFlags[broken_f] & 4) {
-					inputEncoding->ioMode = ASCII;
+					inputEncoding->inputMode = ASCII;
 					//SetIconv(FALSE, 0, nkfFlags, oConvStr);
 					SEND;
 				} else if (nkfFlags[mime_decode_f] && !mime_decode_mode) {
@@ -1089,7 +1089,7 @@ int LibNKF::KanjiConvert(FILE* f) {
 				SEND;
 		}
 		/* send: */
-		switch (inputEncoding->ioMode) {
+		switch (inputEncoding->inputMode) {
 
 		case ASCII:
 			switch (inputEncoding->Iconv(c2, c1, 0, nkfFlags, oConvStr)) { /* can be EUC / SJIS / UTF-8 */
@@ -1131,7 +1131,7 @@ int LibNKF::KanjiConvert(FILE* f) {
 			outputEncoding->Oconv(PREFIX_EUCG3 | c2, c1, nkfFlags, oConvStr);
 			break;
 		default:
-			outputEncoding->Oconv(inputEncoding->ioMode, c1, nkfFlags,
+			outputEncoding->Oconv(inputEncoding->inputMode, c1, nkfFlags,
 					oConvStr); /* other special case */
 		}
 
@@ -1186,7 +1186,8 @@ int LibNKF::ModuleConnection() {
 
 	if (outputEncoding->id == UTF_8) {
 		// エンコーディングがUTF-8だった場合出力モードはUTF-8
-		outputEncoding->ioMode = UTF_8;
+		inputEncoding->outputMode = UTF_8;
+		outputEncoding->outputMode = UTF_8;
 	}
 
 	if (nkfFlags[x0201_f] == NKF_UNSPECIFIED) {
@@ -1569,7 +1570,7 @@ void LibNKF::CodeStatus(nkf_char c) {
  */
 void LibNKF::SetInputMode(int mode) {
 	// 入力文字コードを設定する
-	inputEncoding->ioMode = mode;
+	inputEncoding->inputMode = mode;
 	inputEncoding->baseName = "ISO-2022-JP";
 }
 
