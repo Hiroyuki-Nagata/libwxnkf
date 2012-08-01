@@ -1159,8 +1159,6 @@ int LibNKF::KanjiConvert(FILE* f) {
 		}
 	}
 
-	printf("%d\n", oConvStr->length()); //<< oConvStr->length() << "x2バイト";
-
 	return 0;
 }
 

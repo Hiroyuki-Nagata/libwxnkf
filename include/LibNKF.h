@@ -91,6 +91,16 @@ public:
 	 * NKFのフラグのセット
 	 */
 	std::bitset<nkf_flag_num> nkfFlags;
+	/**
+	 * 変換後の文字列長だけを取得する
+	 */
+	unsigned int GetConvertedStringLength () {
+		if (!oConvStr)
+			return 0;
+
+		return oConvStr->length();
+	};
+
 private:
 	/**
 	 * KanjiConvertメソッド中のswitch文用マクロ
