@@ -42,4 +42,6 @@ int testroutine(std::string option, std::string filename, std::string explanatio
 	std::cout << explanation << std::endl << std::endl;
 
 	delete nkf;
+
+	return 0;
 }

@@ -8,6 +8,7 @@
 #ifndef UTIL_H_
 #define UTIL_H_
 
+#include <cstring>
 #include "NKFNativeEncoding.h"
 
 class Util {

@@ -11,6 +11,7 @@
 #include <iostream>
 #include <string>
 #include <sys/stat.h>
+#include <cstdlib>
 #include "NKFBaseConfig.h"
 #include "FlagSet.h"
 #include "UTF8Table.h"
