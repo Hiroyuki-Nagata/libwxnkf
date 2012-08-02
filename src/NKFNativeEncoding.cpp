@@ -45,7 +45,7 @@ nkf_char NKFNativeEncoding::Iconv(nkf_char c2, nkf_char c1, nkf_char c0,
 void NKFNativeEncoding::Oconv(nkf_char c2, nkf_char c1,
 		std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr) {
 
-	switch (this->baseId) {
+	switch (this->outputMode) {
 
 	case ASCII:
 		EOconv(c2, c1, nkfFlags, oConvStr);
