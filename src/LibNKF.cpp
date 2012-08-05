@@ -669,7 +669,8 @@ void LibNKF::ShowVersion() {
 /**
  * 文字コードを変換する処理のラッパーで、外部に見せるメソッド
  */
-int LibNKF::Convert(const std::string inputFile, const std::string outputFile, const std::string option) {
+int LibNKF::Convert(const std::string inputFile, const std::string outputFile,
+		const std::string option) {
 
 	SetOption(option);
 	FILE* in;
@@ -687,7 +688,9 @@ int LibNKF::Convert(const std::string inputFile, const std::string outputFile, c
 /**
  * 文字コードを変換する処理のラッパーで、外部に見せるメソッド
  */
-std::wstring LibNKF::Convert(FILE* f) {
+std::wstring LibNKF::Convert(FILE* f, const std::string option) {
+
+	SetOption(option);
 	KanjiConvert(f);
 	return *oConvStr;
 }
@@ -786,7 +789,8 @@ int LibNKF::KanjiConvert(FILE* f) {
 			NEXT;
 		} else {
 			/* first byte */
-			if (inputEncoding->inputMode == JIS_X_0208 && DEL <= c1 && c1 < 0x92) {
+			if (inputEncoding->inputMode == JIS_X_0208 && DEL <= c1
+					&& c1 < 0x92) {
 				/* CP5022x */
 				MORE
 				;
@@ -1194,6 +1198,19 @@ int LibNKF::ModuleConnection() {
 		nkfFlags[x0201_f] = X0201_DEFAULT;
 	}
 
+	/* 入力文字コードと処理するメソッドを設定する */
+	if (inputEncoding) {
+		if (nkfFlags[estab_f] != -TRUE) {
+			nkfFlags[estab_f] = -TRUE;
+		}
+	} else {
+		if (nkfFlags[estab_f] != FALSE) {
+			nkfFlags[estab_f] = FALSE;
+		}
+		inputEncoding->iconvName = "e_iconv";
+		inputEncoding->baseId = ISO_2022_JP;
+	}
+
 	return 0;
 }
 
@@ -1574,4 +1591,28 @@ void LibNKF::SetInputMode(int mode) {
 	inputEncoding->baseName = "ISO-2022-JP";
 }
 
+//void LibNKF::SetIconv(int flag, std::string iconvName, NKFNativeEncoding *enc) {
+//
+//	if (estab_f != flag){
+//	    estab_f = flag;
+//	}
+//
+//    if (iconv_func
+//#ifdef INPUT_CODE_FIX
+//	&& (f == -TRUE || !input_encoding) /* -TRUE means "FORCE" */
+//#endif
+//       ){
+//	iconv = iconv_func;
+//    }
+//#ifdef CHECK_OPTION
+//    if (estab_f && iconv_for_check != iconv){
+//	struct input_code *p = find_inputcode_byfunc(iconv);
+//	if (p){
+//	    set_input_codename(p->name);
+//	    debug(p->name);
+//	}
+//	iconv_for_check = iconv;
+//    }
+//#endif
+//}
 

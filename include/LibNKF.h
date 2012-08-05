@@ -61,14 +61,6 @@ public:
 	 */
 	~LibNKF();
 	/**
-	 * SetOption:オプションの判別と設定を行う
-	 *
-	 * return values:
-	 *    0: success
-	 *   -1: ArgumentError
-	 */
-	int SetOption(const std::string option);
-	/**
 	 * 使い方の表示
 	 */
 	void ShowUsage();
@@ -83,11 +75,16 @@ public:
 	/**
 	 * 文字コードを変換する処理のラッパーで、外部に見せるメソッド
 	 */
-	std::wstring Convert(FILE* f);
+	std::wstring Convert(FILE* f, const std::string option);
 	/**
-	 * NKFのフラグのセット
+	 * 変換後の文字列だけを取得する
 	 */
-	std::bitset<nkf_flag_num> nkfFlags;
+	std::wstring GetConvertedString() {
+		if (!oConvStr)
+			return 0;
+
+		return *oConvStr;
+	};
 	/**
 	 * 変換後の文字列長だけを取得する
 	 */
@@ -112,6 +109,18 @@ private:
 	 */
 	std::wstring* oConvStr;
 	/**
+	 * NKFのフラグのセット
+	 */
+	std::bitset<nkf_flag_num> nkfFlags;
+	/**
+	 * SetOption:オプションの判別と設定を行う
+	 *
+	 * return values:
+	 *    0: success
+	 *   -1: ArgumentError
+	 */
+	int SetOption(const std::string option);
+	/**
 	 * 入力文字コードと出力文字コードの設定と処理を行うクラスのインスタンス
 	 */
 	NKFNativeEncoding* inputEncoding;
@@ -133,6 +142,10 @@ private:
 	 * 出力する文字コード用にフラグを設定する
 	 */
 	void SetOutputEncoding(NKFNativeEncoding *enc);
+//	/**
+//	 * 入力文字コードと処理するメソッドを設定する
+//	 */
+//	void SetIconv(int flag, std::string iconvName, NKFNativeEncoding *enc);
 	/**
 	 * 入力文字コードを設定する
 	 */
