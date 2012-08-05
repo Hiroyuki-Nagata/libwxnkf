@@ -61,10 +61,6 @@ public:
 	 */
 	~LibNKF();
 	/**
-	 * 外部からメソッドを呼ぶテスト
-	 */
-	void Test();
-	/**
 	 * SetOption:オプションの判別と設定を行う
 	 *
 	 * return values:
@@ -83,7 +79,7 @@ public:
 	/**
 	 * 文字コードを変換する処理のラッパーで、外部に見せるメソッド
 	 */
-	int Convert(const std::wstring src, std::wstring dst);
+	int Convert(const std::string inputFile, const std::string outputFile, const std::string option);
 	/**
 	 * 文字コードを変換する処理のラッパーで、外部に見せるメソッド
 	 */

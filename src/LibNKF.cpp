@@ -53,12 +53,6 @@ LibNKF::~LibNKF() {
 	delete outputEncoding;
 }
 /**
- * 外部からメソッドを呼ぶテスト
- */
-void LibNKF::Test() {
-
-}
-/**
  * SetOption:オプションの判別と設定を行う
  *
  * return values:
@@ -675,7 +669,19 @@ void LibNKF::ShowVersion() {
 /**
  * 文字コードを変換する処理のラッパーで、外部に見せるメソッド
  */
-int LibNKF::Convert(const std::wstring src, std::wstring dst) {
+int LibNKF::Convert(const std::string inputFile, const std::string outputFile, const std::string option) {
+
+	SetOption(option);
+	FILE* in;
+	in = fopen(inputFile.c_str(), "r");
+	KanjiConvert(in);
+	fclose(in);
+
+	FILE* out;
+	out = fopen(outputFile.c_str(), "w");
+	fputws(oConvStr->c_str(), out);
+	fclose(out);
+
 	return 0;
 }
 /**
@@ -698,9 +704,6 @@ int LibNKF::KanjiConvert(FILE* f) {
 	//if (inputEncoding && !nkf_enc_asciicompat(inputEncoding)) {
 	//	is_8bit = TRUE;
 	//}
-
-	//inputEncoding->id = ASCII;
-	//outputEncoding->id = ASCII;
 
 	// 設定されたフラグから使用するクラスとメソッドを決定する
 	if (ModuleConnection() < 0) {
@@ -1158,7 +1161,6 @@ int LibNKF::KanjiConvert(FILE* f) {
 //			debug(result->name);
 		}
 	}
-
 	return 0;
 }
 

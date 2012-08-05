@@ -350,13 +350,13 @@ int Util::NKFEncFindIndex(const char* name) {
 		break;
 
 	case 'S': // 最初の文字が「S」の場合
-		if (StrncmpFromHead("SHIFT_JIS", name)) {
+		if (StrncmpFromHead("Shift_JIS", name)) {
 			id = SHIFT_JIS;
 		} else if (StrncmpFromHead("SJIS", name)) {
 			id = SHIFT_JIS;
-		} else if (StrncmpFromHead("SHIFT_JISX0213", name)) {
+		} else if (StrncmpFromHead("Shift_JISX0213", name)) {
 			id = SHIFT_JISX0213;
-		} else if (StrncmpFromHead("SHIFT_JIS-2004", name)) {
+		} else if (StrncmpFromHead("Shift_JIS-2004", name)) {
 			id = SHIFT_JIS_2004;
 		}
 		break;
@@ -518,7 +518,7 @@ nkf_char Util::S2eConv(nkf_char c2, nkf_char c1, nkf_char* p2, nkf_char* p1,
 
 	if (!nkfFlags[cp932inv_f] && is_ibmext_in_sjis(c2)) {
 		UTF8Table* table;
-		//val = table->shiftjis_cp932[c2 - CP932_TABLE_BEGIN][c1 - 0x40];
+		val = table->shiftjis_cp932[c2 - CP932_TABLE_BEGIN][c1 - 0x40];
 		if (val) {
 			c2 = val >> 8;
 			c1 = val & 0xff;
@@ -527,7 +527,7 @@ nkf_char Util::S2eConv(nkf_char c2, nkf_char c1, nkf_char* p2, nkf_char* p1,
 	if (nkfFlags[cp932inv_f]
 			&& CP932INV_TABLE_BEGIN <= c2&& c2 <= CP932INV_TABLE_END) {
 		UTF8Table* table;
-		//val = table->cp932inv[c2 - CP932INV_TABLE_BEGIN][c1 - 0x40];
+		val = table->cp932inv[c2 - CP932INV_TABLE_BEGIN][c1 - 0x40];
 		if (val) {
 			c2 = val >> 8;
 			c1 = val & 0xff;
@@ -535,7 +535,7 @@ nkf_char Util::S2eConv(nkf_char c2, nkf_char c1, nkf_char* p2, nkf_char* p1,
 	}
 	if (!nkfFlags[x0213_f] && is_ibmext_in_sjis(c2)) {
 		UTF8Table* table;
-		//val = table->shiftjis_x0212[c2 - 0xfa][c1 - 0x40];
+		val = table->shiftjis_x0212[c2 - 0xfa][c1 - 0x40];
 		if (val) {
 			if (val > 0x7FFF) {
 				c2 = PREFIX_EUCG3 | ((val >> 8) & 0x7f);
@@ -574,7 +574,7 @@ nkf_char Util::S2eConv(nkf_char c2, nkf_char c1, nkf_char* p2, nkf_char* p1,
 			c1 = c1 - 0x7E;
 		}
 	}
-	//c2 = Util::X0212Unshift(c2);
+	c2 = Util::X0212Unshift(c2);
 	if (p2)
 		*p2 = c2;
 	if (p1)
@@ -966,5 +966,17 @@ bool Util::StrncmpFromHead(const char* charCode, const char* name) {
 	int ret = strncmp(charCode, name, cmpLen);
 	return ret == 0 ? true : false;
 }
+
+nkf_char Util::X0212Unshift(nkf_char c) {
+
+	nkf_char ret = c;
+	if (0x7f <= c && c <= 0x88) {
+		ret = c + (0x75 - 0x7f);
+	} else if (0x89 <= c && c <= 0x92) {
+		ret = PREFIX_EUCG3 | 0x80 | (c + (0x75 - 0x89));
+	}
+	return ret;
+}
+
 
 
