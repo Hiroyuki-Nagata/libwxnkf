@@ -25,13 +25,16 @@ int main() {
 	//testroutine("--ic=ISO-2022-JP --oc=UTF-8", "./test/JIS.txt", "ISO-2022-JPからUTF-8への変換終わり", true);
 
 	// ファイルからファイルに書き出す
-	LibNKF* nkf = new LibNKF();
-	nkf->Convert("./test/CP932.txt", "./test.txt", "--ic=CP932 --oc=UTF-8");
-	delete nkf;
+//	LibNKF* nkf = new LibNKF();
+//	nkf->Convert("./test/CP932.txt", "./test.txt", "--ic=CP932 --oc=UTF-8");
+//	delete nkf;
 
 //	LibNKF* nkf2 = new LibNKF();
 //	nkf2->Convert("./test/Shift_JIS.txt", "./test2.txt", "--ic=Shift_JIS -w8");
 //	delete nkf2;
+	LibNKF* nkf = new LibNKF();
+	nkf->Convert("./test/minimalCP932.txt", "./test.txt", "--ic=CP932 --oc=UTF-8");
+	delete nkf;
 }
 
 int testroutine(std::string option, std::string filename, std::string explanation, bool flag) {

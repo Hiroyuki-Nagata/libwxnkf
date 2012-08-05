@@ -149,10 +149,10 @@ private:
 	}
 	;
 	/**
-	 * ファイルポインタではなく引数に指定したnkf_charを返す
+	 * 一度読み込んだ文字をファイルストリームに戻す
 	 */
-	static nkf_char StdUnGetC(nkf_char c, FILE *f) {
-		return c;
+	static void StdUnGetC(nkf_char c, FILE *f) {
+		ungetc(c, f);
 	}
 	;
 	/**
