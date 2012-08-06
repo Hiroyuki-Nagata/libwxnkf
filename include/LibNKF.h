@@ -75,7 +75,7 @@ public:
 	/**
 	 * 文字コードを変換する処理のラッパーで、外部に見せるメソッド
 	 */
-	std::wstring Convert(FILE* f, const std::string option);
+	std::wstring Convert(const std::string inputFile, const std::string option);
 	/**
 	 * 変換後の文字列だけを取得する
 	 */
@@ -142,10 +142,6 @@ private:
 	 * 出力する文字コード用にフラグを設定する
 	 */
 	void SetOutputEncoding(NKFNativeEncoding *enc);
-//	/**
-//	 * 入力文字コードと処理するメソッドを設定する
-//	 */
-//	void SetIconv(int flag, std::string iconvName, NKFNativeEncoding *enc);
 	/**
 	 * 入力文字コードを設定する
 	 */

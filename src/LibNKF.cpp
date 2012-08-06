@@ -688,10 +688,14 @@ int LibNKF::Convert(const std::string inputFile, const std::string outputFile,
 /**
  * 文字コードを変換する処理のラッパーで、外部に見せるメソッド
  */
-std::wstring LibNKF::Convert(FILE* f, const std::string option) {
+std::wstring LibNKF::Convert(const std::string inputFile,
+		const std::string option) {
 
 	SetOption(option);
-	KanjiConvert(f);
+	FILE* in;
+	in = fopen(inputFile.c_str(), "r");
+	KanjiConvert (in);
+	fclose(in);
 	return *oConvStr;
 }
 /**
@@ -1103,10 +1107,10 @@ int LibNKF::KanjiConvert(FILE* f) {
 			case -2:
 				/* 4 bytes UTF-8 */
 				if ((c3 = LibNKF::StdGetC(f)) != EOF) {
-					//GuessConv::CodeStatus(c3, flagPool);
+					CodeStatus(c3);
 					c3 <<= 8;
 					if ((c4 = LibNKF::StdGetC(f)) != EOF) {
-						//GuessConv::CodeStatus(c4, flagPool);
+						CodeStatus(c4);
 						inputEncoding->Iconv(c2, c1, c3 | c4, nkfFlags,
 								oConvStr);
 					}
@@ -1115,7 +1119,7 @@ int LibNKF::KanjiConvert(FILE* f) {
 			case -1:
 				/* 3 bytes EUC or UTF-8 */
 				if ((c3 = LibNKF::StdGetC(f)) != EOF) {
-					//GuessConv::CodeStatus(c3, flagPool);
+					CodeStatus(c3);
 					inputEncoding->Iconv(c2, c1, c3, nkfFlags, oConvStr);
 				}
 				break;
@@ -1578,7 +1582,10 @@ void LibNKF::CodeStatus(nkf_char c) {
 	if (action_flag) {
 		// resultが確定している場合
 		if (result && !nkfFlags[estab_f]) {
-			//SetIconv(TRUE, result->name, nkfFlags);
+			if (nkfFlags[estab_f] != TRUE) {
+				nkfFlags[estab_f] = TRUE;
+			}
+			inputEncoding->baseName = result->name;
 		}
 	}
 }
@@ -1590,29 +1597,4 @@ void LibNKF::SetInputMode(int mode) {
 	inputEncoding->inputMode = mode;
 	inputEncoding->baseName = "ISO-2022-JP";
 }
-
-//void LibNKF::SetIconv(int flag, std::string iconvName, NKFNativeEncoding *enc) {
-//
-//	if (estab_f != flag){
-//	    estab_f = flag;
-//	}
-//
-//    if (iconv_func
-//#ifdef INPUT_CODE_FIX
-//	&& (f == -TRUE || !input_encoding) /* -TRUE means "FORCE" */
-//#endif
-//       ){
-//	iconv = iconv_func;
-//    }
-//#ifdef CHECK_OPTION
-//    if (estab_f && iconv_for_check != iconv){
-//	struct input_code *p = find_inputcode_byfunc(iconv);
-//	if (p){
-//	    set_input_codename(p->name);
-//	    debug(p->name);
-//	}
-//	iconv_for_check = iconv;
-//    }
-//#endif
-//}
 
