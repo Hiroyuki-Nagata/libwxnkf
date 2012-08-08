@@ -6,8 +6,9 @@
 
 # target and sources
 TARGET  = libwxnkf.a
-SOURCES = $(shell find src/ -name '*.cpp')
+SOURCES = wxnkf.cpp flagset.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
+TARGETPATH = lib/libwxnkf.a
 
 # sources for dependency
 DEPSRCS = $(shell find src/ -name '*.cpp')
@@ -17,6 +18,7 @@ DEP		= dep
 CXX		:= g++ -gstabs
 AR      := ar
 RM		:= rm
+MV		:= mv
 VERSION := 2.1.2
 MKDIR	:= mkdir
 
@@ -37,10 +39,11 @@ all:	$(DEP) $(TARGET)
 dep:
 	$(CXX) -MM -MG $(DEPSRCS) >makefile.dep
 # build library
-$(TARGET): $(OBJECTS) $(SOURCES)
+$(TARGET) : $(OBJECTS) $(SOURCES)
 		$(AR) $(ARFLAG) $(TARGET) $(OBJECTS)
+		$(MV) $(TARGET) $(TARGETPATH)
 # clean
 clean:
-		$(RM) -f *.o $(TARGET) makefile.dep
+		$(RM) -f *.o $(TARGET) makefile.dep $(TARGETPATH)
 # dependency
 -include makefile.dep

@@ -35,3 +35,60 @@
     "Copyright (C) 1987, FUJITSU LTD. (I.Ichikawa).\n" \
     "Copyright (C) 1996-2011, The nkf Project."
 
+/**
+ * constructor
+ */
+wxNKF::wxNKF() {
+	/* prepare nkf flag set */
+	FlagSet* flag = new FlagSet();
+	nkfFlags = flag->GetFlagSet();
+	delete flag;
+}
+/**
+ * destructor
+ */
+wxNKF::~wxNKF() {
+}
+/**
+ * convert charcter code with option
+ */
+int wxNKF::Convert(const wxString inputFilePath, const wxString outputFilePath,
+		const wxString option) {
+
+	// validate
+	if (0 == inputFilePath.Len() || 0 == outputFilePath.Len()
+			|| 0 == option.Len()) {
+		return -1;
+	}
+
+	// prepare file system
+	wxFileSystem* fileSystem = new wxFileSystem();
+	wxFSFile* file = fileSystem->OpenFile(inputFilePath);
+
+	if (!file) {
+		// cannot get filestream
+		delete fileSystem;
+		return -1;
+	}
+
+	wxInputStream* in = file->GetStream();
+
+	// delete resource
+	delete fileSystem;
+}
+/**
+ * SetOption : setting and judge options
+ *
+ * return values:
+ *    0: success
+ *   -1: ArgumentError
+ */
+int wxNKF::SetOption(const wxString option) {
+}
+/**
+ * main method of this class
+ * convert charcode
+ */
+int wxNKF::KanjiConvert(wxInputStream* in) {
+}
+
