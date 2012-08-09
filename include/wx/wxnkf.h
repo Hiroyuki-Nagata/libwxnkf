@@ -11,8 +11,10 @@
 #include <wx/wx.h>
 #include <wx/stream.h>
 #include <wx/filesys.h>
-#include <wx/txtstrm.h>
+#include <wx/datstrm.h>
+#include <wx/wfstream.h>
 #include "flagset.h"
+
 
 class wxNKF {
 public:
@@ -46,7 +48,7 @@ private:
 	 * main method of this class
 	 * convert charcode
 	 */
-	int KanjiConvert(wxInputStream* in);
+	int KanjiConvert(wxInputStream* in, wxDataOutputStream* out);
 };
 
 #endif /* WXNKF_H_ */

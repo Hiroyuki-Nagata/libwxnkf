@@ -17,8 +17,8 @@ CXX		:= g++ -gstabs
 RM 		:= rm
 
 # compile option
-CXXFLAGS = -Wall -I/c/MinGW/include -I../include
-LDFLAGS  = -static -L/c/MinGW/lib #../lib/$(LIBNKF)
+CXXFLAGS = -Wall -I/c/MinGW/include -I../include `wx-config --cxxflags`
+LDFLAGS  = -static -L/c/MinGW/lib ../lib/$(LIBNKF) `wx-config --libs`
 
 # make all
 all : $(TARGET)

@@ -8,6 +8,7 @@
  */
 
 #include <wx/wx.h>
+#include "wx/wxnkf.h"
 
 class MyApp: public wxApp {
 public:
@@ -59,12 +60,7 @@ void MyFrame::OnQuit(wxCommandEvent& WXUNUSED(event)) {
 	Close(true);
 }
 void MyFrame::OnAbout(wxCommandEvent& WXUNUSED(event)) {
-//	LibNKF* nkf = new LibNKF();
-//	std::wstring c1 = nkf->Convert("./sjis.txt", "--ic=CP932 --oc=UTF-8");
-//
-//	wchar_t* wc = (wchar_t*) c1.c_str();
-//	wxString c2(wc);
-//	wxMessageBox(c2);
-//
-//	delete nkf;
+	wxNKF* nkf = new wxNKF();
+	nkf->Convert(wxT("./CP932.txt"), wxT("./test.txt"), wxT("test"));
+	delete nkf;
 }

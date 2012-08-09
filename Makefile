@@ -14,6 +14,9 @@ TARGETPATH = lib/libwxnkf.a
 DEPSRCS = $(shell find src/ -name '*.cpp')
 DEP		= dep
 
+# test sources and objects
+TEST	= test
+
 # basic command
 CXX		:= g++ -gstabs
 AR      := ar
@@ -21,6 +24,7 @@ RM		:= rm
 MV		:= mv
 VERSION := 2.1.2
 MKDIR	:= mkdir
+MAKE	:= make
 
 # compile option
 VPATH    = include src
@@ -31,19 +35,24 @@ ARFLAG	:= crsv
 # dummy target
 .PHONY: dep clean
 # make all
-all:	$(DEP) $(TARGET)
+all:	$(DEP) $(TARGET) $(TEST)
 # suffix rule
 .cpp.o:
 		$(CXX) $(CXXFLAGS) -c $<
 # make dependency
-dep:
+$(DEP):
 	$(CXX) -MM -MG $(DEPSRCS) >makefile.dep
 # build library
 $(TARGET) : $(OBJECTS) $(SOURCES)
 		$(AR) $(ARFLAG) $(TARGET) $(OBJECTS)
 		$(MV) $(TARGET) $(TARGETPATH)
+		$(MAKE) -C $(TEST)
 # clean
 clean:
 		$(RM) -f *.o $(TARGET) makefile.dep $(TARGETPATH)
+		$(MAKE) -C $(TEST) clean
+# build test code
+test: 
+		$(MAKE) -C $(TEST)
 # dependency
 -include makefile.dep

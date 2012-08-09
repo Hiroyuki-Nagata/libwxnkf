@@ -61,6 +61,10 @@ int wxNKF::Convert(const wxString inputFilePath, const wxString outputFilePath,
 		return -1;
 	}
 
+	// set option
+	if (0 != SetOption(option))
+		return -1;
+
 	// prepare file system
 	wxFileSystem* fileSystem = new wxFileSystem();
 	wxFSFile* file = fileSystem->OpenFile(inputFilePath);
@@ -73,6 +77,16 @@ int wxNKF::Convert(const wxString inputFilePath, const wxString outputFilePath,
 
 	wxInputStream* in = file->GetStream();
 
+	// prepare outputstream
+	wxFileOutputStream output(outputFilePath);
+	wxDataOutputStream out(output);
+
+	// Convert char code
+	if (0 != KanjiConvert(in, &out)) {
+		delete fileSystem;
+		return -1;
+	}
+
 	// delete resource
 	delete fileSystem;
 }
@@ -84,11 +98,15 @@ int wxNKF::Convert(const wxString inputFilePath, const wxString outputFilePath,
  *   -1: ArgumentError
  */
 int wxNKF::SetOption(const wxString option) {
+	return 0;
 }
 /**
  * main method of this class
  * convert charcode
  */
-int wxNKF::KanjiConvert(wxInputStream* in) {
+int wxNKF::KanjiConvert(wxInputStream* in, wxDataOutputStream* out) {
+	while (!in->Eof()) {
+		out->Write8(in->GetC());
+	}
 }
 
