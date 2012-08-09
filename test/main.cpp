@@ -60,7 +60,13 @@ void MyFrame::OnQuit(wxCommandEvent& WXUNUSED(event)) {
 	Close(true);
 }
 void MyFrame::OnAbout(wxCommandEvent& WXUNUSED(event)) {
-	wxNKF* nkf = new wxNKF();
-	nkf->Convert(wxT("./CP932.txt"), wxT("./test.txt"), wxT("test"));
-	delete nkf;
+	wxNKF* nkf1 = new wxNKF();
+	nkf1->Convert(wxT("./CP932.txt"), wxT("./test.txt"), wxT("test"));
+	delete nkf1;
+
+	wxNKF* nkf2 = new wxNKF();
+	wxString test = nkf2->Convert(wxT("./CP932.txt"), wxT("test"));
+	delete nkf2;
+
+	wxMessageBox(test);
 }
