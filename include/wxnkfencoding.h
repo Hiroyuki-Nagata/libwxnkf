@@ -24,6 +24,7 @@
  */
 class wxNKFEncoding {
 
+public:
 	/**
 	 * unique character code id
 	 */

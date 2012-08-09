@@ -123,6 +123,12 @@ private:
 	 * check BOM existence. If it exist, ignore
 	 */
 	void CheckBom(wxInputStream* in, wxDataOutputStream* out);
+	void CheckBom(wxInputStream* in);
+	/**
+	 * set flag for Input & Output
+	 */
+	void SetInputEncoding(wxNKFEncoding *enc);
+	void SetOutputEncoding(wxNKFEncoding *enc);
 };
 
 #endif /* WXNKF_H_ */
