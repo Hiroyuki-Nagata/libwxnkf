@@ -6,7 +6,7 @@
 
 # target and sources
 TARGET  = libwxnkf.a
-SOURCES = wxnkf.cpp flagset.cpp utf8table.cpp
+SOURCES = wxnkf.cpp flagset.cpp utf8table.cpp wxnkfencoding.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 TARGETPATH = lib/libwxnkf.a
 

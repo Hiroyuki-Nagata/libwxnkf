@@ -43,11 +43,19 @@ wxNKF::wxNKF() {
 	FlagSet* flag = new FlagSet();
 	nkfFlags = flag->GetFlagSet();
 	delete flag;
+
+	/* prepare wstring */
+	oConvStr = new std::wstring();
+
+	/* prepare encode setting class */
+	wxEnc = new wxNKFEncoding();
 }
 /**
  * destructor
  */
 wxNKF::~wxNKF() {
+	delete oConvStr;
+	delete wxEnc;
 }
 /**
  * convert charcter code in file, with option

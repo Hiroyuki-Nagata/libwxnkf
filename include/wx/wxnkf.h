@@ -15,6 +15,7 @@
 #include <wx/wfstream.h>
 #include "flagset.h"
 #include "utf8table.h"
+#include "wxnkfencoding.h"
 
 /* HELP_OUTPUT */
 #ifdef HELP_OUTPUT_STDERR
@@ -86,6 +87,14 @@ private:
 	 * set of nkf flag
 	 */
 	std::bitset<nkf_flag_num> nkfFlags;
+	/**
+	 * string for output
+	 */
+	std::wstring* oConvStr;
+	/**
+	 * Instance of class for IO char code setting and process
+	 */
+	wxNKFEncoding* wxEnc;
 	/**
 	 * SetOption : setting and judge options
 	 *

@@ -8,13 +8,13 @@
 #ifndef WXNKFBASECONFIG_H_
 #define WXNKFBASECONFIG_H_
 
-#ifdef __WIN32__
-#include <windows.h>
-#include <locale.h>
-#endif
-
-#include <assert.h>
-#include <cstdio>
+//#ifdef __WIN32__
+//#include <windows.h>
+//#include <locale.h>
+//#endif
+//
+//#include <assert.h>
+//#include <cstdio>
 
 #ifdef nkf_char
 #elif defined(INT_IS_SHORT)
