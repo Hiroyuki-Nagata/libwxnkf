@@ -213,13 +213,13 @@ int wxNKF::SetOption(const wxString option) {
 					exit(EXIT_SUCCESS);
 				}
 				if (strcmp(long_option[i].name, "ic=") == 0) {
-					Util::NKFEncFind((char *) p, inputEncoding);
+					Util::NKFEncFind((char *) p, wxEnc, SET_INPUT_MODE);
 					continue;
 				}
 				if (strcmp(long_option[i].name, "oc=") == 0) {
-					Util::NKFEncFind((char *) p, outputEncoding);
+					Util::NKFEncFind((char *) p, wxEnc, SET_OUTPUT_MODE);
 					/* if (enc <= 0) continue; */
-					if (!outputEncoding)
+					if (!wxEnc->oCharName.Len())
 						continue;
 					continue;
 				}
@@ -256,7 +256,7 @@ int wxNKF::SetOption(const wxString option) {
 					nkfFlags[overwrite_f] = TRUE;
 					nkfFlags[preserve_time_f] = FALSE;
 					nkfFlags[backup_f] = TRUE;
-					backup_suffix = (char *) p;
+					//backup_suffix = (char *) p;
 					continue;
 				}
 
@@ -382,7 +382,7 @@ int wxNKF::SetOption(const wxString option) {
 				if (strcmp(long_option[i].name, "prefix=") == 0) {
 					if (nkf_isgraph(p[0])) {
 						for (i = 1; nkf_isgraph(p[i]); i++) {
-							prefix_table[p[i]] = p[0];
+							//prefix_table[p[i]] = p[0];
 						}
 					}
 					continue;
@@ -419,17 +419,17 @@ int wxNKF::SetOption(const wxString option) {
 			continue;
 		case 'j': /* JIS output */
 		case 'n':
-			Util::NKFEncFromIndex(ISO_2022_JP, outputEncoding);
+			Util::NKFEncFromIndex(ISO_2022_JP, wxEnc, SET_OUTPUT_MODE);
 			continue;
 		case 'e': /* AT&T EUC output */
-			Util::NKFEncFromIndex(EUCJP_NKF, outputEncoding);
+			Util::NKFEncFromIndex(EUCJP_NKF, wxEnc, SET_OUTPUT_MODE);
 			continue;
 		case 's': /* SJIS output */
-			Util::NKFEncFromIndex(SHIFT_JIS, outputEncoding);
+			Util::NKFEncFromIndex(SHIFT_JIS, wxEnc, SET_OUTPUT_MODE);
 			continue;
 		case 'l': /* ISO8859 Latin-1 support, no conversion */
 			nkfFlags[iso8859_f] = TRUE; /* Only compatible with ISO-2022-JP */
-			Util::NKFEncFromIndex(ISO_8859_1, inputEncoding);
+			Util::NKFEncFromIndex(ISO_8859_1, wxEnc, SET_INPUT_MODE);
 			continue;
 		case 'i': /* Kanji IN ESC-$-@/B */
 			if (*cp == '@' || *cp == 'B')
@@ -473,10 +473,10 @@ int wxNKF::SetOption(const wxString option) {
 				cp++;
 				if (cp[0] == '0') {
 					cp++;
-					Util::NKFEncFromIndex(UTF_8N, outputEncoding);
+					Util::NKFEncFromIndex(UTF_8N, wxEnc, SET_OUTPUT_MODE);
 				} else {
 					nkfFlags[output_bom_f] = TRUE;
-					Util::NKFEncFromIndex(UTF_8_BOM, outputEncoding);
+					Util::NKFEncFromIndex(UTF_8_BOM, wxEnc, SET_OUTPUT_MODE);
 				}
 			} else {
 				int enc_idx;
@@ -487,12 +487,12 @@ int wxNKF::SetOption(const wxString option) {
 					cp += 2;
 					enc_idx = UTF_32;
 				} else {
-					Util::NKFEncFromIndex(UTF_8, outputEncoding);
+					Util::NKFEncFromIndex(UTF_8, wxEnc, SET_OUTPUT_MODE);
 					continue;
 				}
 				if (cp[0] == 'L') {
 					cp++;
-					outputEncoding->endian = ENDIAN_LITTLE;
+					wxEnc->oEndian = ENDIAN_LITTLE;
 					nkfFlags[output_bom_f] = TRUE;
 				} else if (cp[0] == 'B') {
 					cp++;
@@ -503,66 +503,66 @@ int wxNKF::SetOption(const wxString option) {
 					cp++;
 					enc_idx =
 							enc_idx == UTF_16 ?
-									(outputEncoding->endian == ENDIAN_LITTLE ?
+									(wxEnc->oEndian == ENDIAN_LITTLE ?
 											UTF_16LE : UTF_16BE) :
-									(outputEncoding->endian == ENDIAN_LITTLE ?
+									(wxEnc->oEndian == ENDIAN_LITTLE ?
 											UTF_32LE : UTF_32BE);
 				} else {
 					enc_idx =
 							enc_idx == UTF_16 ?
-									(outputEncoding->endian == ENDIAN_LITTLE ?
+									(wxEnc->oEndian == ENDIAN_LITTLE ?
 											UTF_16LE_BOM : UTF_16BE_BOM) :
-									(outputEncoding->endian == ENDIAN_LITTLE ?
+									(wxEnc->oEndian == ENDIAN_LITTLE ?
 											UTF_32LE_BOM : UTF_32BE_BOM);
 				}
-				Util::NKFEncFromIndex(enc_idx, outputEncoding);
+				Util::NKFEncFromIndex(enc_idx, wxEnc, SET_OUTPUT_MODE);
 			}
 			continue;
 
 		case 'W': /* UTF input */
 			if (cp[0] == '8') {
 				cp++;
-				Util::NKFEncFromIndex(UTF_8, inputEncoding);
+				Util::NKFEncFromIndex(UTF_8, wxEnc, SET_INPUT_MODE);
 			} else {
 				int enc_idx;
 				if ('1' == cp[0] && '6' == cp[1]) {
 					cp += 2;
-					inputEncoding->endian = ENDIAN_BIG;
+					wxEnc->iEndian = ENDIAN_BIG;
 					enc_idx = UTF_16;
 				} else if ('3' == cp[0] && '2' == cp[1]) {
 					cp += 2;
-					inputEncoding->endian = ENDIAN_BIG;
+					wxEnc->iEndian = ENDIAN_BIG;
 					enc_idx = UTF_32;
 				} else {
-					Util::NKFEncFromIndex(UTF_8, inputEncoding);
+					Util::NKFEncFromIndex(UTF_8, wxEnc, SET_OUTPUT_MODE);
 					continue;
 				}
 				if (cp[0] == 'L') {
 					cp++;
-					inputEncoding->endian = ENDIAN_LITTLE;
+					wxEnc->iEndian = ENDIAN_LITTLE;
 				} else if (cp[0] == 'B') {
 					cp++;
-					inputEncoding->endian = ENDIAN_BIG;
+					wxEnc->iEndian = ENDIAN_BIG;
 				}
 				enc_idx = (
 						enc_idx == UTF_16 ?
-								(inputEncoding->endian == ENDIAN_LITTLE ?
+								(wxEnc->iEndian == ENDIAN_LITTLE ?
 										UTF_16LE : UTF_16BE) :
-								(inputEncoding->endian == ENDIAN_LITTLE ?
+								(wxEnc->iEndian == ENDIAN_LITTLE ?
 										UTF_32LE : UTF_32BE));
-				Util::NKFEncFromIndex(enc_idx, inputEncoding);
+				Util::NKFEncFromIndex(enc_idx, wxEnc, SET_INPUT_MODE);
 			}
 			continue;
 
 			/* Input code assumption */
 		case 'J': /* ISO-2022-JP input */
-			Util::NKFEncFromIndex(ISO_2022_JP, inputEncoding);
+			Util::NKFEncFromIndex(ISO_2022_JP, wxEnc, SET_INPUT_MODE);
 			continue;
 		case 'E': /* EUC-JP input */
-			Util::NKFEncFromIndex(EUCJP_NKF, inputEncoding);
+			Util::NKFEncFromIndex(EUCJP_NKF, wxEnc, SET_INPUT_MODE);
 			continue;
 		case 'S': /* Shift_JIS input */
-			Util::NKFEncFromIndex(SHIFT_JIS, inputEncoding);
+			Util::NKFEncFromIndex(SHIFT_JIS, wxEnc, SET_INPUT_MODE);
 			continue;
 		case 'Z': /* Convert X0208 alphabet to asii */
 			/* alpha_f

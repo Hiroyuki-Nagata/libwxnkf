@@ -36,15 +36,15 @@ public:
 	wxString iCharName;
 	wxString oCharName;
 	/**
-	 * unique base character code id
+	 * base character code id
 	 */
 	int inputMode;
 	int outputMode;
 	/**
-	 * unique base character code name
+	 * base character code name
 	 */
-	wxString iCharBaseName;
-	wxString oCharBaseName;
+	wxString inputBaseName;
+	wxString outputBaseName;
 	/**
 	 * endian
 	 */

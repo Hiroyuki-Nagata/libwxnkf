@@ -6,6 +6,7 @@
  */
 
 #include "wxnkfencoding.h"
+#include "util.h"
 
 nkf_char wxNKFEncoding::Iconv(nkf_char c2, nkf_char c1, nkf_char c0,
 		std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr) {

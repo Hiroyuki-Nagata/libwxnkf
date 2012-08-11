@@ -16,6 +16,7 @@
 #include "flagset.h"
 #include "utf8table.h"
 #include "wxnkfencoding.h"
+#include "util.h"
 
 /* HELP_OUTPUT */
 #ifdef HELP_OUTPUT_STDERR
@@ -129,6 +130,15 @@ private:
 	 */
 	void SetInputEncoding(wxNKFEncoding *enc);
 	void SetOutputEncoding(wxNKFEncoding *enc);
+	/**
+	 * other class value etc.
+	 */
+	unsigned char prefix_table[256];
+	char* backup_suffix;
+	int fold_len;
+	int fold_margin;
+	int mimeout_mode; /* 0, -1, 'Q', 'B', 1, 2 */
+	int shift_mode;/* 0 or 1 */
 };
 
 #endif /* WXNKF_H_ */

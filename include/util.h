@@ -13,17 +13,22 @@
 #include "flagset.h"
 #include "wxnkfencoding.h"
 
+#define SET_INPUT_MODE 0
+#define SET_OUTPUT_MODE 1
+
 class Util {
 
 public:
 	/**
 	 * judge baseID and return wxNKFEncoding instance
+	 * 0: set input
+	 * 1: set output
 	 */
-	static void NKFEncFind(const char *name, wxNKFEncoding* enc);
+	static void NKFEncFind(const char *name, wxNKFEncoding* enc, int io);
 	/**
 	 * return wxNKFEncoding class per encoding ID
 	 */
-	static void NKFEncFromIndex(int idx, wxNKFEncoding* enc);
+	static void NKFEncFromIndex(int idx, wxNKFEncoding* enc, int io);
 	/**
 	 * get encode ID by name
 	 */
@@ -31,7 +36,7 @@ public:
 	/**
 	 * Initialize character code
 	 */
-	static NKFNativeEncoding* NKFDefaultEncoding();
+	static wxNKFEncoding* NKFDefaultEncoding();
 	/**
 	 * convert EUC-JP to UTF-8
 	 */
