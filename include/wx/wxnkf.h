@@ -17,6 +17,7 @@
 #include "utf8table.h"
 #include "wxnkfencoding.h"
 #include "util.h"
+#include "utf16util.h"
 
 /* HELP_OUTPUT */
 #ifdef HELP_OUTPUT_STDERR
@@ -123,8 +124,11 @@ private:
 	/**
 	 * check BOM existence. If it exist, ignore
 	 */
-	void CheckBom(wxInputStream* in, wxDataOutputStream* out);
 	void CheckBom(wxInputStream* in);
+	/**
+	 * search character code
+	 */
+	void CodeStatus(nkf_char c);
 	/**
 	 * set flag for Input & Output
 	 */
