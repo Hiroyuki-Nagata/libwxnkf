@@ -37,7 +37,7 @@ ARFLAG	:= crsv
 # dummy target
 .PHONY: dep clean
 # make all
-all:	$(DEP) $(TARGET) #$(TEST)
+all:	$(DEP) $(TARGET) $(TEST)
 # suffix rule
 .cpp.o:
 		$(CXX) $(CXXFLAGS) -c $<
@@ -48,13 +48,13 @@ $(DEP):
 $(TARGET) : $(OBJECTS) $(SOURCES)
 		$(AR) $(ARFLAG) $(TARGET) $(OBJECTS)
 		$(MV) $(TARGET) $(TARGETPATH)
-		#$(MAKE) -C $(TEST)
+		$(MAKE) -C $(TEST)
 # clean
 clean:
 		$(RM) -f *.o $(TARGET) makefile.dep $(TARGETPATH)
 		$(MAKE) -C $(TEST) clean
 # build test code
 test: 
-		$(MAKE) -C $(TEST)
+		$(MAKE) -C $(TEST) osx
 # dependency
 -include makefile.dep
