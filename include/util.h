@@ -10,8 +10,13 @@
 #define UTIL_H_
 
 #include <cstring>
+#include "wxnkfbaseconfig.h"
 #include "flagset.h"
 #include "wxnkfencoding.h"
+
+#ifdef __WXMAC__
+#include <langinfo.h>
+#endif
 
 #define SET_INPUT_MODE 0
 #define SET_OUTPUT_MODE 1
@@ -36,7 +41,7 @@ public:
 	/**
 	 * Initialize character code
 	 */
-	static wxNKFEncoding* NKFDefaultEncoding();
+	static void NKFDefaultEncoding(wxNKFEncoding* enc, int io);
 	/**
 	 * convert EUC-JP to UTF-8
 	 */
@@ -60,7 +65,7 @@ public:
 	/**
 	 * get default os locale
 	 */
-	static void NKFLocaleEncoding(wxNKFEncoding* enc);
+	static void NKFLocaleEncoding(wxNKFEncoding* enc, int io);
 	/**
 	 * convert Unicode to UTF-8
 	 */
@@ -87,13 +92,18 @@ public:
 	 */
 	static nkf_char W16eConv(nkf_char val, nkf_char *p2, nkf_char *p1,
 			std::bitset<nkf_flag_num> nkfFlags);
-
+	/**
+	 * use X0212
+	 */
 	static nkf_char X0212Shift(nkf_char c);
+	/**
+	 * use X0212
+	 */
 	static nkf_char X0212Unshift(nkf_char c);
 
 private:
 	/**
-	 * ２つの引数を先頭から比較してboolを返す、比較する長さは１つ目の引数の長さ
+	 * compare two strings and return bool
 	 */
 	static bool StrncmpFromHead(const char* charCode, const char* name);
 };

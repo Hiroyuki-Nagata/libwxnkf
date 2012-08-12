@@ -14,7 +14,7 @@
 //#endif
 //
 //#include <assert.h>
-//#include <cstdio>
+#include <cstdio>
 
 #ifdef nkf_char
 #elif defined(INT_IS_SHORT)
