@@ -582,6 +582,9 @@ wxString wxNKF::Convert(const wxString inputFilePath, const wxString option) {
 	wxFileSystem* fileSystem = new wxFileSystem();
 	wxFSFile* file = fileSystem->OpenFile(inputFilePath);
 
+	/* debug */
+	wxMessageBox(inputFilePath);
+
 	if (!file) {
 		// cannot get filestream
 		delete fileSystem;
@@ -1968,6 +1971,13 @@ void wxNKF::CodeStatus(nkf_char c) {
 //			//SetIconv(TRUE, result->name, nkfFlags);
 //		}
 //	}
+}
+/**
+ * setting input encode
+ */
+void wxNKF::SetInputMode(int mode) {
+	wxEnc->inputMode = mode;
+	wxEnc->inputBaseName = wxT("ISO-2022-JP");
 }
 /**
  * set flag for Output

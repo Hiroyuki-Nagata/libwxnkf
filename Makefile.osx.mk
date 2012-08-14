@@ -18,7 +18,7 @@ DEP		= dep
 TEST	= test
 
 # basic command
-CXX		:= g++ -gstabs
+CXX		:= g++ -m64 -gstabs
 AR      := ar
 RM		:= rm
 MV		:= mv
@@ -31,7 +31,7 @@ MACINC	 = -I/Developer/SDKs/MacOSX10.7.sdk/usr/include -I/Developer/SDKs/MacOSX1
 MACLD	 = -L/Developer/SDKs/MacOSX10.7.sdk/usr/
 VPATH    = include src
 CXXFLAGS = -Wall -I./include `wx-config --cxxflags` $(MACINC)
-LDFLAGS := -static `wx-config --libs` $(MACLD) -lcrt1.10.6.o
+LDFLAGS := -static `wx-config --libs` $(MACLD) -lstdc++ -lcrt1.10.6.o
 ARFLAG	:= crsv
 
 # dummy target

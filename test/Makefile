@@ -18,7 +18,7 @@ RM 		:= rm
 
 # compile option
 CXXFLAGS = -Wall -I../include `wx-config --cxxflags`
-LDFLAGS  = ../lib/$(LIBNKF) `wx-config --libs`
+LDFLAGS  = ../lib/$(LIBNKF) `wx-config --libs` -lstdc++
 
 # dummy target
 .PHONY: clean mac $(BUNDLE) $(MACPKGINFO) $(MACINFOPLIST) $(COPY)
@@ -35,12 +35,14 @@ BUNDLESIGNATURE	=
 # basic mac setting
 BUNDLE			= $(OUTPUTPATH)/$(PROGRAM).app
 MACPKGINFO		= $(BUNDLE)/Contents/PkgInfo
-MACINFOPLIST	= $(BUNDLE)/Contents/Info.plist 
+MACINFOPLIST	= $(BUNDLE)/Contents/Info.plist
+MACCXX			= -m64
 MACINC			= -I/Developer/SDKs/MacOSX10.7.sdk/usr/include/ -I/Developer/SDKs/MacOSX10.7.sdk/usr/include/c++/4.2.1/
-MACLD			= -L/Developer/SDKs/MacOSX10.7.sdk/usr/lib/ -L/usr/lib
+MACLD			= -L/Developer/SDKs/MacOSX10.7.sdk/usr/lib/ -L/usr/lib -lcrt1.10.6.o
 COPY			= copy
 
 .PHONY	: mac
+mac : CXX	   += $(MACCXX)
 mac : CXXFLAGS += $(MACINC)
 mac : LDFLAGS  += $(MACLD)
 mac : $(BUNDLE) $(MACPKGINFO) $(MACINFOPLIST) all $(COPY)
