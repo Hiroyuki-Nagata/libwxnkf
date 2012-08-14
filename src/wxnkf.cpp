@@ -83,7 +83,6 @@ int wxNKF::Convert(const wxString inputFilePath, const wxString outputFilePath,
 		return -1;
 	}
 
-	// ! debug ... here is running
 	wxInputStream* in = file->GetStream();
 
 	// prepare outputstream
@@ -142,11 +141,12 @@ int wxNKF::KanjiConvert(wxInputStream* in, wxDataOutputStream* out) {
 
 		// for 2byte process
 		while ((c1 = in->GetC()) != EOF && (c2 = in->GetC()) != EOF) {
-			if (utf16->NKFIconvUTF16(c1, c2, 0,
-					0) == NKF_ICONV_NEED_TWO_MORE_BYTES&& (c3 = in->GetC()) != EOF
-					&& (c4 = in->GetC()) != EOF) {out->Write8(utf16->NKFIconvUTF16(c1, c2, c3, c4));
+			if (utf16->NKFIconvUTF16(c1, c2, 0, 0)
+					== NKF_ICONV_NEED_TWO_MORE_BYTES && (c3 = in->GetC()) != EOF
+					&& (c4 = in->GetC()) != EOF) {
+				out->Write8(utf16->NKFIconvUTF16(c1, c2, c3, c4));
+			}
 		}
-	}
 		goto finished;
 	}
 
@@ -477,8 +477,8 @@ int wxNKF::KanjiConvert(wxInputStream* in, wxDataOutputStream* out) {
 							if (c1 == SP) {
 								in->Ungetch(SP);
 								continue;
-							} else if (c1 == LF && (c1 = in->GetC()) != EOF
-									&& c1 == SP) {
+							} else if (c1 == LF
+									&& (c1 = in->GetC()) != EOF&& c1 == SP) {
 								in->Ungetch(SP);
 								continue;
 							} else {
@@ -498,7 +498,11 @@ int wxNKF::KanjiConvert(wxInputStream* in, wxDataOutputStream* out) {
 		/* send: */
 		switch (wxEnc->inputMode) {
 
+		/* process ASCII/SJIS/EUC/UTF here */
 		case ASCII:
+		case SHIFT_JIS:
+		case EUC_JP:
+		case UTF_8:
 			switch (wxEnc->Iconv(c2, c1, 0, nkfFlags, out)) { /* can be EUC / SJIS / UTF-8 */
 			case -2:
 				/* 4 bytes UTF-8 */
@@ -583,9 +587,6 @@ wxString wxNKF::Convert(const wxString inputFilePath, const wxString option) {
 	wxFileSystem* fileSystem = new wxFileSystem();
 	wxFSFile* file = fileSystem->OpenFile(inputFilePath);
 
-	/* debug */
-	wxMessageBox(inputFilePath);
-
 	if (!file) {
 		// cannot get filestream
 		delete fileSystem;
@@ -641,11 +642,12 @@ wxString wxNKF::KanjiConvert(wxInputStream* in) {
 
 		// for 2byte process
 		while ((c1 = in->GetC()) != EOF && (c2 = in->GetC()) != EOF) {
-			if (utf16->NKFIconvUTF16(c1, c2, 0,
-					0) == NKF_ICONV_NEED_TWO_MORE_BYTES&& (c3 = in->GetC()) != EOF
-					&& (c4 = in->GetC()) != EOF) {oConvStr->push_back(utf16->NKFIconvUTF16(c1, c2, c3, c4));
+			if (utf16->NKFIconvUTF16(c1, c2, 0, 0)
+					== NKF_ICONV_NEED_TWO_MORE_BYTES && (c3 = in->GetC()) != EOF
+					&& (c4 = in->GetC()) != EOF) {
+				oConvStr->push_back(utf16->NKFIconvUTF16(c1, c2, c3, c4));
+			}
 		}
-	}
 		goto finished;
 	}
 
@@ -976,8 +978,8 @@ wxString wxNKF::KanjiConvert(wxInputStream* in) {
 							if (c1 == SP) {
 								in->Ungetch(SP);
 								continue;
-							} else if (c1 == LF && (c1 = in->GetC()) != EOF
-									&& c1 == SP) {
+							} else if (c1 == LF
+									&& (c1 = in->GetC()) != EOF&& c1 == SP) {
 								in->Ungetch(SP);
 								continue;
 							} else {
@@ -997,7 +999,11 @@ wxString wxNKF::KanjiConvert(wxInputStream* in) {
 		/* send: */
 		switch (wxEnc->inputMode) {
 
+		/* process ASCII/SJIS/EUC/UTF here */
 		case ASCII:
+		case SHIFT_JIS:
+		case EUC_JP:
+		case UTF_8:
 			switch (wxEnc->Iconv(c2, c1, 0, nkfFlags, oConvStr)) { /* can be EUC / SJIS / UTF-8 */
 			case -2:
 				/* 4 bytes UTF-8 */
@@ -1065,7 +1071,16 @@ wxString wxNKF::KanjiConvert(wxInputStream* in) {
 
 	// convert wstring to wxString
 	wchar_t* wideChar = (wchar_t*) oConvStr->c_str();
+	/* debug */
+	printf("%s\n", "converted wxString:");
+	wprintf( L"%s\n", wideChar );
+
 	wxString result(wideChar);
+	/* debug */
+	printf("%s\n", "converted wxString:");
+	for (int i=0;i<result.Len();i++) {
+		printf("0x%02x\n",result[i]);
+	}
 
 	return result;
 }
@@ -1126,7 +1141,7 @@ int wxNKF::SetOption(const wxString option) {
 			} else {
 				if (strcmp(long_option[i].name, "help") == 0) {
 					ShowUsage();
-					exit(EXIT_SUCCESS);
+					exit (EXIT_SUCCESS);
 				}
 				if (strcmp(long_option[i].name, "ic=") == 0) {
 					Util::NKFEncFind((char *) p, wxEnc, SET_INPUT_MODE);
@@ -1381,7 +1396,7 @@ int wxNKF::SetOption(const wxString option) {
 //			break;
 		case 'v':
 			ShowVersion();
-			exit(EXIT_SUCCESS);
+			exit (EXIT_SUCCESS);
 			break;
 
 		case 'w': /* UTF-{8,16,32} output */
