@@ -75,14 +75,15 @@ int wxNKF::Convert(const wxString inputFilePath, const wxString outputFilePath,
 
 	// prepare file system
 	wxFileSystem* fileSystem = new wxFileSystem();
-	wxFSFile* file = fileSystem->OpenFile(inputFilePath);
+	wxFSFile* file = fileSystem->OpenFile(inputFilePath, wxFS_READ);
 
-	if (!file) {
+	if (NULL == file) {
 		// cannot get filestream
 		delete fileSystem;
 		return -1;
 	}
 
+	// ! debug ... here is running
 	wxInputStream* in = file->GetStream();
 
 	// prepare outputstream

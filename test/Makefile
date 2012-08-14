@@ -21,7 +21,7 @@ CXXFLAGS = -Wall -I../include `wx-config --cxxflags`
 LDFLAGS  = ../lib/$(LIBNKF) `wx-config --libs` -lstdc++
 
 # dummy target
-.PHONY: clean mac $(BUNDLE) $(MACPKGINFO) $(MACINFOPLIST) $(COPY)
+.PHONY: clean mac msw $(BUNDLE) $(MACPKGINFO) $(MACINFOPLIST) $(COPY)
 
 ########################################## for mac ############################
 # for application bundle
@@ -41,7 +41,7 @@ MACINC			= -I/Developer/SDKs/MacOSX10.7.sdk/usr/include/ -I/Developer/SDKs/MacOS
 MACLD			= -L/Developer/SDKs/MacOSX10.7.sdk/usr/lib/ -L/usr/lib -lcrt1.10.6.o
 COPY			= copy
 
-.PHONY	: mac
+# mac is difficult to compile C++ GUI application :P
 mac : CXX	   += $(MACCXX)
 mac : CXXFLAGS += $(MACINC)
 mac : LDFLAGS  += $(MACLD)
@@ -97,6 +97,14 @@ $(MACINFOPLIST):
 $(COPY):
 	cp -p $(TARGET) $(BUNDLE)/Contents/MacOS/$(PROGRAM)
 ########################################## for mac ############################
+
+
+
+########################################## for msw ############################
+# msw is base develop, so do nothing.
+msw : LDFLAGS+= -static
+msw : all
+########################################## for msw ############################
 
 # make all
 all : $(TARGET)

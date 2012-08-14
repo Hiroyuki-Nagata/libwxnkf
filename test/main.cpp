@@ -20,20 +20,28 @@ public:
 	MyFrame(const wxString& title);
 	void OnQuit(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent& event);
+	void OnConvertFTF(wxCommandEvent& event);
+	void OnConvertFTM(wxCommandEvent& event);
+
 private:
-	wxTextCtrl* m_tc;
-	DECLARE_EVENT_TABLE()
+	wxTextCtrl* m_tc;DECLARE_EVENT_TABLE()
 };
 
 enum {
-	Minimal_Quit = wxID_EXIT, Minimal_About = wxID_ABOUT
+	Minimal_Quit = wxID_EXIT,
+	Minimal_About = wxID_ABOUT,
+	wxID_CONVERTFILETOFILE,
+	wxID_CONVERTFILETOMEM
 };
 
 BEGIN_EVENT_TABLE(MyFrame, wxFrame)
 EVT_MENU(Minimal_Quit, MyFrame::OnQuit)
 EVT_MENU(Minimal_About, MyFrame::OnAbout)
+EVT_BUTTON(wxID_CONVERTFILETOFILE, MyFrame::OnConvertFTF)
+EVT_BUTTON(wxID_CONVERTFILETOMEM, MyFrame::OnConvertFTM)
 END_EVENT_TABLE()
 IMPLEMENT_APP(MyApp)
+
 bool MyApp::OnInit()
 {
 	if ( !wxApp::OnInit() )
@@ -43,6 +51,7 @@ bool MyApp::OnInit()
 	frame->Show(true);
 	return true;
 }
+
 MyFrame::MyFrame(const wxString& title) :
 		wxFrame(NULL, wxID_ANY, title) {
 
@@ -61,6 +70,19 @@ MyFrame::MyFrame(const wxString& title) :
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	m_tc = new wxTextCtrl(panel, wxID_ANY);
 	sizer->Add(m_tc, 1, wxEXPAND);
+
+	// bbox　ボタン配置部分
+	wxBoxSizer *bbox = new wxBoxSizer(wxHORIZONTAL);
+	// ファイル→ファイル
+	wxButton *btn1 = new wxButton(panel, wxID_CONVERTFILETOFILE,
+			wxT("ファイルの変換処理"));
+	bbox->Add(btn1, 0);
+	// ファイル→テキストコントロール
+	wxButton *btn2 = new wxButton(panel, wxID_CONVERTFILETOMEM,
+			wxT("ファイルからメモリへ"));
+	bbox->Add(btn2, 0, wxLEFT | wxBOTTOM, 5);
+	sizer->Add(bbox, 0, wxALIGN_RIGHT | wxRIGHT, 10);
+
 	panel->SetSizer(sizer);
 
 	CreateStatusBar(2);
@@ -70,24 +92,49 @@ MyFrame::MyFrame(const wxString& title) :
 void MyFrame::OnQuit(wxCommandEvent& WXUNUSED(event)) {
 	Close(true);
 }
-void MyFrame::OnAbout(wxCommandEvent& WXUNUSED(event)) {
+
+void MyFrame::OnConvertFTF(wxCommandEvent& WXUNUSED(event)) {
+
+	wxMessageBox(wxT("ファイルから別のファイルにデータを変換します"));
+
 	wxString inputFilePath;
 	wxString outputFilePath;
 
-#ifdef __WXMAC__
+#if __WXMAC__
 	inputFilePath = wxT("/Users/hiroyuki/git/libnkf/test/CP932.txt");
 	outputFilePath = wxT("/Users/hiroyuki/git/libnkf/test/UTF-8.txt");
-#elif
-	inputFilePath = wxT("./CP932.txt");
-	outputFilePath = wxT("./UTF-8.txt")
+#elif __WXMSW__
+	inputFilePath = wxT("C:\\Users\\learning\\git\\libnkf\\test\\CP932.txt");
+	outputFilePath = wxT("C:\\Users\\learning\\git\\libnkf\\test\\UTF-8.txt");
+#else
 #endif
 
-	wxNKF* nkf1 = new wxNKF();
-	nkf1->Convert(inputFilePath, outputFilePath, wxT("--ic=CP932 --oc=UTF-8"));
-	delete nkf1;
+	wxNKF* nkf = new wxNKF();
+	nkf->Convert(inputFilePath, outputFilePath, wxT("--ic=CP932 --oc=UTF-8"));
+	delete nkf;
+}
 
-	wxNKF* nkf2 = new wxNKF();
-	wxString test = nkf2->Convert(inputFilePath, wxT("--ic=CP932 --oc=UTF-8"));
+void MyFrame::OnConvertFTM(wxCommandEvent& WXUNUSED(event)) {
+
+	wxMessageBox(wxT("ファイルからwxString内にデータをコピーします"));
+
+	wxString inputFilePath;
+	wxString outputFilePath;
+
+#if __WXMAC__
+	inputFilePath = wxT("/Users/hiroyuki/git/libnkf/test/CP932.txt");
+	outputFilePath = wxT("/Users/hiroyuki/git/libnkf/test/UTF-8.txt");
+#else
+	inputFilePath = wxT("CP932.txt");
+	outputFilePath = wxT("UTF-8.txt");
+#endif
+
+	wxNKF* nkf = new wxNKF();
+	wxString test = nkf->Convert(inputFilePath, wxT("--ic=CP932 --oc=UTF-8"));
 	m_tc->SetValue(test);
-	delete nkf2;
+	delete nkf;
+}
+
+void MyFrame::OnAbout(wxCommandEvent& WXUNUSED(event)) {
+	wxMessageBox(wxT("これはwxNKFのテストプログラムです"));
 }

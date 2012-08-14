@@ -18,6 +18,11 @@
 #include <langinfo.h>
 #endif
 
+#ifdef __WXMSW__
+#include <windows.h>
+#include <locale.h>
+#endif
+
 #define SET_INPUT_MODE 0
 #define SET_OUTPUT_MODE 1
 

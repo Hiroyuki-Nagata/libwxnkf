@@ -9,6 +9,7 @@
 #define WXNKF_H_
 
 #include <wx/wx.h>
+#include <wx/app.h>
 #include <wx/stream.h>
 #include <wx/filesys.h>
 #include <wx/datstrm.h>
@@ -49,6 +50,7 @@ static const struct {
 				"cp932inv", "" }, { "prefix=", "" }, };
 
 class wxNKF {
+
 public:
 	/**
 	 * constructor
@@ -60,6 +62,11 @@ public:
 	~wxNKF();
 	/**
 	 * convert charcter code in file, with option
+	 *
+	 * path example
+	 *
+	 * msw : C:\\Users\\foo\\bar\\etc.txt
+	 * gtk, osx : /usr/foo/bar/etc.txt
 	 */
 	int Convert(const wxString inputFilePath, const wxString outputFilePath,
 			const wxString option);

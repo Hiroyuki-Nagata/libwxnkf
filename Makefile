@@ -6,12 +6,7 @@
 
 # target and sources
 TARGET  = libwxnkf.a
-SOURCES = wxnkf.cpp			¥
-		  flagset.cpp		¥
-		  utf8table.cpp		¥
-		  wxnkfencoding.cpp	¥
-		  util.cpp			¥
-		  utf16util.cpp
+SOURCES = wxnkf.cpp flagset.cpp utf8table.cpp wxnkfencoding.cpp	util.cpp utf16util.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 TARGETPATH = lib/libwxnkf.a
 
@@ -34,7 +29,7 @@ MAKE	:= make
 # compile option
 VPATH    = include src
 CXXFLAGS = -Wall -I./include `wx-config --cxxflags`
-LDFLAGS := -static `wx-config --libs`
+LDFLAGS := -static `wx-config --libs` -lstdc++
 ARFLAG	:= crsv
 
 # dummy target
@@ -51,13 +46,10 @@ $(DEP):
 $(TARGET) : $(OBJECTS) $(SOURCES)
 		$(AR) $(ARFLAG) $(TARGET) $(OBJECTS)
 		$(MV) $(TARGET) $(TARGETPATH)
-		$(MAKE) -C $(TEST)
+		$(MAKE) -C $(TEST) msw
 # clean
 clean:
 		$(RM) -f *.o $(TARGET) makefile.dep $(TARGETPATH)
 		$(MAKE) -C $(TEST) clean
-# build test code
-test: 
-		$(MAKE) -C $(TEST)
 # dependency
 -include makefile.dep
