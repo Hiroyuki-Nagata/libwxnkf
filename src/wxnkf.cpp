@@ -551,8 +551,6 @@ int wxNKF::KanjiConvert(wxInputStream* in, wxDataOutputStream* out) {
 	}
 
 	finished:
-	/* epilogue */
-	wxEnc->Iconv(EOF, 0, 0, nkfFlags, out);
 
 	if (wxEnc->iCharName.IsEmpty()) {
 		if (is_8bit) {
@@ -1052,8 +1050,6 @@ wxString wxNKF::KanjiConvert(wxInputStream* in) {
 	}
 
 	finished:
-	/* epilogue */
-	wxEnc->Iconv(EOF, 0, 0, nkfFlags, oConvStr);
 
 	if (wxEnc->iCharName.IsEmpty()) {
 		if (is_8bit) {
