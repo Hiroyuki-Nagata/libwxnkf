@@ -206,7 +206,7 @@ top_srcdir = @top_srcdir@
 
 # -- Top-level Makefile.am --
 # Subdirectories to descend into.
-SUBDIRS = src
+SUBDIRS = src test
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 

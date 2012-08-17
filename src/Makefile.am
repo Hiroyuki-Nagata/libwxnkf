@@ -1,4 +1,3 @@
-libdir = ../lib
 noinst_LIBRARIES = libwxnkf.a
 
 libwxnkf_a_SOURCES = flagset.cpp \
