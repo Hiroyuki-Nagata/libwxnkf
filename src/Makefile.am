@@ -16,4 +16,3 @@ wxnkfencoding.cpp				 \
 wxnkfencoding.h
 
 libwxnkf_a_CXXFLAGS=@CXXFLAGS@
-libwxnkf_a_LIBADD=@LIBS@

@@ -4,7 +4,7 @@
 AC_PREREQ([2.68])
 AC_INIT([libwxnkf], [1.0.0], [newserver002@gmail.com])
 AM_INIT_AUTOMAKE
-AC_CONFIG_FILES([Makefile src/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile test/Makefile])
 AC_CONFIG_SRCDIR([src/flagset.cpp])
 AC_CONFIG_HEADERS([config.h])
 

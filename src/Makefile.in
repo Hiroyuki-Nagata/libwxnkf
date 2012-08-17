@@ -46,7 +46,7 @@ LIBRARIES = $(noinst_LIBRARIES)
 AR = ar
 ARFLAGS = cru
 libwxnkf_a_AR = $(AR) $(ARFLAGS)
-libwxnkf_a_DEPENDENCIES =
+libwxnkf_a_LIBADD =
 am_libwxnkf_a_OBJECTS = libwxnkf_a-flagset.$(OBJEXT) \
 	libwxnkf_a-utf16util.$(OBJEXT) libwxnkf_a-utf8table.$(OBJEXT) \
 	libwxnkf_a-util.$(OBJEXT) libwxnkf_a-wxnkf.$(OBJEXT) \
@@ -155,7 +155,7 @@ htmldir = @htmldir@
 includedir = @includedir@
 infodir = @infodir@
 install_sh = @install_sh@
-libdir = @libdir@
+libdir = ../lib
 libexecdir = @libexecdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
@@ -190,7 +190,6 @@ wxnkfencoding.cpp				 \
 wxnkfencoding.h
 
 libwxnkf_a_CXXFLAGS = @CXXFLAGS@
-libwxnkf_a_LIBADD = @LIBS@
 all: all-am
 
 .SUFFIXES:
