@@ -26,4 +26,13 @@ C++風の書き方に直しています
   
 $ ./configure  
 $ make  
-$ make install    
+$ make install 
+  
+configureを実行した際に" `AM_OPTIONS_WXCONFIG' not found "というエラーが  
+発生した場合wxWidgets用のm4マクロが見つけられていないので  
+`wx-config --prefix`を実行し、そのディレクトリ以下のaclocalディレクトリにある  
+「wxwin.m4」を/usr/share/aclocal以下にコピーしてください。  
+（※wxwin.m4はwxWidgetsをインストールした際にシステムにインストールされています）  
+  
+
+   

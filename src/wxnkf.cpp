@@ -1089,7 +1089,7 @@ wxString wxNKF::KanjiConvert(wxInputStream* in) {
  */
 int wxNKF::SetOption(const wxString option) {
 
-	const char* buf = option.c_str();
+	const char* buf = (const char*)option.mb_str();
 	unsigned char* cp = (unsigned char*) buf;
 	nkf_char i, j;
 	unsigned char *p;

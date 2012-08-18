@@ -74,8 +74,8 @@ MyFrame::MyFrame(const wxString& title) :
 			wxT("LibNKFをスタートさせる"));
 	fileMenu->Append(Minimal_Quit, wxT("終了"), wxT("プログラムを終了させる"));
 	wxMenuBar *menuBar = new wxMenuBar();
-	menuBar->Append(fileMenu, "&File");
-	menuBar->Append(helpMenu, "&Help");
+	menuBar->Append(fileMenu, wxT("&File"));
+	menuBar->Append(helpMenu, wxT("&Help"));
 	SetMenuBar(menuBar);
 
 	// とりあえずテキストで画面を埋めておく
@@ -117,7 +117,7 @@ MyFrame::MyFrame(const wxString& title) :
 	panel->SetSizer(sizer);
 
 	CreateStatusBar(2);
-	SetStatusText("ようこそwxWidgetsへ！");
+	SetStatusText(wxT("ようこそwxWidgetsへ！"));
 
 }
 void MyFrame::OnQuit(wxCommandEvent& WXUNUSED(event)) {
