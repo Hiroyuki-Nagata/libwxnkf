@@ -79,6 +79,7 @@ int wxNKF::Convert(const wxString inputFilePath, const wxString outputFilePath,
 
 	if (NULL == file) {
 		// cannot get filestream
+		delete file;
 		delete fileSystem;
 		return -1;
 	}
@@ -96,6 +97,7 @@ int wxNKF::Convert(const wxString inputFilePath, const wxString outputFilePath,
 	}
 
 	// delete resource
+	delete file;
 	delete fileSystem;
 }
 /**
@@ -585,12 +587,16 @@ wxString wxNKF::Convert(const wxString inputFilePath, const wxString option) {
 
 	if (!file) {
 		// cannot get filestream
+		delete file;
 		delete fileSystem;
 		return wxEmptyString;
 	}
 
 	wxInputStream* in = file->GetStream();
 	wxString result = KanjiConvert(in);
+
+	// delete resource
+	delete file;
 	delete fileSystem;
 
 	return result;
