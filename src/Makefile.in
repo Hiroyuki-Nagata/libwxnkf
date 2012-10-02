@@ -39,7 +39,6 @@ am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
-CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LIBRARIES = $(noinst_LIBRARIES)
@@ -52,7 +51,7 @@ am_libwxnkf_a_OBJECTS = libwxnkf_a-flagset.$(OBJEXT) \
 	libwxnkf_a-util.$(OBJEXT) libwxnkf_a-wxnkf.$(OBJEXT) \
 	libwxnkf_a-wxnkfencoding.$(OBJEXT)
 libwxnkf_a_OBJECTS = $(am_libwxnkf_a_OBJECTS)
-DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
+DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
@@ -176,17 +175,17 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 noinst_LIBRARIES = libwxnkf.a
 libwxnkf_a_SOURCES = flagset.cpp \
-flagset.h						 \
-utf16util.cpp					 \
-utf16util.h						 \
-utf8table.cpp					 \
-utf8table.h						 \
-util.cpp						 \
-util.h							 \
-wxnkf.h							 \
-wxnkf.cpp						 \
-wxnkfbaseconfig.h				 \
-wxnkfencoding.cpp				 \
+flagset.h			 \
+utf16util.cpp			 \
+utf16util.h			 \
+utf8table.cpp			 \
+utf8table.h			 \
+util.cpp			 \
+util.h				 \
+wxnkf.h				 \
+wxnkf.cpp			 \
+wxnkfbaseconfig.h		 \
+wxnkfencoding.cpp		 \
 wxnkfencoding.h
 
 libwxnkf_a_CXXFLAGS = @CXXFLAGS@

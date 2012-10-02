@@ -1,18 +1,16 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
-#
+
 AC_PREREQ([2.68])
 AC_INIT([libwxnkf], [1.0.0], [newserver002@gmail.com])
 AM_INIT_AUTOMAKE
-AC_CONFIG_FILES([Makefile src/Makefile test/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile test1/Makefile test2/Makefile])
 AC_CONFIG_SRCDIR([src/flagset.cpp])
-AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC
 AC_LANG(C++)
-
 # Checks for MacOS
 IS_MACOS=
 case "${host}" in
@@ -37,6 +35,7 @@ if test "$wxWin" != 1; then
 		])
 fi
 
+# Add Flags
 CPPFLAGS="$CPPFLAGS $WX_CPPFLAGS"
 CXXFLAGS="$CXXFLAGS $WX_CXXFLAGS_ONLY"
 CFLAGS="$CFLAGS $WX_CFLAGS_ONLY"

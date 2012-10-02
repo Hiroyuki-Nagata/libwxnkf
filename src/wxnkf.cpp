@@ -1069,16 +1069,7 @@ wxString wxNKF::KanjiConvert(wxInputStream* in) {
 
 	// convert wstring to wxString
 	wchar_t* wideChar = (wchar_t*) oConvStr->c_str();
-	/* debug */
-	printf("%s\n", "converted wxString:");
-	wprintf(L"%s\n", wideChar);
-
 	wxString result(wideChar);
-	/* debug */
-	printf("%s\n", "converted wxString:");
-	for (int i = 0; i < result.Len(); i++) {
-		printf("0x%02x\n", result[i]);
-	}
 
 	return result;
 }
