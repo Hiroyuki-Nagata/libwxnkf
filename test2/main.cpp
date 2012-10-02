@@ -1,171 +1,121 @@
-/**
- * WxTest.cpp - wxWidgetsの最小ソースコード
- * 
- * wxWidgets付属のminimal.cppから余分な部分を削除し、コメントを日本語に直しました
- * 
- * 2012/02/10 新規作成
- * https://sites.google.com/site/programmirovanienotes
- */
+//============================================================================
+// Name        : libwxnkftest2.cpp
+// Author      : Hiroyuki Nagata
+// Version     : 1.0.0
+// Copyright   : Copyright (C) 2012 Hiroyuki Nagata, All rights reserved.
+// Description : libwxnkf test program
+// Licence     : wxWindows Library Licence, Version 3.1
+//============================================================================
 
-// ============================================================================
-// 宣言
-// ============================================================================
-
-// ----------------------------------------------------------------------------
-// ヘッダ
-// ----------------------------------------------------------------------------
 #include <wx/wx.h>
+#include <wx/image.h>
 
-// 訳者注：プリコンパイルを考慮したコード・アイコン実装コードは省略
-
-// 新しいアプリケーションの型を定義する、どのプログラムもwxAppから継承されるべ
-// きである
 class MyApp : public wxApp
 {
 public:
-    // 基底クラスの仮想関数をオーバーライドする
-    // ----------------------------
-
-    // ここはアプリケーションの開始時に呼ばれ、アプリケーションの初期化に適した
-    // 場所です。（ここで初期化を行なってコンストラクタにエラーがあればOnInit()
-    // はfalseを返し、アプリケーションが終了します。）
     virtual bool OnInit();
 };
 
-// 新しいフレームの型を定義する、これはこのアプリケーションのメインフレームに
-// なるでしょう
 class MyFrame : public wxFrame
 {
 public:
-    // コンストラクタ
-    MyFrame(const wxString& title);
+     // コンストラクタ
+     MyFrame(wxWindow* parent, int id, const wxString& title,
+	     const wxPoint& pos=wxDefaultPosition, 
+	     const wxSize& size=wxDefaultSize, 
+	     long style=wxDEFAULT_FRAME_STYLE);
 
-    // イベントハンドラ（これらの関数は仮想関数であるべきではない）
-    void OnQuit(wxCommandEvent& event);
-    void OnAbout(wxCommandEvent& event);
+     // イベントハンドラ
+     void OnQuit(wxCommandEvent& event);
+     void OnAbout(wxCommandEvent& event);
 
 private:
-    // wxWidgetsのイベントを処理するどんなクラスでもこのマクロは使わなければ
-    // ならない
-    DECLARE_EVENT_TABLE()
-};
+     // begin wxGlade: MyFrame::methods
+     void set_properties(wxString& title);
+     void do_layout();
+     // end wxGlade
 
-// ----------------------------------------------------------------------------
-// 定数
-// ----------------------------------------------------------------------------
+protected:
+     // begin wxGlade: MyFrame::attributes
+     wxStaticText* label_1;
+     wxComboBox* combo_box_1;
+     wxButton* button_1;
+     wxPanel* upPanel;
+     wxTextCtrl* text_ctrl_2;
+     wxTextCtrl* text_ctrl_3;
+     wxPanel* downPanel;
+     // end wxGlade
+
+private:
+     DECLARE_EVENT_TABLE()
+
+};
 
 // 操作のためのIDとメニューコマンド
 enum
 {
     // メニューの項目
     Minimal_Quit = wxID_EXIT,
-
-    // "About"コマンドに応じたIDをアプリに持たせることは重要です。
-    // この標準的な変数名はMacでは正しく動作しない
-    // （というのはそれが特別なもので、"Apple"メニューの中に入っているからです）
-
-    // 訳者注：MacでこのコードをコンパイルするにはApplicationBundleを考慮した
-    // Makefileを用意する必要があるので注意
     Minimal_About = wxID_ABOUT
 };
 
-// ----------------------------------------------------------------------------
-// イベントテーブルとwxWidgetsのためのその他のマクロ
-// ----------------------------------------------------------------------------
-
-// 以下のイベントテーブルは、イベントを処理するevent関数（イベントハンドラ）に
-// よってwxWidgetsに紐付けられている。イベントの処理はアプリの使用時にも起こり
-// うる、しかしこのような単純なメニューイベントはスタティックな関数のほうがより
-// シンプルであろう。
 BEGIN_EVENT_TABLE(MyFrame, wxFrame)
     EVT_MENU(Minimal_Quit,  MyFrame::OnQuit)
     EVT_MENU(Minimal_About, MyFrame::OnAbout)
 END_EVENT_TABLE()
 
-// 新しいアプリのオブジェクトを生成する：このマクロはwxWidgetsがプログラムの
-// 実行時に、そのアプリのオブジェクトを作り出すことを許可する（これは多くの理由
-// からスタティックなオブジェクトを使うよりも良い）そしてマクロが継承している
-// アクセッサー関数であるwxGetApp()は正しい型への参照を返す（例えばMyAppであっ
-// たりwxAppでは無かったり）
 IMPLEMENT_APP(MyApp)
 
-// ============================================================================
-// 実装
-// ============================================================================
+bool MyApp::OnInit() {
 
-// ----------------------------------------------------------------------------
-// アプリケーションクラス
-// ----------------------------------------------------------------------------
-
-// 'メインプログラム'と同等のもの：つまりこのプログラムはここから”始まる”
-bool MyApp::OnInit()
-{
-    // 基底クラスの初期化メソッドを呼ぶ。現在これはわずかなコマンドライン
-    // オプションしか解釈できないが将来的にはもっといろいろなオプションを解釈
-    // できるようになるだろう
     if ( !wxApp::OnInit() )
         return false;
 
     // メインのアプリケーションウィンドウを生成する
-    MyFrame *frame = new MyFrame("Minimal wxWidgets App");
-
-    // そしてそれを表示させる（フレームは、そのように簡単な操作ではないのだが、
-    // 初期化しているときには現れない）
+    MyFrame *frame = new MyFrame(NULL, wxID_ANY, wxT("libwxnkfのテスト"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE);
     frame->Show(true);
-
-    // 成功時：wxApp::OnRun()が呼ばれるでしょう（それはメインのメッセージルー
-    // プに入り、アプリケーションを稼働させる）。もしここでfalseが返ってくる
-    // と、アプリケーションは即座に終了する
     return true;
 }
 
-// ----------------------------------------------------------------------------
-// メインフレーム
-// ----------------------------------------------------------------------------
+MyFrame::MyFrame(wxWindow* parent, int id, const wxString& title, const wxPoint& pos, const wxSize& size, long style):
+     wxFrame(parent, id, title, pos, size, wxDEFAULT_FRAME_STYLE) {
 
-// フレームのコンストラクタ
-MyFrame::MyFrame(const wxString& title)
-       : wxFrame(NULL, wxID_ANY, title)
-{
-    // 訳者注：アイコンは面倒なので削除
+     // メニュー等の設定
+     wxMenu *fileMenu = new wxMenu;
+     wxMenu *helpMenu = new wxMenu;
+     helpMenu->Append(Minimal_About, "&About...\tF1", "Show about dialog");
+     fileMenu->Append(Minimal_Quit, "E&xit\tAlt-X", "Quit this program");
 
-#if wxUSE_MENUS
-    // メニューバーを設置
-    wxMenu *fileMenu = new wxMenu;
+     wxMenuBar *menuBar = new wxMenuBar();
+     menuBar->Append(fileMenu, "&File");
+     menuBar->Append(helpMenu, "&Help");
 
-    // ”About”の項目はヘルプメニューの下にあるべきでしょう
-    wxMenu *helpMenu = new wxMenu;
-    helpMenu->Append(Minimal_About, "&About...\tF1", "Show about dialog");
+     SetMenuBar(menuBar);
 
-    fileMenu->Append(Minimal_Quit, "E&xit\tAlt-X", "Quit this program");
+     CreateStatusBar(2);
 
-    // さあ新しく作成されたメニューをメニューバーに追加しましよう
-    wxMenuBar *menuBar = new wxMenuBar();
-    menuBar->Append(fileMenu, "&File");
-    menuBar->Append(helpMenu, "&Help");
+     // レイアウトを設定する
+     // begin wxGlade: MyFrame::MyFrame
+     downPanel = new wxPanel(this, wxID_ANY);
+     upPanel = new wxPanel(this, wxID_ANY);
+     label_1 = new wxStaticText(upPanel, wxID_ANY, wxT("以下に変換したい文字列を入力"));
+     const wxString *combo_box_1_choices = NULL;
+     combo_box_1 = new wxComboBox(upPanel, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0, combo_box_1_choices, wxCB_DROPDOWN);
+     button_1 = new wxButton(upPanel, wxID_ANY, wxT("変換実行"));
+     text_ctrl_2 = new wxTextCtrl(downPanel, wxID_ANY, wxEmptyString);
+     text_ctrl_3 = new wxTextCtrl(downPanel, wxID_ANY, wxEmptyString);
 
-    // ... そしてフレームにこのメニューバーを設置する
-    SetMenuBar(menuBar);
-#endif // wxUSE_MENUS
-
-#if wxUSE_STATUSBAR
-    // 慰みにステータスバーも作成してみる（デフォルトで１ペインのみね）
-    CreateStatusBar(2);
-    SetStatusText("Welcome to wxWidgets!");
-#endif // wxUSE_STATUSBAR
+     set_properties(title);
+     do_layout();
+     // end wxGlade
 }
 
-
-// イベントハンドラ
-
-void MyFrame::OnQuit(wxCommandEvent& WXUNUSED(event))
-{
+void MyFrame::OnQuit(wxCommandEvent& WXUNUSED(event)) {
     // trueならば強制的にフレームを終了する
     Close(true);
 }
 
-void MyFrame::OnAbout(wxCommandEvent& WXUNUSED(event))
-{
+void MyFrame::OnAbout(wxCommandEvent& WXUNUSED(event)) {
     wxMessageBox(wxString::Format
                  (
                     "Welcome to %s!\n"
@@ -178,4 +128,29 @@ void MyFrame::OnAbout(wxCommandEvent& WXUNUSED(event))
                  "About wxWidgets minimal sample",
                  wxOK | wxICON_INFORMATION,
                  this);
+}
+void MyFrame::set_properties(wxString& title) {
+     // begin wxGlade: MyFrame::set_properties
+     SetTitle(title);
+     SetSize(wxSize(640, 480));
+     label_1->SetFont(wxFont(12, wxDEFAULT, wxNORMAL, wxNORMAL, 0, wxT("MS Shell Dlg 2")));
+     // end wxGlade
+}
+void MyFrame::do_layout() {
+     // begin wxGlade: MyFrame::do_layout
+     wxBoxSizer* vBox = new wxBoxSizer(wxVERTICAL);
+     wxBoxSizer* textCtrlSizer = new wxBoxSizer(wxHORIZONTAL);
+     wxBoxSizer* upSizer = new wxBoxSizer(wxHORIZONTAL);
+     upSizer->Add(label_1, 0, wxTOP|wxALIGN_CENTER_VERTICAL, 0);
+     upSizer->Add(combo_box_1, 1, wxALIGN_CENTER_VERTICAL, 0);
+     upSizer->Add(button_1, 0, wxALIGN_CENTER_VERTICAL, 0);
+     upPanel->SetSizer(upSizer);
+     vBox->Add(upPanel, 0, wxEXPAND, 0);
+     textCtrlSizer->Add(text_ctrl_2, 1, wxEXPAND, 0);
+     textCtrlSizer->Add(text_ctrl_3, 1, wxEXPAND, 0);
+     downPanel->SetSizer(textCtrlSizer);
+     vBox->Add(downPanel, 1, wxEXPAND, 0);
+     SetSizer(vBox);
+     Layout();
+     // end wxGlade
 }

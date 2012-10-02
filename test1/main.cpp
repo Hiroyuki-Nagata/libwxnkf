@@ -136,7 +136,7 @@ void MyFrame::OnConvertFTF(wxCommandEvent& WXUNUSED(event)) {
 
 void MyFrame::OnConvertFTM(wxCommandEvent& WXUNUSED(event)) {
 
-	wxString inputFilePath = m_inputFileName->GetValue();
+/**	wxString inputFilePath = m_inputFileName->GetValue();
 	wxString outputFilePath = m_outputFileName->GetValue();
 
 	wxNKF* nkf = new wxNKF();
@@ -144,6 +144,7 @@ void MyFrame::OnConvertFTM(wxCommandEvent& WXUNUSED(event)) {
 	wxMessageBox(test);
 	m_tc->SetValue(test);
 	delete nkf;
+*/
 }
 
 void MyFrame::OnAbout(wxCommandEvent& WXUNUSED(event)) {

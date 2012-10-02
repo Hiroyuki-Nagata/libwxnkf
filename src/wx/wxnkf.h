@@ -8,6 +8,7 @@
 #ifndef WXNKF_H_
 #define WXNKF_H_
 
+#include <vector>
 #include <wx/wx.h>
 #include <wx/app.h>
 #include <wx/stream.h>
@@ -68,12 +69,19 @@ public:
 	 * msw : C:\\Users\\foo\\bar\\etc.txt
 	 * gtk, osx : /usr/foo/bar/etc.txt
 	 */
-	int Convert(const wxString inputFilePath, const wxString outputFilePath,
-			const wxString option);
+	int Convert(const wxString inputFilePath, const wxString outputFilePath, const wxString option);
 	/**
-	 * convert charcter code in string, with option
+	 * convert charcter code in string to string, with option
+	 * 
+	 * wxString to Multibyte String(Shift_JIS, EUC-JP, UTF-8, and so on.)
 	 */
-	wxString Convert(const wxString inputFilePath, const wxString option);
+	std::string WxToMultiByte(const wxString inputString, const wxString option);
+	/**
+	 * convert charcter code in string to string, with option
+	 * 
+	 * Multibyte String(Shift_JIS, EUC-JP, UTF-8, and so on.) to wxString
+	 */
+	wxString MultiByteToWx(const std::string inputString, const std::string option);
 	/**
 	 * show usage
 	 */
@@ -123,7 +131,7 @@ private:
 	/**
 	 * main method of this class convert char to string
 	 */
-	wxString KanjiConvert(wxInputStream* in);
+	//wxString KanjiConvert(wxInputStream* in);
 	/**
 	 * setting input encode
 	 */
