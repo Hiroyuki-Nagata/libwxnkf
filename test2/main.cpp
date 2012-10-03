@@ -10,6 +10,10 @@
 #include <wx/wx.h>
 #include <wx/image.h>
 
+#if !defined(__WXMSW__) && !defined(__WXPM__)
+    #include "sample.xpm"
+#endif
+
 class MyApp : public wxApp
 {
 public:
@@ -31,7 +35,7 @@ public:
 
 private:
      // begin wxGlade: MyFrame::methods
-     void set_properties(wxString& title);
+     void set_properties(const wxString& title);
      void do_layout();
      // end wxGlade
 
@@ -80,6 +84,8 @@ bool MyApp::OnInit() {
 MyFrame::MyFrame(wxWindow* parent, int id, const wxString& title, const wxPoint& pos, const wxSize& size, long style):
      wxFrame(parent, id, title, pos, size, wxDEFAULT_FRAME_STYLE) {
 
+     // アイコンの設定
+     SetIcon(wxICON(sample));
      // メニュー等の設定
      wxMenu *fileMenu = new wxMenu;
      wxMenu *helpMenu = new wxMenu;
@@ -129,7 +135,7 @@ void MyFrame::OnAbout(wxCommandEvent& WXUNUSED(event)) {
                  wxOK | wxICON_INFORMATION,
                  this);
 }
-void MyFrame::set_properties(wxString& title) {
+void MyFrame::set_properties(const wxString& title) {
      // begin wxGlade: MyFrame::set_properties
      SetTitle(title);
      SetSize(wxSize(640, 480));

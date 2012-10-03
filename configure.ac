@@ -3,6 +3,7 @@
 
 AC_PREREQ([2.68])
 AC_INIT([libwxnkf], [1.0.0], [newserver002@gmail.com])
+AC_CANONICAL_HOST
 AM_INIT_AUTOMAKE
 AC_CONFIG_FILES([Makefile src/Makefile test1/Makefile test2/Makefile])
 AC_CONFIG_SRCDIR([src/flagset.cpp])
@@ -11,13 +12,35 @@ AC_CONFIG_SRCDIR([src/flagset.cpp])
 AC_PROG_CXX
 AC_PROG_CC
 AC_LANG(C++)
-# Checks for MacOS
-IS_MACOS=
-case "${host}" in
-    *-*-darwin* | powerpc-apple-macos* )
-        IS_MACOS=1
-    ;;
+# Checks for HostOS
+case "$host" in
+        *-*-mingw*|*-*-cygwin*)
+                AC_DEFINE(PLATFORM_WIN32, 1, [Platform is Win32])
+                PLATFORM_STRING="Win32"
+                ;;
+        *-*-linux*)
+                AC_DEFINE(PLATFORM_LINUX, 1, [Platform is Linux])
+                PLATFORM_STRING="Linux"
+                ;;
+        *-*-darwin*)
+		AC_MSG_WARN([Hello])
+                AC_DEFINE(PLATFORM_APPLE, 1, [Platform is Apple])
+                PLATFORM_STRING="Apple"
+                ;;
+        *)
+                AC_MSG_WARN([*** Please add $host to configure.ac checks!])
+                ;;
 esac
+
+# Check for windres
+if test "$PLATFORM_STRING" = "Win32"; then
+   AC_CHECK_TARGET_TOOL([WINDRES], [windres], [no])
+   if test "x$WINDRES" = "xno"; then
+      AC_MSG_ERROR([Cannot find windres])
+   fi
+   AC_SUBST(WINDRES)
+   AM_CONDITIONAL(USE_WINDRES, true)   
+fi
 
 # Checks for libraries.
 AM_OPTIONS_WXCONFIG
