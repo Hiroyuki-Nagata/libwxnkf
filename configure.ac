@@ -41,6 +41,8 @@ if test "$PLATFORM_STRING" = "Win32"; then
    AC_SUBST(WINDRES)
    AM_CONDITIONAL(USE_WINDRES, true)   
 fi
+# Set false use_windres
+AM_CONDITIONAL(USE_WINDRES, false)
 
 # Checks for libraries.
 AM_OPTIONS_WXCONFIG
