@@ -1,7 +1,7 @@
 bin_PROGRAMS = test2
 test2_SOURCES = main.cpp
-test2_CXXFLAGS=@CXXFLAGS@
-test2_LDADD=@LIBS@
+test2_CXXFLAGS=@CXXFLAGS@ -I../src
+test2_LDADD=@LIBS@ -L../src -lwxnkf
 
 if USE_WINDRES
 test2_LDADD += test2_rc.o

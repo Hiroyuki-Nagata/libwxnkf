@@ -1623,11 +1623,12 @@ std::string wxNKF::WxToMultiByte(const wxString inputString, const wxString opti
      // convert wxString to vector<char>
      //std::vector<char> inputData;
      const char* inputStrChar = inputString.char_str();
-     std::string dump(inputStrChar);
+     //std::string dump(inputStrChar);
      
-     std::cout << dump;
-     
-     return "";
+     //std::cout << dump;
+     std::string test = "Hello";
+
+     return test;
 }
 /**
  * convert charcter code in string to string, with option

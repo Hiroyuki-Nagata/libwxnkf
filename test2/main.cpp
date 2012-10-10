@@ -9,6 +9,7 @@
 
 #include <wx/wx.h>
 #include <wx/image.h>
+#include "wx/wxnkf.h"
 
 #if !defined(__WXMSW__) && !defined(__WXPM__)
     #include "sample.xpm"
@@ -32,6 +33,7 @@ public:
      // イベントハンドラ
      void OnQuit(wxCommandEvent& event);
      void OnAbout(wxCommandEvent& event);
+     void OnExecuteConv(wxCommandEvent& event);
 
 private:
      // begin wxGlade: MyFrame::methods
@@ -43,10 +45,10 @@ protected:
      // begin wxGlade: MyFrame::attributes
      wxStaticText* label_1;
      wxComboBox* combo_box_1;
-     wxButton* button_1;
+     wxButton* executeButton;
      wxPanel* upPanel;
-     wxTextCtrl* text_ctrl_2;
-     wxTextCtrl* text_ctrl_3;
+     wxTextCtrl* inputBox;
+     wxTextCtrl* outputBox;
      wxPanel* downPanel;
      // end wxGlade
 
@@ -60,12 +62,14 @@ enum
 {
     // メニューの項目
     Minimal_Quit = wxID_EXIT,
-    Minimal_About = wxID_ABOUT
+    Minimal_About = wxID_ABOUT,
+    ID_Convert
 };
 
 BEGIN_EVENT_TABLE(MyFrame, wxFrame)
     EVT_MENU(Minimal_Quit,  MyFrame::OnQuit)
     EVT_MENU(Minimal_About, MyFrame::OnAbout)
+    EVT_BUTTON(ID_Convert, MyFrame::OnExecuteConv)
 END_EVENT_TABLE()
 
 IMPLEMENT_APP(MyApp)
@@ -89,12 +93,12 @@ MyFrame::MyFrame(wxWindow* parent, int id, const wxString& title, const wxPoint&
      // メニュー等の設定
      wxMenu *fileMenu = new wxMenu;
      wxMenu *helpMenu = new wxMenu;
-     helpMenu->Append(Minimal_About, "&About...\tF1", "Show about dialog");
-     fileMenu->Append(Minimal_Quit, "E&xit\tAlt-X", "Quit this program");
+     helpMenu->Append(Minimal_About, wxT("このプログラムについて...\tF1"), wxT("このプログラムについて"));
+     fileMenu->Append(Minimal_Quit, wxT("終了\tAlt-X"), wxT("このプログラムを終了する"));
 
      wxMenuBar *menuBar = new wxMenuBar();
-     menuBar->Append(fileMenu, "&File");
-     menuBar->Append(helpMenu, "&Help");
+     menuBar->Append(fileMenu, wxT("&ファイル"));
+     menuBar->Append(helpMenu, wxT("&ヘルプ"));
 
      SetMenuBar(menuBar);
 
@@ -105,15 +109,23 @@ MyFrame::MyFrame(wxWindow* parent, int id, const wxString& title, const wxPoint&
      downPanel = new wxPanel(this, wxID_ANY);
      upPanel = new wxPanel(this, wxID_ANY);
      label_1 = new wxStaticText(upPanel, wxID_ANY, wxT("以下に変換したい文字列を入力"));
-     const wxString *combo_box_1_choices = NULL;
-     combo_box_1 = new wxComboBox(upPanel, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0, combo_box_1_choices, wxCB_DROPDOWN);
-     button_1 = new wxButton(upPanel, wxID_ANY, wxT("変換実行"));
-     text_ctrl_2 = new wxTextCtrl(downPanel, wxID_ANY, wxEmptyString);
-     text_ctrl_3 = new wxTextCtrl(downPanel, wxID_ANY, wxEmptyString);
+     
+     const wxString choices[] = {
+	  wxT("--ic=UTF-16 --oc=Shift_JIS"),
+	  wxT("--ic=UTF-16 --oc=EUC-JP"),
+	  wxT("--ic=UTF-16 --oc=ISO-2022-JP")
+     };
+     wxArrayString* combo_box_choices = new wxArrayString(3, choices);
+
+     combo_box_1 = new wxComboBox(upPanel, wxID_ANY, wxT("nkfのオプション"), wxDefaultPosition, wxDefaultSize, *combo_box_choices, wxCB_DROPDOWN | wxCB_READONLY, wxDefaultValidator, wxT("テスト"));
+     executeButton = new wxButton(upPanel, ID_Convert, wxT("変換実行"));
+     inputBox = new wxTextCtrl(downPanel, wxID_ANY, wxEmptyString);
+     outputBox = new wxTextCtrl(downPanel, wxID_ANY, wxEmptyString);
 
      set_properties(title);
      do_layout();
      // end wxGlade
+     delete combo_box_choices;
 }
 
 void MyFrame::OnQuit(wxCommandEvent& WXUNUSED(event)) {
@@ -149,14 +161,28 @@ void MyFrame::do_layout() {
      wxBoxSizer* upSizer = new wxBoxSizer(wxHORIZONTAL);
      upSizer->Add(label_1, 0, wxTOP|wxALIGN_CENTER_VERTICAL, 0);
      upSizer->Add(combo_box_1, 1, wxALIGN_CENTER_VERTICAL, 0);
-     upSizer->Add(button_1, 0, wxALIGN_CENTER_VERTICAL, 0);
+     upSizer->Add(executeButton, 0, wxALIGN_CENTER_VERTICAL, 0);
      upPanel->SetSizer(upSizer);
      vBox->Add(upPanel, 0, wxEXPAND, 0);
-     textCtrlSizer->Add(text_ctrl_2, 1, wxEXPAND, 0);
-     textCtrlSizer->Add(text_ctrl_3, 1, wxEXPAND, 0);
+     textCtrlSizer->Add(inputBox, 1, wxEXPAND, 0);
+     textCtrlSizer->Add(outputBox, 1, wxEXPAND, 0);
      downPanel->SetSizer(textCtrlSizer);
      vBox->Add(downPanel, 1, wxEXPAND, 0);
      SetSizer(vBox);
      Layout();
      // end wxGlade
+}
+void MyFrame::OnExecuteConv(wxCommandEvent& WXUNUSED(event)) {
+
+     // 変換を実行する
+     wxString inputStr = inputBox->GetValue();
+
+     // nkfのインスタンスを準備する
+     wxNKF* nkf = new wxNKF();
+     const wxString option = combo_box_1->GetValue();
+     const wxString inputString = inputBox->GetValue();
+     std::string output = nkf->WxToMultiByte(inputString, option);
+     wxMessageBox(wxString::Format("%d", output.size()));
+     // コンボボックスに入っているオプションで条件分岐
+     delete nkf;
 }

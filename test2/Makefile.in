@@ -185,8 +185,8 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 test2_SOURCES = main.cpp
-test2_CXXFLAGS = @CXXFLAGS@
-test2_LDADD = @LIBS@ $(am__append_1)
+test2_CXXFLAGS = @CXXFLAGS@ -I../src
+test2_LDADD = @LIBS@ -L../src -lwxnkf $(am__append_1)
 all: all-am
 
 .SUFFIXES:
