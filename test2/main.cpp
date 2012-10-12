@@ -111,11 +111,12 @@ MyFrame::MyFrame(wxWindow* parent, int id, const wxString& title, const wxPoint&
      label_1 = new wxStaticText(upPanel, wxID_ANY, wxT("以下に変換したい文字列を入力"));
      
      const wxString choices[] = {
-	  wxT("--ic=UTF-16 --oc=Shift_JIS"),
-	  wxT("--ic=UTF-16 --oc=EUC-JP"),
-	  wxT("--ic=UTF-16 --oc=ISO-2022-JP")
+	  wxT("--ic=UTF-8 --oc=Shift_JIS"),
+	  wxT("--ic=UTF-8 --oc=CP932"),
+	  wxT("--ic=UTF-8 --oc=EUC-JP"),
+	  wxT("--ic=UTF-8 --oc=ISO-2022-JP")
      };
-     wxArrayString* combo_box_choices = new wxArrayString(3, choices);
+     wxArrayString* combo_box_choices = new wxArrayString(4, choices);
 
      combo_box_1 = new wxComboBox(upPanel, wxID_ANY, wxT("nkfのオプション"), wxDefaultPosition, wxDefaultSize, *combo_box_choices, wxCB_DROPDOWN | wxCB_READONLY, wxDefaultValidator, wxT("テスト"));
      executeButton = new wxButton(upPanel, ID_Convert, wxT("変換実行"));
@@ -182,7 +183,13 @@ void MyFrame::OnExecuteConv(wxCommandEvent& WXUNUSED(event)) {
      const wxString option = combo_box_1->GetValue();
      const wxString inputString = inputBox->GetValue();
      std::string output = nkf->WxToMultiByte(inputString, option);
-     wxMessageBox(wxString::Format("%d", output.size()));
+
+     wxString dumpString;
+     for (int i=0;i < output.size();i++) {
+	  dumpString += wxString::Format("%02X ", (unsigned char)output[i]);
+     }
+     
+     wxMessageBox(dumpString);
      // コンボボックスに入っているオプションで条件分岐
      delete nkf;
 }
