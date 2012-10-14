@@ -133,7 +133,7 @@ class wxNKF {
  /**
   * main method of this class convert char to string
   */
- int KanjiConvert(const std::string iConv, std::string oConv);
+ int KanjiConvert(std::string iConv, std::string oConv);
  /**
   * setting input encode
   */

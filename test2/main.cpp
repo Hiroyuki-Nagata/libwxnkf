@@ -111,7 +111,7 @@ MyFrame::MyFrame(wxWindow* parent, int id, const wxString& title, const wxPoint&
      label_1 = new wxStaticText(upPanel, wxID_ANY, wxT("以下に変換したい文字列を入力"));
      
      const wxString choices[] = {
-	  wxT("--ic=UTF-8 --oc=Shift_JIS"),
+	  wxT("--ic=UTF-8 --oc=Shift-JIS"),
 	  wxT("--ic=UTF-8 --oc=CP932"),
 	  wxT("--ic=UTF-8 --oc=EUC-JP"),
 	  wxT("--ic=UTF-8 --oc=ISO-2022-JP")
