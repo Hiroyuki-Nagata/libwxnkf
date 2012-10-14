@@ -184,12 +184,13 @@ void MyFrame::OnExecuteConv(wxCommandEvent& WXUNUSED(event)) {
      const wxString inputString = inputBox->GetValue();
      std::string output = nkf->WxToMultiByte(inputString, option);
 
-     wxString dumpString;
+     wxString dumpString = wxT("変換後の16進数値：\n");
      for (int i=0;i < output.size();i++) {
 	  dumpString += wxString::Format("%02X ", (unsigned char)output[i]);
      }
      
-     wxMessageBox(dumpString);
+     // 右側のテキストコントロールに結果を出力
+     outputBox->SetValue(dumpString);
      // コンボボックスに入っているオプションで条件分岐
      delete nkf;
 }

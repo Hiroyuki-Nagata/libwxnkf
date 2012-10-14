@@ -12,7 +12,7 @@
  * According to inputMode, convert input char
  */
 nkf_char wxNKFEncoding::Iconv(nkf_char c2, nkf_char c1, nkf_char c0,
-		std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr) {
+		std::bitset<nkf_flag_num> nkfFlags, std::string* oConvStr) {
 
 	switch (this->inputMode) {
 
@@ -78,7 +78,7 @@ nkf_char wxNKFEncoding::Iconv(nkf_char c2, nkf_char c1, nkf_char c0,
  * According to outputMode, convert output char
  */
 void wxNKFEncoding::Oconv(nkf_char c2, nkf_char c1,
-		std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr) {
+		std::bitset<nkf_flag_num> nkfFlags, std::string* oConvStr) {
 
 	switch (this->outputMode) {
 
@@ -142,7 +142,7 @@ void wxNKFEncoding::Oconv(nkf_char c2, nkf_char c1,
  * s_iconv
  */
 nkf_char wxNKFEncoding::SIconv(nkf_char c2, nkf_char c1, nkf_char c0,
-		std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr) {
+		std::bitset<nkf_flag_num> nkfFlags, std::string* oConvStr) {
 
 	if (c2 == JIS_X_0201_1976_K || (0xA1 <= c2 && c2 <= 0xDF)) {
 		if (nkfFlags[iso2022jp_f] && !nkfFlags[x0201_f]) {
@@ -204,7 +204,7 @@ nkf_char wxNKFEncoding::SIconv(nkf_char c2, nkf_char c1, nkf_char c0,
  * e_iconv
  */
 nkf_char wxNKFEncoding::EIconv(nkf_char c2, nkf_char c1, nkf_char c0,
-		std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr) {
+		std::bitset<nkf_flag_num> nkfFlags, std::string* oConvStr) {
 
 	if (c2 == JIS_X_0201_1976_K || c2 == SS2) {
 		if (nkfFlags[iso2022jp_f] && !nkfFlags[x0201_f]) {
@@ -330,7 +330,7 @@ nkf_char wxNKFEncoding::EIconv(nkf_char c2, nkf_char c1, nkf_char c0,
  * w_iconv
  */
 nkf_char wxNKFEncoding::WIconv(nkf_char c1, nkf_char c2, nkf_char c3,
-		std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr) {
+		std::bitset<nkf_flag_num> nkfFlags, std::string* oConvStr) {
 
 	nkf_char ret = 0, c4 = 0;
 	static const char w_iconv_utf8_1st_byte[] = { /* 0xC0 - 0xFF */
@@ -502,7 +502,7 @@ nkf_char wxNKFEncoding::WIconv(nkf_char c1, nkf_char c2, nkf_char c3,
  * w_iconv16
  */
 nkf_char wxNKFEncoding::WIconv16(nkf_char c2, nkf_char c1, nkf_char c0,
-		std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr) {
+		std::bitset<nkf_flag_num> nkfFlags, std::string* oConvStr) {
 
 	this->Oconv(c2, c1, nkfFlags, oConvStr);
 	return 16; /* different from w_iconv32 */
@@ -520,7 +520,7 @@ nkf_char wxNKFEncoding::WIconv16(nkf_char c2, nkf_char c1, nkf_char c0,
  * w_iconv32
  */
 nkf_char wxNKFEncoding::WIconv32(nkf_char c2, nkf_char c1, nkf_char c0,
-		std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr) {
+		std::bitset<nkf_flag_num> nkfFlags, std::string* oConvStr) {
 
 	this->Oconv(c2, c1, nkfFlags, oConvStr);
 	return 32; /* different from w_iconv16 */
@@ -538,7 +538,7 @@ nkf_char wxNKFEncoding::WIconv32(nkf_char c2, nkf_char c1, nkf_char c0,
  * j_oconv
  */
 void wxNKFEncoding::JOconv(nkf_char c2, nkf_char c1,
-		std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr) {
+		std::bitset<nkf_flag_num> nkfFlags, std::string* oConvStr) {
 
 	if (c2 == 0 && nkf_char_unicode_p(c1)) {
 		Util::W16eConv(c1, &c2, &c1, nkfFlags);
@@ -639,7 +639,7 @@ void wxNKFEncoding::JOconv(nkf_char c2, nkf_char c1,
  * s_oconv
  */
 void wxNKFEncoding::SOconv(nkf_char c2, nkf_char c1,
-		std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr) {
+		std::bitset<nkf_flag_num> nkfFlags, std::string* oConvStr) {
 
 	if (c2 == 0 && nkf_char_unicode_p(c1)) {
 		Util::W16eConv(c1, &c2, &c1, nkfFlags);
@@ -779,7 +779,7 @@ void wxNKFEncoding::SOconv(nkf_char c2, nkf_char c1,
  * e_oconv
  */
 void wxNKFEncoding::EOconv(nkf_char c2, nkf_char c1,
-		std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr) {
+		std::bitset<nkf_flag_num> nkfFlags, std::string* oConvStr) {
 
 	if (c2 == 0 && nkf_char_unicode_p(c1)) {
 		Util::W16eConv(c1, &c2, &c1, nkfFlags);
@@ -933,7 +933,7 @@ void wxNKFEncoding::EOconv(nkf_char c2, nkf_char c1,
  * w_oconv
  */
 void wxNKFEncoding::WOconv(nkf_char c2, nkf_char c1,
-		std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr) {
+		std::bitset<nkf_flag_num> nkfFlags, std::string* oConvStr) {
 
 	nkf_char c3, c4;
 	nkf_char val;
@@ -1033,7 +1033,7 @@ void wxNKFEncoding::WOconv(nkf_char c2, nkf_char c1,
  * w_oconv16
  */
 void wxNKFEncoding::WOconv16(nkf_char c2, nkf_char c1,
-		std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr) {
+		std::bitset<nkf_flag_num> nkfFlags, std::string* oConvStr) {
 
 	if (nkfFlags[output_bom_f]) {
 		nkfFlags[output_bom_f] = FALSE;
@@ -1155,7 +1155,7 @@ void wxNKFEncoding::WOconv16(nkf_char c2, nkf_char c1,
  * w_oconv32
  */
 void wxNKFEncoding::WOconv32(nkf_char c2, nkf_char c1,
-		std::bitset<nkf_flag_num> nkfFlags, std::wstring* oConvStr) {
+		std::bitset<nkf_flag_num> nkfFlags, std::string* oConvStr) {
 
 	if (nkfFlags[output_bom_f]) {
 		nkfFlags[output_bom_f] = FALSE;
@@ -1249,7 +1249,7 @@ void wxNKFEncoding::WOconv32(nkf_char c2, nkf_char c1,
  * escape sequence for mixing Ascii code
  */
 void wxNKFEncoding::OutputAsciiEscapeSequence(int mode,
-		std::wstring* oConvStr) {
+		std::string* oConvStr) {
 
 	if (this->outputMode != ASCII && this->outputMode != ISO_8859_1) {
 		oConvStr->push_back(ESC);
