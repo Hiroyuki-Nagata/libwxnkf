@@ -89,13 +89,9 @@ void wxNKFEncoding::Oconv(nkf_char c2, nkf_char c1,
 	  JOconv(c2, c1, nkfFlags, oConvStr);
 	  break;
      case SHIFT_JIS:
-	  std::cout << this->outputMode << ":output is Shift_JIS!!" << std::endl;
-	  std::cout << "c1:" << c1 << " c2:" << c2 << std::endl;
 	  SOconv(c2, c1, nkfFlags, oConvStr);
 	  break;
      case EUC_JP:
-	  std::cout << this->outputMode << ":output is EUC-JP!!" << std::endl;
-	  std::cout << "c1:" << c1 << " c2:" << c2 << std::endl;
 	  EOconv(c2, c1, nkfFlags, oConvStr);
 	  break;
      case UTF_8:

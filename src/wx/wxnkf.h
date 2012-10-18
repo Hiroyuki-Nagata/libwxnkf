@@ -134,7 +134,7 @@ class wxNKF {
  /**
   * main method of this class convert char to string
   */
- int KanjiConvert(wxStringInputStream* in, std::string oConv);
+ int KanjiConvert(wxStringInputStream* in, std::string* oConv);
  /**
   * setting input encode
   */
