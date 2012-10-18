@@ -9,6 +9,7 @@
 #define WXNKFENCODING_H_
 
 #include <wx/datstrm.h>
+#include <iostream>
 #include "wxnkfbaseconfig.h"
 #include "flagset.h"
 #include "utf8table.h"

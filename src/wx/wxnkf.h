@@ -16,6 +16,7 @@
 #include <wx/filesys.h>
 #include <wx/datstrm.h>
 #include <wx/wfstream.h>
+#include <wx/sstream.h>
 #include "flagset.h"
 #include "utf8table.h"
 #include "wxnkfencoding.h"
@@ -133,7 +134,7 @@ class wxNKF {
  /**
   * main method of this class convert char to string
   */
- int KanjiConvert(std::string iConv, std::string oConv);
+ int KanjiConvert(wxStringInputStream* in, std::string oConv);
  /**
   * setting input encode
   */
