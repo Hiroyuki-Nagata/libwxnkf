@@ -8,10 +8,10 @@ utf8table.cpp			 \
 utf8table.h			 \
 util.cpp			 \
 util.h				 \
-wxnkf.h				 \
+wx/wxnkf.h			 \
 wxnkf.cpp			 \
 wxnkfbaseconfig.h		 \
 wxnkfencoding.cpp		 \
 wxnkfencoding.h
 
-libwxnkf_a_CXXFLAGS=@CXXFLAGS@
+libwxnkf_a_CXXFLAGS = @CXXFLAGS@
