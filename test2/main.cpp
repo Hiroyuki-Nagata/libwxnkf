@@ -118,10 +118,12 @@ MyFrame::MyFrame(wxWindow* parent, int id, const wxString& title, const wxPoint&
      };
      wxArrayString* combo_box_choices = new wxArrayString(4, choices);
 
-     combo_box_1 = new wxComboBox(upPanel, wxID_ANY, wxT("nkfのオプション"), wxDefaultPosition, wxDefaultSize, *combo_box_choices, wxCB_DROPDOWN | wxCB_READONLY, wxDefaultValidator, wxT("テスト"));
+     combo_box_1 = new wxComboBox(upPanel, wxID_ANY, wxT("nkfのオプション"), 
+				  wxDefaultPosition, wxDefaultSize, *combo_box_choices, 
+				  wxCB_DROPDOWN | wxCB_READONLY, wxDefaultValidator, wxT("テスト"));
      executeButton = new wxButton(upPanel, ID_Convert, wxT("変換実行"));
-     inputBox = new wxTextCtrl(downPanel, wxID_ANY, wxEmptyString);
-     outputBox = new wxTextCtrl(downPanel, wxID_ANY, wxEmptyString);
+     inputBox = new wxTextCtrl(downPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
+     outputBox = new wxTextCtrl(downPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
 
      set_properties(title);
      do_layout();
@@ -135,26 +137,15 @@ void MyFrame::OnQuit(wxCommandEvent& WXUNUSED(event)) {
 }
 
 void MyFrame::OnAbout(wxCommandEvent& WXUNUSED(event)) {
-    wxMessageBox(wxString::Format
-                 (
-                    "Welcome to %s!\n"
-                    "\n"
-                    "This is the minimal wxWidgets sample\n"
-                    "running under %s.",
-                    wxVERSION_STRING,
-                    wxGetOsDescription()
-                 ),
-                 "About wxWidgets minimal sample",
-                 wxOK | wxICON_INFORMATION,
-                 this);
 }
+
 void MyFrame::set_properties(const wxString& title) {
      // begin wxGlade: MyFrame::set_properties
      SetTitle(title);
      SetSize(wxSize(640, 480));
-     label_1->SetFont(wxFont(12, wxDEFAULT, wxNORMAL, wxNORMAL, 0, wxT("MS Shell Dlg 2")));
      // end wxGlade
 }
+
 void MyFrame::do_layout() {
      // begin wxGlade: MyFrame::do_layout
      wxBoxSizer* vBox = new wxBoxSizer(wxVERTICAL);
@@ -173,6 +164,7 @@ void MyFrame::do_layout() {
      Layout();
      // end wxGlade
 }
+
 void MyFrame::OnExecuteConv(wxCommandEvent& WXUNUSED(event)) {
 
      // 変換を実行する
@@ -186,7 +178,7 @@ void MyFrame::OnExecuteConv(wxCommandEvent& WXUNUSED(event)) {
 
      wxString dumpString = wxT("変換後の16進数値：\n");
      for (int i=0;i < output.size();i++) {
-	  dumpString += wxString::Format("%02X ", (unsigned char)output[i]);
+	  dumpString += wxString::Format(wxT("%02x "), (unsigned char)output[i]);
      }
      
      // 右側のテキストコントロールに結果を出力
