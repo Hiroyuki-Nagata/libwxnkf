@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# exec autoreconf
+autoreconf -vi -I `pwd`/m4
