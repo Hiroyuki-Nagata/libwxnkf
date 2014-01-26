@@ -65,6 +65,10 @@ fi
 
 # Checks for compiler
 AX_CXX_COMPILE_STDCXX_11([noext], [mandatory])
+# Mac OS is need -stdlib option 
+if test "$PLATFORM_STRING" = "Apple"; then
+   CXXFLAGS="$CXXFLAGS -stdlib=libc++"
+fi
 
 # Add Flags
 CPPFLAGS="$CPPFLAGS $WX_CPPFLAGS"
