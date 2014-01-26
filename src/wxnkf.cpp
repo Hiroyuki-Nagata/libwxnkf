@@ -57,12 +57,12 @@ int wxNKF::Convert(const wxString& inputFilePath, const wxString& outputFilePath
      // validate
      if (0 == inputFilePath.Len() || 0 == outputFilePath.Len()
 	 || 0 == option.Len()) {
-	  return -1;
+	  return EXIT_FAILURE;
      }
 
      // set option
      if (0 != SetOption(option))
-	  return -1;
+	  return EXIT_FAILURE;
 
      // prepare file system
      std::unique_ptr<wxFileSystem> fileSystem(new wxFileSystem());
@@ -70,7 +70,7 @@ int wxNKF::Convert(const wxString& inputFilePath, const wxString& outputFilePath
 
      if (NULL == file) {
 	  // could'nt get filestream
-	  return -1;
+	  return EXIT_FAILURE;
      }
 
      wxInputStream* in = file->GetStream();
@@ -81,10 +81,10 @@ int wxNKF::Convert(const wxString& inputFilePath, const wxString& outputFilePath
 
      // Convert char code
      if (0 != KanjiConvert(in, &out)) {
-	  return -1;
+	  return EXIT_FAILURE;
      }
 
-     return 0;
+     return EXIT_SUCCESS;
 }
 /**
  * main method of this class convert character code
@@ -103,7 +103,7 @@ int wxNKF::KanjiConvert(wxInputStream* in, wxDataOutputStream* out) {
      // set class and method by set flags
      if (ModuleConnection() < 0) {
 	  fprintf(stderr, "no output encoding given\n");
-	  return -1;
+	  return EXIT_FAILURE;
      }
      CheckBom(in);
 
@@ -551,14 +551,14 @@ finished:
 //			debug(result->name);
 	  }
      }
-     return 0;
+     return EXIT_SUCCESS;
 }
 /**
  * SetOption : setting and judge options
  *
  * return values:
  *    0: success
- *   -1: ArgumentError
+ *    1: ArgumentError
  */
 int wxNKF::SetOption(const wxString option) {
 
@@ -572,7 +572,7 @@ int wxNKF::SetOption(const wxString option) {
      bool bitshift;
 
      if (nkfFlags[option_mode])
-	  return 0;
+	  return EXIT_SUCCESS;
 
      while (*cp && *cp++ != '-')
 	  ;
@@ -587,7 +587,7 @@ int wxNKF::SetOption(const wxString option) {
 	  case '-': /* literal options */
 	       if (!*cp || *cp == SP) { /* ignore the rest of arguments */
 		    nkfFlags[option_mode] = TRUE;
-		    return 0;
+		    return EXIT_SUCCESS;
 	       }
 	       for (i = 0;
 		    i < (int) (sizeof(long_option) / sizeof(long_option[0]));
@@ -602,7 +602,7 @@ int wxNKF::SetOption(const wxString option) {
 		    p = 0;
 	       }
 	       if (p == 0) {
-		    return -1;
+		    return EXIT_FAILURE;
 	       }
 	       while (*cp && *cp != SP && cp++)
 		    ;
@@ -793,7 +793,7 @@ int wxNKF::SetOption(const wxString option) {
 		    fprintf(stderr, "unsupported long option: --%s\n",
 			    long_option[i].name);
 
-		    return -1;
+		    return EXIT_FAILURE;
 	       }
 	       continue;
 	  case 'b': /* buffered mode */
@@ -1120,10 +1120,10 @@ int wxNKF::SetOption(const wxString option) {
 	       fprintf(stderr, "unknown option: -%c\n", *(cp - 1));
 
 	       /* bogus option but ignored */
-	       return -1;
+	       return EXIT_FAILURE;
 	  }
      }
-     return 0;
+     return EXIT_SUCCESS;
 }
 /**
  * show usage
@@ -1281,7 +1281,7 @@ int wxNKF::ModuleConnection() {
 		if (nkfFlags[noout_f] || nkfFlags[guess_f]) {
 			Util::NKFEncFromIndex(ISO_2022_JP, wxEnc, SET_OUTPUT_MODE);
 		} else {
-			return -1;
+			return EXIT_FAILURE;
 		}
 	}
 	// set output encode flag
@@ -1307,7 +1307,7 @@ int wxNKF::ModuleConnection() {
 		wxEnc->inputMode = ISO_2022_JP;
 	}
 
-	return 0;
+	return EXIT_SUCCESS;
 }
 /**
  * check BOM existence. If it exist, ignore
@@ -1642,9 +1642,9 @@ int wxNKF::ConvertSTDString(const std::string& inputString, std::string& outputS
      
      // convert multibyte std::string to other multibyte std::string
      if (0 != KanjiConvert(&in, &outputString))
-	  return -1;
+	  return EXIT_FAILURE;
 
-     return 0;
+     return EXIT_SUCCESS;
 }
 /**
  * main method of this class convert char to string
@@ -1659,7 +1659,7 @@ int wxNKF::KanjiConvert(wxStringInputStream* in, std::string* oConvStr) {
      // set class and method by set flags
      if (ModuleConnection() < 0) {
 	  fprintf(stderr, "no output encoding given\n");
-	  return -1;
+	  return EXIT_FAILURE;
      }
 
      CheckBom(in);
@@ -2099,7 +2099,7 @@ int wxNKF::KanjiConvert(wxStringInputStream* in, std::string* oConvStr) {
 
 finished:
 
-     return 0;
+     return EXIT_SUCCESS;
 }
 /**
  * main method of this class convert char to string
@@ -2114,7 +2114,7 @@ int wxNKF::KanjiConvert(std::stringstream* in, std::string* oConvStr) {
      // set class and method by set flags
      if (ModuleConnection() < 0) {
 	  fprintf(stderr, "no output encoding given\n");
-	  return -1;
+	  return EXIT_FAILURE;
      }
 
      /**
@@ -2518,5 +2518,5 @@ int wxNKF::KanjiConvert(std::stringstream* in, std::string* oConvStr) {
 
 finished:
 
-     return 0;
+     return EXIT_SUCCESS;
 }
