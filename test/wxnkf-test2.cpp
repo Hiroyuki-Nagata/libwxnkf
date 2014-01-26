@@ -3,10 +3,9 @@
 #include <memory>
 
 /**
- * Test of wxNKF::WxToMultiByte
- * Main convert is UTF-8 to other charcode.
+ * Test of wxNKF::ConvertSTDString
  */
-class wxNKFTest1 : public wxAppConsole {
+class wxNKFTest2 : public wxAppConsole {
 
 public:
      virtual bool OnInit();
@@ -19,21 +18,21 @@ private:
      void ErrorReport1(size_t realSize, size_t convSize);
 };
 
-IMPLEMENT_APP(wxNKFTest1)
+IMPLEMENT_APP(wxNKFTest2)
 
-bool wxNKFTest1::OnInit() {
+bool wxNKFTest2::OnInit() {
      return true;
 }
 
-int wxNKFTest1::OnRun() {
+int wxNKFTest2::OnRun() {
 
      Test1(); // <UTF-8>  ->  <CP932>
-     Test2(); // <UTF-8>  ->  <EUC-JP>
+     //Test2(); // <UTF-8>  ->  <EUC-JP>
 
      return EXIT_SUCCESS;
 }
 
-void wxNKFTest1::Dump(const std::string& stdStr)
+void wxNKFTest2::Dump(const std::string& stdStr)
 {
      for (std::string::const_iterator it = stdStr.begin(); it != stdStr.end(); ++it) 
      {
@@ -43,24 +42,24 @@ void wxNKFTest1::Dump(const std::string& stdStr)
      std::cout << std::endl;
 }
 
-void wxNKFTest1::ErrorReport1(size_t realSize, size_t convSize)
+void wxNKFTest2::ErrorReport1(size_t realSize, size_t convSize)
 {
      printf("ERROR:   real string is %d byte.\n", realSize);
      printf("But converted string is %d byte.\n", convSize);
 }
 
 /**
- * wxString -> std::string
- * <UTF-8>  ->  <CP932>
+ * std::string -> std::string
+ * <UTF-8>     ->  <CP932>
  */
-int wxNKFTest1::Test1()
+int wxNKFTest2::Test1()
 {
-     wxString test1 = wxT("AbCdEfGhあいうえお");
-
-     const wxString option = wxT("--ic=UTF-8 --oc=CP932");
+     const std::string test1  = u8"AbCdEfGhあいうえお";
+     const std::string option = "--ic=UTF-8 --oc=CP932";
      std::unique_ptr<wxNKF> nkf(new wxNKF());
 
-     const std::string stdStr = nkf->WxToMultiByte(test1, option);
+     std::string stdStr;
+     nkf->ConvertSTDString(test1, stdStr, option);
 
      std::cout << "変換対象：" << stdStr << std::endl;
 
@@ -101,7 +100,7 @@ int wxNKFTest1::Test1()
  * wxString -> std::string
  * <UTF-8>  ->  <EUC-JP>
  */
-int wxNKFTest1::Test2()
+int wxNKFTest2::Test2()
 {
      wxString test2 = wxT("AbCdEfGhあいうえお");
 
@@ -124,7 +123,8 @@ int wxNKFTest1::Test2()
 
      if ( sizeof(answer2) != stdStr.size() )
      {
-	  ErrorReport1(sizeof(answer2), stdStr.size());
+	  std::cout << "ERROR: real string is " << sizeof(answer2) << " byte." << std::endl;
+	  std::cout << "but converted string is " << stdStr.size() << " byte." << std::endl;
 	  return -2;
      }
 

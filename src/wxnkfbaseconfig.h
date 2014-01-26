@@ -8,12 +8,6 @@
 #ifndef WXNKFBASECONFIG_H_
 #define WXNKFBASECONFIG_H_
 
-//#ifdef __WIN32__
-//#include <windows.h>
-//#include <locale.h>
-//#endif
-//
-//#include <assert.h>
 #include <cstdio>
 
 #ifdef nkf_char
@@ -60,42 +54,42 @@ typedef int nkf_char;
 
 /* encodings */
 enum nkf_encodings {
-	ASCII,
-	ISO_8859_1,
-	ISO_2022_JP,
-	CP50220,
-	CP50221,
-	CP50222,
-	ISO_2022_JP_1,
-	ISO_2022_JP_3,
-	ISO_2022_JP_2004,
-	SHIFT_JIS,
-	WINDOWS_31J,
-	CP10001,
-	EUC_JP,
-	EUCJP_NKF,
-	CP51932,
-	EUCJP_MS,
-	EUCJP_ASCII,
-	SHIFT_JISX0213,
-	SHIFT_JIS_2004,
-	EUC_JISX0213,
-	EUC_JIS_2004,
-	UTF_8,
-	UTF_8N,
-	UTF_8_BOM,
-	UTF8_MAC,
-	UTF_16,
-	UTF_16BE,
-	UTF_16BE_BOM,
-	UTF_16LE,
-	UTF_16LE_BOM,
-	UTF_32,
-	UTF_32BE,
-	UTF_32BE_BOM,
-	UTF_32LE,
-	UTF_32LE_BOM,
-	BINARY,
+	ASCII,           /** 0  */ 
+	ISO_8859_1,	 /** 1  */ 
+	ISO_2022_JP,	 /** 2  */ 
+	CP50220,	 /** 3  */ 
+	CP50221,	 /** 4  */ 
+	CP50222,	 /** 5  */ 
+	ISO_2022_JP_1,	 /** 6  */ 
+	ISO_2022_JP_3,	 /** 7  */ 
+	ISO_2022_JP_2004,/** 8  */ 
+	SHIFT_JIS,	 /** 9  */ 
+	WINDOWS_31J,	 /** 10 */ 
+	CP10001,	 /** 11 */ 
+	EUC_JP,		 /** 12 */ 
+	EUCJP_NKF,	 /** 13 */ 
+	CP51932,	 /** 14 */ 
+	EUCJP_MS,	 /** 15 */ 
+	EUCJP_ASCII,	 /** 16 */ 
+	SHIFT_JISX0213,	 /** 17 */ 
+	SHIFT_JIS_2004,	 /** 18 */ 
+	EUC_JISX0213,	 /** 19 */ 
+	EUC_JIS_2004,	 /** 20 */ 
+	UTF_8,		 /** 21 */ 
+	UTF_8N,		 /** 22 */ 
+	UTF_8_BOM,	 /** 23 */ 
+	UTF8_MAC,	 /** 24 */ 
+	UTF_16,		 /** 25 */ 
+	UTF_16BE,	 /** 26 */ 
+	UTF_16BE_BOM,	 /** 27 */ 
+	UTF_16LE,	 /** 28 */ 
+	UTF_16LE_BOM,	 /** 29 */ 
+	UTF_32,		 /** 30 */ 
+	UTF_32BE,	 /** 31 */ 
+	UTF_32BE_BOM,	 /** 32 */ 
+	UTF_32LE,	 /** 33 */ 
+	UTF_32LE_BOM,	 /** 34 */ 
+	BINARY,		 /** 35 */ 
 	NKF_ENCODING_TABLE_SIZE,
 	JIS_X_0201_1976_K = 0x1013, /* I *//* JIS C 6220-1969 */
 	/* JIS_X_0201_1976_R = 0x1014, *//* J *//* JIS C 6220-1969 */

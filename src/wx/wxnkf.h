@@ -124,7 +124,9 @@ class wxNKF {
   *    0: success
   *   -1: ArgumentError
   */
- int SetOption(const wxString option);
+ int SetOption(const wxString& option);
+ int SetOption(const std::string& option);
+ int SetOptionInternal(const char* buf);
  /**
   * define charcter code convert method by set flags
   */

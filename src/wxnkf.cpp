@@ -560,11 +560,24 @@ finished:
  *    0: success
  *    1: ArgumentError
  */
-int wxNKF::SetOption(const wxString option) {
-
+int wxNKF::SetOption(const wxString& option)
+{
      wxCharBuffer buffer = option.ToUTF8();
      const char* buf = buffer.data();
-     unsigned char* cp = (unsigned char*) buf;
+
+     return wxNKF::SetOptionInternal(buf);
+}
+
+int wxNKF::SetOption(const std::string& option)
+{
+     const char* buf = option.c_str();
+
+     return wxNKF::SetOptionInternal(buf);
+}
+
+int wxNKF::SetOptionInternal(const char* buf) 
+{
+     unsigned char* cp = (unsigned char*)buf;
 
      nkf_char i, j;
      unsigned char *p;
@@ -1639,6 +1652,10 @@ int wxNKF::ConvertSTDString(const std::string& inputString, std::string& outputS
 
      // convert std::string to std::stringstream
      std::stringstream in(inputString);
+
+     // set option
+     if (SetOption(option) != 0)
+	  return EXIT_FAILURE;
      
      // convert multibyte std::string to other multibyte std::string
      if (0 != KanjiConvert(&in, &outputString))
