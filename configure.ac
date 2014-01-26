@@ -5,7 +5,7 @@ AC_PREREQ([2.68])
 AC_INIT([libwxnkf], [1.0.0], [newserver002@gmail.com])
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE
-AC_CONFIG_FILES([Makefile src/Makefile test1/Makefile test2/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([src/flagset.cpp])
 
@@ -26,7 +26,6 @@ case "$host" in
         *-*-darwin*)
                 AC_DEFINE(PLATFORM_APPLE, 1, [Platform is Apple])
                 PLATFORM_STRING="Apple"
-		AM_CONDITIONAL(USE_MAC_OSX, true)
                 ;;
         *)
                 AC_MSG_WARN([*** Please add $host to configure.ac checks!])
