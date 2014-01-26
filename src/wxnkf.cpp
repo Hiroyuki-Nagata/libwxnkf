@@ -43,8 +43,11 @@ wxNKF::wxNKF() {
      std::unique_ptr<FlagSet> flag(new FlagSet());
      nkfFlags = flag->GetFlagSet();
 
-     /* prepare encode setting class */
-     std::unique_ptr<wxNKFEncoding> wxEnc(new wxNKFEncoding());
+     /**
+      * prepare encode setting class
+      * normal instance -> unique_ptr -> member class unique_ptr
+      */
+     wxEnc = std::move(std::unique_ptr<wxNKFEncoding>(new wxNKFEncoding()));
 }
 /**
  * convert charcter code in file, with option
@@ -62,13 +65,11 @@ int wxNKF::Convert(const wxString& inputFilePath, const wxString& outputFilePath
 	  return -1;
 
      // prepare file system
-     wxFileSystem* fileSystem = new wxFileSystem();
-     wxFSFile* file = fileSystem->OpenFile(inputFilePath, wxFS_READ);
+     std::unique_ptr<wxFileSystem> fileSystem(new wxFileSystem());
+     std::unique_ptr<wxFSFile> file(fileSystem->OpenFile(inputFilePath, wxFS_READ));
 
      if (NULL == file) {
 	  // could'nt get filestream
-	  delete file;
-	  delete fileSystem;
 	  return -1;
      }
 
@@ -80,13 +81,8 @@ int wxNKF::Convert(const wxString& inputFilePath, const wxString& outputFilePath
 
      // Convert char code
      if (0 != KanjiConvert(in, &out)) {
-	  delete fileSystem;
 	  return -1;
      }
-
-     // delete resource
-     delete file;
-     delete fileSystem;
 
      return 0;
 }
@@ -116,7 +112,7 @@ int wxNKF::KanjiConvert(wxInputStream* in, wxDataOutputStream* out) {
       */
      if (wxEnc->inputMode == UTF_32) {
 	  // prepare UTF-16 processing class
-	  UTF16Util* utf16 = new UTF16Util();
+	  std::unique_ptr<UTF16Util> utf16(new UTF16Util());
 	  utf16->SetInputEndian(wxEnc->iEndian);
 
 	  // for 4byte process
@@ -128,7 +124,7 @@ int wxNKF::KanjiConvert(wxInputStream* in, wxDataOutputStream* out) {
 
      } else if (wxEnc->inputMode == UTF_16) {
 	  // prepare UTF-16 processing class
-	  UTF16Util* utf16 = new UTF16Util();
+	  std::unique_ptr<UTF16Util> utf16(new UTF16Util());
 	  utf16->SetInputEndian(wxEnc->iEndian);
 
 	  // for 2byte process
@@ -1177,7 +1173,7 @@ void wxNKF::ShowVersion() {
 /**
  * set flag for Input
  */
-void wxNKF::SetInputEncoding(wxNKFEncoding* enc) {
+void wxNKF::SetInputEncoding(std::unique_ptr<wxNKFEncoding>& enc) {
 
      switch (enc->iCharID) {
 
@@ -1485,7 +1481,7 @@ void wxNKF::SetInputMode(int mode) {
 /**
  * set flag for Output
  */
-void wxNKF::SetOutputEncoding(wxNKFEncoding* enc) {
+void wxNKF::SetOutputEncoding(std::unique_ptr<wxNKFEncoding>& enc) {
 
      switch (enc->oCharID) {
 
@@ -1673,7 +1669,7 @@ int wxNKF::KanjiConvert(wxStringInputStream* in, std::string* oConvStr) {
       */
      if (wxEnc->inputMode == UTF_32) {
 	  // prepare UTF-16 processing class
-	  UTF16Util* utf16 = new UTF16Util();
+	  std::unique_ptr<UTF16Util> utf16(new UTF16Util());
 	  utf16->SetInputEndian(wxEnc->iEndian);
 
 	  // for 4byte process
@@ -1686,7 +1682,7 @@ int wxNKF::KanjiConvert(wxStringInputStream* in, std::string* oConvStr) {
 
      } else if (wxEnc->inputMode == UTF_16) {
 	  // prepare UTF-16 processing class
-	  UTF16Util* utf16 = new UTF16Util();
+	  std::unique_ptr<UTF16Util> utf16(new UTF16Util());
 	  utf16->SetInputEndian(wxEnc->iEndian);
 
 	  // for 2byte process

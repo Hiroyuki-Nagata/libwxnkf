@@ -116,7 +116,7 @@ class wxNKF {
  /**
   * Instance of class for IO char code setting and process
   */
- wxNKFEncoding* wxEnc;
+ std::unique_ptr<wxNKFEncoding> wxEnc;
  /**
   * SetOption : setting and judge options
   *
@@ -156,8 +156,8 @@ class wxNKF {
  /**
   * set flag for Input & Output
   */
- void SetInputEncoding(wxNKFEncoding *enc);
- void SetOutputEncoding(wxNKFEncoding *enc);
+ void SetInputEncoding(std::unique_ptr<wxNKFEncoding>& enc);
+ void SetOutputEncoding(std::unique_ptr<wxNKFEncoding>& enc);
  /**
   * other class value etc.
   */

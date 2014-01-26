@@ -13,7 +13,7 @@
  * 0: set input
  * 1: set output
  */
-void Util::NKFEncFind(const char* name, wxNKFEncoding* enc, int io) {
+void Util::NKFEncFind(const char* name, std::unique_ptr<wxNKFEncoding>& enc, int io) {
 	// setting unique encode index(int)
 	int idx = -1;
 	// encode name to encode index
@@ -24,7 +24,7 @@ void Util::NKFEncFind(const char* name, wxNKFEncoding* enc, int io) {
 /**
  * return wxNKFEncoding class per encoding ID
  */
-void Util::NKFEncFromIndex(int idx, wxNKFEncoding* enc, int io) {
+void Util::NKFEncFromIndex(int idx, std::unique_ptr<wxNKFEncoding>& enc, int io) {
 
 	/**
 	 * base name & base id
@@ -432,7 +432,7 @@ int Util::NKFEncFindIndex(const char *name) {
 /**
  * Initialize character code
  */
-void Util::NKFDefaultEncoding(wxNKFEncoding* enc, int io) {
+void Util::NKFDefaultEncoding(std::unique_ptr<wxNKFEncoding>& enc, int io) {
 
 #ifdef DEFAULT_CODE_LOCALE
 	NKFLocaleEncoding(enc, io);
@@ -645,7 +645,7 @@ nkf_char Util::E2sConv(nkf_char c2, nkf_char c1, nkf_char* p2, nkf_char* p1,
 /**
  * get default os locale
  */
-void Util::NKFLocaleEncoding(wxNKFEncoding* enc, int io) {
+void Util::NKFLocaleEncoding(std::unique_ptr<wxNKFEncoding>& enc, int io) {
 
 	const char* encname;
 #ifdef HAVE_LANGINFO_H

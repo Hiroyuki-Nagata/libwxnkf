@@ -5,7 +5,6 @@ AC_PREREQ([2.68])
 AC_INIT([libwxnkf], [1.0.0], [newserver002@gmail.com])
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE
-AC_CONFIG_FILES([Makefile src/Makefile])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([src/flagset.cpp])
 
@@ -82,4 +81,8 @@ AC_TYPE_SIZE_T
 
 # Checks for library functions.
 AC_CHECK_FUNCS([nl_langinfo])
+AC_CONFIG_FILES([Makefile
+		 src/Makefile
+		 test/Makefile])
+
 AC_OUTPUT
