@@ -40,18 +40,11 @@
  */
 wxNKF::wxNKF() {
      /* prepare nkf flag set */
-     FlagSet* flag = new FlagSet();
+     std::unique_ptr<FlagSet> flag(new FlagSet());
      nkfFlags = flag->GetFlagSet();
-     delete flag;
 
      /* prepare encode setting class */
-     wxEnc = new wxNKFEncoding();
-}
-/**
- * destructor
- */
-wxNKF::~wxNKF() {
-     delete wxEnc;
+     std::unique_ptr<wxNKFEncoding> wxEnc(new wxNKFEncoding());
 }
 /**
  * convert charcter code in file, with option

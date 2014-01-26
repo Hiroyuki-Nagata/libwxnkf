@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <memory>
 #include <wx/wx.h>
 #include <wx/app.h>
 #include <wx/stream.h>
@@ -61,15 +62,11 @@ class wxNKF {
    */
   wxNKF();
   /**
-   * destructor
-   */
-  ~wxNKF();
-  /**
    * convert charcter code in file, with option
    *
    * path example
    *
-   * msw : C:\\Users\\foo\\bar\\etc.txt
+   * msw      : C:\\Users\\foo\\bar\\etc.txt
    * gtk, osx : /usr/foo/bar/etc.txt
    */
   int Convert(const wxString& inputFilePath, const wxString& outputFilePath, const wxString& option);

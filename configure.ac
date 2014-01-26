@@ -64,6 +64,9 @@ if test "$wxWin" != 1; then
 		])
 fi
 
+# Checks for compiler
+AX_CXX_COMPILE_STDCXX_11([noext], [mandatory])
+
 # Add Flags
 CPPFLAGS="$CPPFLAGS $WX_CPPFLAGS"
 CXXFLAGS="$CXXFLAGS $WX_CXXFLAGS_ONLY"
