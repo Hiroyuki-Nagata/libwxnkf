@@ -13,6 +13,9 @@ AC_CONFIG_SRCDIR([src/flagset.cpp])
 AC_PROG_CXX
 AC_PROG_CC
 AC_LANG(C++)
+AC_LIBTOOL_WIN32_DLL
+LT_INIT
+
 # Checks for HostOS
 case "$host" in
         *-*-mingw*|*-*-cygwin*)
@@ -76,5 +79,4 @@ AC_TYPE_SIZE_T
 
 # Checks for library functions.
 AC_CHECK_FUNCS([nl_langinfo])
-AC_PROG_RANLIB
 AC_OUTPUT
